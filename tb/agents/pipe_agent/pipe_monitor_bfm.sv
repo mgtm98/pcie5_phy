@@ -25,5 +25,5 @@ interface pipe_monitor_bfm (
   input logic [3:0]  TxsynchHeader,
   input logic [3:0]  Powerdown
 );
- 
+  
 endinterface: pipe_monitor_bfm
