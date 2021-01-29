@@ -1,6 +1,6 @@
 class pipe_driver extends uvm_driver #(pipe_seq_item);
 
-`uvm_component_utils(apb_driver)
+  `uvm_component_utils(pipe_driver)
 
 virtual pipe_driver_bfm pipe_driver_bfm_h;
   
