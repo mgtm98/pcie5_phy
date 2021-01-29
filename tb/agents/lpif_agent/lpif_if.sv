@@ -1,16 +1,16 @@
 interface lpif_if(input PCLK,
                  input reset);
 
-Logic [NBYTES-1:0][7:0] Data;
-Logic [PL_NVLD-1:0] Valid;
+Logic [7:0][7:0] Data;
+Logic [7:0] Valid;
 Logic Irdy;
 Logic ex_cg_ack;
 Logic [3:0] state_req;
 Logic stall_ack;
-Logic [w-1] tlp_start;
-Logic [w-1] tlp_end;
-Logic [w-1] dllp_start;
-Logic [w-1] dllp_end;
+Logic [8:0] tlp_start;
+Logic [8:0] tlp_end;
+Logic [8:0] dllp_start;
+Logic [8:0] dllp_end;
 Logic ex_cg_req;
 Logic block_dl_init;
 Logic protocol_valid;
