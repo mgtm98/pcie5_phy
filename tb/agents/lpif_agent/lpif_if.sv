@@ -1,4 +1,4 @@
-interface lpif_if(input PCLK,
+interface lpif_if(input Clk,
                  input reset);
 
 Logic [7:0][7:0] Data;
