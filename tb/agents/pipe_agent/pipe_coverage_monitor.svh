@@ -1,6 +1,6 @@
 class pipe_coverage_monitor extends uvm_subscriber #(pipe_seq_item);
 
-`uvm_component_utils(apb_coverage_monitor);
+	`uvm_component_utils(pipe_coverage_monitor);
 
 pipe_seq_item pipe_seq_item_h;
 
