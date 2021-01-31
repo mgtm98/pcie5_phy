@@ -19,7 +19,7 @@ class pcie_coverage_monitor extends uvm_component;
   extern task run_phase(uvm_phase phase);
   extern function void report_phase(uvm_phase phase);
 
-endclass: pcie_scoreboard
+endclass: pcie_coverage_monitor
 
 function pcie_coverage_monitor::new(string name = "pcie_coverage_monitor", uvm_component parent = null);
   super.new(name, parent);
