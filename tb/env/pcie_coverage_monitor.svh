@@ -1,6 +1,6 @@
 class pcie_coverage_monitor extends uvm_component;
 
-  `uvm_component_utils(pcie_scoreboard)
+  `uvm_component_utils(pcie_coverage_monitor)
 
   lpif_seq_item lpif_seq_item_h;
   pipe_seq_item pipe_seq_item_h;
