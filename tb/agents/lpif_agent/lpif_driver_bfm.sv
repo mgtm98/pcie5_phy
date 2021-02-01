@@ -1,3 +1,7 @@
+`include "uvm_macros.svh"
+import uvm_pkg::*;
+import pipe_agent_pkg::*;
+
 interface lpif_driver_bfm(
   input bit clk,
   output bit reset,
@@ -26,3 +30,36 @@ interface lpif_driver_bfm(
   input logic stall_req,
   input logic phyinl1
 );
+  
+task link_up();
+  //to be implemented
+endtask
+
+
+task send_tlp(tlp_s tlp);
+  //to be implemented
+endtask
+
+
+task send_dllp(dllp_s dllp);
+  //to be implemented
+endtask
+
+task reset ();
+//to be implemented
+endtask
+  
+task change_speed(speed_mode_t speed);
+  //to be implemented
+endtask
+task retrain();
+    //to be implemented
+endtask
+task enter_l0s();
+    //to be implemented
+endtask
+task exit l0s();
+    //to be implemented
+endtask
+  
+end interface
