@@ -6,7 +6,7 @@ interface lpif_driver_bfm(
   input bit clk,
   output bit reset,
   // TODO Change the size of data, valid, tlp_start, tlp_end, dllp_start, dlp_end
-  // add proxy 
+
   output logic [7:0][7:0] data,
   output logic [7:0] valid,
   output logic irdy,
