@@ -33,7 +33,11 @@ function lpif_agent::new(string name = "lpif_agent", uvm_component parent = null
 endfunction
 
 function void lpif_agent::build_phase(uvm_phase phase);
-  `get_config(lpif_agent_config, lpif_agent_config_h , "lpif_agent_config")
+
+  if(!uvm_config_db#(lpif_agent_config)::get(this, "", "lpif_config_db", lpif_agent_config_h)) 
+  begin
+    `uvm_fatal(this.get_name(), "Cannot get LPIF Agent configuration from uvm_config_db");
+  end
   // Monitor is always present
   lpif_monitor_h = lpif_monitor::type_id::create("lpif_monitor_h", this);
   lpif_monitor_h.lpif_agent_config_h = lpif_agent_config_h;
@@ -45,7 +49,7 @@ function void lpif_agent::build_phase(uvm_phase phase);
   lpif_driver_h = lpif_driver::type_id::create("lpif_driver_h", this);
   end
 
-  if(lpif_agent_config_h.has_functional_coverage) 
+  if(lpif_agent_config_h.has_coverage_monitor) 
   begin
     lpif_coverage_monitor_h = lpif_coverage_monitor::type_id::create("lpif_coverage_monitor_h", this);
   end
@@ -58,7 +62,7 @@ function void lpif_agent::connect_phase(uvm_phase phase);
   begin
     lpif_driver_h.seq_item_port.connect(lpif_sequencer_h.seq_item_export);
   end
-  if(lpif_agent_config_h.has_functional_coverage) 
+  if(lpif_agent_config_h.has_coverage_monitor) 
   begin
     lpif_monitor_h.ap.connect(lpif_coverage_monitor_h.analysis_export);
   end
