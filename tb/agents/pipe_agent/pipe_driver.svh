@@ -1,8 +1,9 @@
 class pipe_driver extends uvm_driver #(pipe_seq_item);
 
-  `uvm_component_utils(pipe_driver)
+`uvm_component_utils(pipe_driver)
 
 virtual pipe_driver_bfm pipe_driver_bfm_h;
+pipe_agent_config pipe_agent_config_h;
   
 extern function new(string name = "pipe_driver", uvm_component parent = null);
 extern function void build_phase(uvm_phase phase);
@@ -17,8 +18,7 @@ endfunction
 
 function void pipe_driver::build_phase(uvm_phase phase);
   super.build_phase(phase);
-  if(! uvm_config_db#(virtual pipe_driver_bfm)::get(this, "", "pipe_driver_bfm", pipe_driver_bfm_h);)  //???
-    `uvm_fatal ( "DRV","couldn't get pipe_monitor_bfm")
+  pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
 endfunction
 
 task pipe_driver::run_phase(uvm_phase phase);
