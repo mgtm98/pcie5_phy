@@ -31,6 +31,7 @@ interface lpif_driver_bfm(
   input logic phyinl1
 );
   
+lpif_driver lpif_driver_proxy;
 task link_up();
   //to be implemented
 endtask
