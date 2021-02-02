@@ -48,6 +48,5 @@ endfunction:report_phase
 function void pcie_scoreboard::write_lpif_received(lpif_seq_item lpif_seq_item_h);
 endfunction:write_lpif_received
 
-
 function void pcie_scoreboard::write_pipe_received(pipe_seq_item pipe_seq_item_h);
 endfunction:write_pipe_received
