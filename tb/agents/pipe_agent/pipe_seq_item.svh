@@ -1,48 +1,59 @@
-//  Class: pipe_seq_item
-//
+
 class pipe_seq_item extends uvm_sequence_item;
-  typedef pipe_seq_item this_type_t;
-  `uvm_object_utils(pipe_seq_item);
 
-  //  Group: Variables
+// UVM Factory Registration Macro
+//
+`uvm_object_utils(pipe_seq_item)
 
+//------------------------------------------
+// Data Members (Outputs rand, inputs non-rand)
+//------------------------------------------
 
-  //  Group: Constraints
+Pipe_operation_t pipe_operation
+rand bit [7:0] tlp_data []
+rand bit [7:0] dllp_data []
+rand pipe_width_t pipe_width
+rand pclk_rate_t pclk_rate
 
-
-  //  Group: Functions
-
-  //  Constructor: new
-  function new(string name = "pipe_seq_item");
-    super.new(name);
-  endfunction: new
-
-  //  Function: do_copy
-  // extern function void do_copy(uvm_object rhs);
-  //  Function: do_compare
-  // extern function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-  //  Function: convert2string
-  // extern function string convert2string();
-  //  Function: do_print
-  // extern function void do_print(uvm_printer printer);
-  //  Function: do_record
-  // extern function void do_record(uvm_recorder recorder);
-  //  Function: do_pack
-  // extern function void do_pack();
-  //  Function: do_unpack
-  // extern function void do_unpack();
-  
-endclass: pipe_seq_item
+// Analysis members: ???
 
 
-/*----------------------------------------------------------------------------*/
-/*  Constraints                                                               */
-/*----------------------------------------------------------------------------*/
+//------------------------------------------
+// Constraints
+//------------------------------------------
 
 
+//------------------------------------------
+// Methods
+//------------------------------------------
 
+// Standard UVM Methods:
+extern function new(string name = "pipe_seq_item");
+extern function void do_copy(uvm_object rhs);
+extern function bit do_compare(uvm_object rhs, uvm_comparer comparer);
 
-/*----------------------------------------------------------------------------*/
-/*  Functions                                                                 */
-/*----------------------------------------------------------------------------*/
+endclass:pipe_seq_item
 
+function pipe_seq_item::new(string name = "pipe_seq_item");
+  super.new(name);
+endfunction
+
+function void pipe_seq_item::do_copy(uvm_object rhs);
+  pipe_seq_item rhs_;
+
+  if(!$cast(rhs_, rhs)) begin
+    `uvm_fatal("do_copy", "cast of rhs object failed")
+  end
+  super.do_copy(rhs);
+  // Copy over data members:
+endfunction:do_copy
+
+function bit pipe_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
+  pipe_seq_item rhs_;
+
+  if(!$cast(rhs_, rhs)) begin
+    `uvm_error("do_copy", "cast of rhs object failed")
+    return 0;
+  end
+  // return super.do_compare(rhs, comparer) && .......
+endfunction:do_compare
