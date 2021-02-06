@@ -1,6 +1,6 @@
 class pipe_monitor extends uvm_monitor;
   // UVM Factory Registration Macro
-    `uvm_component_utils(pipe_monitor);
+  `uvm_component_utils(pipe_monitor)
     
   // Virtual Interface
   virtual pipe_monitor_bfm pipe_monitor_bfm_h;
@@ -8,7 +8,7 @@ class pipe_monitor extends uvm_monitor;
   //------------------------------------------
   // Data Members
   //------------------------------------------
-  pipe_monitor_config pipe_monitor_config_h;
+  pipe_agent_config pipe_agent_config_h;
   
   //------------------------------------------
   // Component Members
@@ -53,12 +53,12 @@ function void pipe_monitor::build_phase(uvm_phase phase);
   //super.build_pahse(phase);
   //should this be called ?
 
-  if( !uvm_config_db #( pipe_monitor_config )::get( this , "" ,"pipe_monitor_config_h" , pipe_monitor_config_h )) 
+  if( !uvm_config_db #( pipe_agent_config )::get( this , "" ,"pipe_agent_config_h" , pipe_agent_config_h )) 
   begin
-    `uvm_error("Config Error" , "uvm_config_db #( pipe_monitor_config )::get cannot find resource pipe_monitor_config" )
+    `uvm_error("Config Error" , "uvm_config_db #( pipe_agent_config )::get cannot find resource pipe_agent_config" )
   end
 
-  pipe_monitor_bfm_h = pipe_monitor_config_h.pipe_monitor_bfm_h;
+  pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
 
   //pipe_monitor_bfm_h.proxy = this;
   //not mentioned in the document

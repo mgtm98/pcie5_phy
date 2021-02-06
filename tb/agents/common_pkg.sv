@@ -11,6 +11,10 @@ package common_pkg;
     BUS_WIDTH_16 = 16,
     BUS_WIDTH_32 = 32
   } pipe_data_width_t;
+
+  typedef struct  {
+    bit nothing
+  } tlp_s;
    
 endpackage: common_pkg
 

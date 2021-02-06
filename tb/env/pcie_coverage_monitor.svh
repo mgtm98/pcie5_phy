@@ -26,8 +26,6 @@ function pcie_coverage_monitor::new(string name = "pcie_coverage_monitor", uvm_c
 endfunction
 
 function void pcie_coverage_monitor::build_phase(uvm_phase phase);
-  lpif_seq_item_h = new("lpif_seq_item_h", this);
-  pipe_seq_item_h = new("pipe_seq_item_h", this);
   lpif_export = new("lpif_export", this);
   pipe_export = new("pipe_export", this);
   lpif_fifo = new("lpif_fifo", this);

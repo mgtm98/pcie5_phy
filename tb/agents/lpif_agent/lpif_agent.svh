@@ -44,9 +44,9 @@ function void lpif_agent::build_phase(uvm_phase phase);
 
   if(lpif_agent_config_h.active == UVM_ACTIVE) 
   begin
-  lpif_driver_h.lpif_agent_config_h = lpif_agent_config_h;
-  lpif_sequencer_h = lpif_sequencer::type_id::create("lpif_sequencer_h", this);
-  lpif_driver_h = lpif_driver::type_id::create("lpif_driver_h", this);
+    lpif_driver_h.lpif_agent_config_h = lpif_agent_config_h;
+    lpif_sequencer_h = lpif_sequencer::type_id::create("lpif_sequencer_h", this);
+    lpif_driver_h = lpif_driver::type_id::create("lpif_driver_h", this);
   end
 
   if(lpif_agent_config_h.has_coverage_monitor) 

@@ -1,4 +1,4 @@
-class lpif_driver extends uvm_driver #(lpif_seq_item)
+class lpif_driver extends uvm_driver #(lpif_seq_item);
 
   `uvm_component_utils(lpif_driver)
   
@@ -9,7 +9,7 @@ class lpif_driver extends uvm_driver #(lpif_seq_item)
     super.new(name, parent);
   endfunction
 
-  function void build_pahse(uvm_phase phase);
+  function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     lpif_driver_bfm_h = lpif_agent_config_h.lpif_driver_bfm_h;
   endfunction

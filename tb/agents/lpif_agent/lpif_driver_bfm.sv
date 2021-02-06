@@ -26,3 +26,5 @@ interface lpif_driver_bfm(
   input logic stall_req,
   input logic phyinl1
 );
+
+endinterface

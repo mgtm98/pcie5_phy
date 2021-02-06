@@ -20,10 +20,10 @@ interface pipe_monitor_bfm (
   input logic [1:0]  Width,
   input logic [3:0]  Rate, 
   input logic [3:0]  PCLKRate, 
-  input logic        Reset#,
+  input logic        Reset,
   input logic        TxstartBlock,
   input logic [3:0]  TxsynchHeader,
   input logic [3:0]  Powerdown
 );
   
-endinterface: pipe_monitor_bfm
+endinterface

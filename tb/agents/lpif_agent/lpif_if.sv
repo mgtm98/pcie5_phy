@@ -1,27 +1,27 @@
 interface lpif_if(input Clk,
                  input reset);
 
-Logic [7:0][7:0] Data;
-Logic [7:0] Valid;
-Logic Irdy;
-Logic ex_cg_ack;
-Logic [3:0] state_req;
-Logic stall_ack;
-Logic [8:0] tlp_start;
-Logic [8:0] tlp_end;
-Logic [8:0] dllp_start;
-Logic [8:0] dllp_end;
-Logic ex_cg_req;
-Logic block_dl_init;
-Logic protocol_valid;
-Logic [2:0] protocol;
-Logic link_up;
-Logic [3:0] state_sts;
-Logic trdy;
-Logic phyinrecenter;
-Logic rxframe_errmask;
-Logic [2:0] link_cfg;
-Logic stall_req;
-Logic phyinl1;
+logic [7:0][7:0] Data;
+logic [7:0] Valid;
+logic Irdy;
+logic ex_cg_ack;
+logic [3:0] state_req;
+logic stall_ack;
+logic [8:0] tlp_start;
+logic [8:0] tlp_end;
+logic [8:0] dllp_start;
+logic [8:0] dllp_end;
+logic ex_cg_req;
+logic block_dl_init;
+logic protocol_valid;
+logic [2:0] protocol;
+logic link_up;
+logic [3:0] state_sts;
+logic trdy;
+logic phyinrecenter;
+logic rxframe_errmask;
+logic [2:0] link_cfg;
+logic stall_req;
+logic phyinl1;
 
 endinterface: lpif_if

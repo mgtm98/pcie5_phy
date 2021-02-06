@@ -9,14 +9,16 @@ class pipe_agent extends uvm_agent;
   pipe_agent_config                 pipe_agent_config_h;
   uvm_analysis_port#(pipe_seq_item) ap;
 
-  function pipe_agent::new(string name = "pipe_agent", uvm_component parent = null);
-    super.new(name, parent);
-  endfunction: new
+  extern function new(string name = "pipe_agent", uvm_component parent = null);
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 
 endclass: pipe_agent
+
+function pipe_agent::new(string name = "pipe_agent", uvm_component parent = null);
+  super.new(name, parent);
+endfunction: new
 
 
 function void pipe_agent::build_phase(uvm_phase phase);
@@ -53,7 +55,7 @@ function void pipe_agent::connect_phase(uvm_phase phase);
   // check ig agent is active
   if(pipe_agent_config_h.active == UVM_ACTIVE) begin
     // pass driver virtual interface (driver_bfm) to the driver
-    pipe_driver_h.pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm;
+    pipe_driver_h.pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
     // connecting driver sequence item port with the driver sequence item export
     pipe_driver_h.seq_item_port.connect(pipe_sequencer_h.seq_item_export);
   end

@@ -1,11 +1,11 @@
 //  Interface: pipe_if 
 
-interface pipe_if #(pipe_data_width_t bus_width = BUS_WIDTH_32)(
+interface pipe_if #(bit bus_width = 1, parameter bus_data_width_param, parameter bus_kontrol_param)(
   input bit clk,
   input bit reset
 );
-  integer bus_data_width_param = bus_width - 1;  
-  integer bus_kontrol_param = (bus_width/8) - 1;
+  // integer bus_data_width_param = bus_width - 1;  
+  // integer bus_kontrol_param = (bus_width/8) - 1;
 
   logic [bus_data_width_param:0]  rx_data;        
   logic [bus_kontrol_param:0]     rx_data_k;
