@@ -13,7 +13,9 @@ class pipe_monitor extends uvm_monitor;
   //------------------------------------------
   // Component Members
   //------------------------------------------
-  uvm_analysis_port #(pipe_seq_item) ap;
+  uvm_analysis_port #(pipe_seq_item) ap_sent;
+  uvm_analysis_port #(pipe_seq_item) ap_received;
+
   
   //------------------------------------------
   // Methods
@@ -22,10 +24,7 @@ class pipe_monitor extends uvm_monitor;
   // Standard UVM Methods:
   extern function new(string name = "pipe_monitor", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
-
-  //extern task run_phase(uvm_phase phase); 
-  //not mentioned in the document!?
-
+  extern function void connect_phase(uvm_phase phase);
 
   // Proxy Methods:
   extern function void notify_link_up_req();
@@ -50,34 +49,23 @@ endfunction
   
 function void pipe_monitor::build_phase(uvm_phase phase);
   
-  //super.build_pahse(phase);
-  //should this be called ?
-
   if( !uvm_config_db #( pipe_agent_config )::get( this , "" ,"pipe_agent_config_h" , pipe_agent_config_h )) 
   begin
     `uvm_error("Config Error" , "uvm_config_db #( pipe_agent_config )::get cannot find resource pipe_agent_config" )
   end
 
-  pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
+  ap_sent = new("ap_sent", this);
+  ap_received = new("ap_received", this);
 
-  //pipe_monitor_bfm_h.proxy = this;
-  //not mentioned in the document
-
-  ap = new("ap", this);
 
 endfunction: build_phase
     
 
+function void pipe_monitor::connect_phase(uvm_phase phase);
+  pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
+  pipe_monitor_bfm_h.proxy = this;
+endfunction: connect_phase
 
-/*
-
-//not mentioned in the document
-
-task pipe_monitor::run_phase(uvm_phase phase);
-  pipe_monitor_bfm_h.run();
-endtask
-*/
-        
 
 function void pipe_monitor::notify_link_up_req();
   //to be implemented
