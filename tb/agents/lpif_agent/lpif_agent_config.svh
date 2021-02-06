@@ -23,6 +23,6 @@ class lpif_agent_config extends uvm_object;
   
 endclass
   
-    function lpif_agent_config::new(string name = "lpif_agent_config");
+function lpif_agent_config::new(string name = "lpif_agent_config");
   super.new(name);
 endfunction
