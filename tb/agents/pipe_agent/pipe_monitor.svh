@@ -49,10 +49,10 @@ endfunction
   
 function void pipe_monitor::build_phase(uvm_phase phase);
   
-  if( !uvm_config_db #( pipe_agent_config )::get( this , "" ,"pipe_agent_config_h" , pipe_agent_config_h )) 
-  begin
-    `uvm_error("Config Error" , "uvm_config_db #( pipe_agent_config )::get cannot find resource pipe_agent_config" )
-  end
+  // if( !uvm_config_db #( pipe_agent_config )::get( this , "" ,"pipe_agent_config_h" , pipe_agent_config_h )) 
+  // begin
+  //   `uvm_error("Config Error" , "uvm_config_db #( pipe_agent_config )::get cannot find resource pipe_agent_config" )
+  // end
 
   ap_sent = new("ap_sent", this);
   ap_received = new("ap_received", this);
