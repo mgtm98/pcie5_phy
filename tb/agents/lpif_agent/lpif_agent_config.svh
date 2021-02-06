@@ -17,12 +17,11 @@ class lpif_agent_config extends uvm_object;
   //------------------------------------------
   // Methods
   //------------------------------------------
-
-  // Standard UVM Methods:
-  extern function new(string name = "lpif_agent_config");
+  function lpif_agent_config::new(string name = "lpif_agent_config");
+    super.new(name);
+  endfunction
   
 endclass
-  
-function lpif_agent_config::new(string name = "lpif_agent_config");
-  super.new(name);
-endfunction
+
+
+
