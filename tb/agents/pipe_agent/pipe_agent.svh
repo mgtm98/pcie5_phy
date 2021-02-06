@@ -53,7 +53,8 @@ function void pipe_agent::connect_phase(uvm_phase phase);
   pipe_monitor_h.ap.connect(this.ap);
 
   // check ig agent is active
-  if(pipe_agent_config_h.active == UVM_ACTIVE) begin
+  if(pipe_agent_config_h.active == UVM_ACTIVE) 
+  begin
     // pass driver virtual interface (driver_bfm) to the driver
     pipe_driver_h.pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
     // connecting driver sequence item port with the driver sequence item export
