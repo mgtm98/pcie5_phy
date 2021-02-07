@@ -8,9 +8,7 @@ package lpif_agent_pkg;
   `include "lpif_driver.svh"
   `include "lpif_coverage_monitor.svh"
   `include "lpif_monitor.svh"
-  typedef uvm_sequencer#(lpif_seq_item) lpif_sequencer;
   `include "lpif_agent.svh"
-
-
-
+  typedef uvm_sequencer#(lpif_seq_item) lpif_sequencer;
+ 
 endpackage: lpif_agent_pkg

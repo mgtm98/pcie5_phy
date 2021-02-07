@@ -6,7 +6,9 @@ class lpif_dummy_seq extends uvm_sequence #(lpif_seq_item);
     // Data Members (Outputs rand, inputs non-rand)
     //------------------------------------------
     rand logic [7:0] data_d;
-    
+    rand Lpif_operation_t lpif_operation;
+    rand Tlp_t tlp;
+    rand Dllp_t dllp;
     //------------------------------------------
     // Constraints
     //------------------------------------------
@@ -32,7 +34,9 @@ class lpif_dummy_seq extends uvm_sequence #(lpif_seq_item);
     
       begin
         start_item(req);
-        req.data_d = data_d;
+        req.lpif_operation = lpif_operation;
+        req.tlp = tlp;
+        req.dllp = dllp;
         finish_item(req);
       end
     

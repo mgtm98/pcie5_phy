@@ -68,7 +68,7 @@ interface lpif_driver_bfm
     //to be implemented
   endtask
 
-  task exit l0s();
+  task exit_l0s();
     //to be implemented
   endtask
   
