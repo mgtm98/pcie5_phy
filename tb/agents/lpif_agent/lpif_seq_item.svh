@@ -4,6 +4,7 @@ class lpif_seq_item extends uvm_sequence_item;
   `uvm_object_utils(lpif_seq_item);
 
   //  Group: Variables
+  rand logic [7:0] data_d;
 
 
   //  Group: Constraints

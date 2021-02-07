@@ -22,11 +22,11 @@ extern task body;
 
 endclass:pipe_seq
 
-function spi_seq::new(string name = "spi_seq");
+function pipe_seq::new(string name = "spi_seq");
   super.new(name);
 endfunction
 
-task spi_seq::body;
+task pipe_seq::body;
   pipe_seq_item seq_item ;
 
   begin
