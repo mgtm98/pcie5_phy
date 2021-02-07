@@ -36,11 +36,11 @@ function void lpif_agent::build_phase(uvm_phase phase);
   end
   `uvm_info (get_type_name (), $sformatf (" building lpif agent"), UVM_MEDIUM)
 
-  ap_sent=new("ap_sent",this);
-  ap_received=new("ap_received",this);
   lpif_monitor_h = lpif_monitor::type_id::create("lpif_monitor_h", this);
   lpif_monitor_h.lpif_agent_config_h = lpif_agent_config_h;
-
+  ap_sent=new("ap_sent",this);
+  ap_received=new("ap_received",this);
+  
   if(lpif_agent_config_h.active == UVM_ACTIVE) 
   begin
     lpif_sequencer_h = lpif_sequencer::type_id::create("lpif_sequencer_h", this);
