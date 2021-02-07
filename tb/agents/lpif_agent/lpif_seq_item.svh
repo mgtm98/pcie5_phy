@@ -5,7 +5,10 @@ class lpif_seq_item extends uvm_sequence_item;
 
   //  Group: Variables
   rand logic [7:0] data_d;
-
+  rand Lpif_operation_t lpif_operation;
+  rand Tlp_t tlp;
+  rand Dllp_t dllp;
+  
 
   //  Group: Constraints
 
