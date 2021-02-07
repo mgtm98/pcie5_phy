@@ -26,7 +26,7 @@ class pcie_test extends uvm_test;
   // Standard UVM Methods:
   extern function new(string name = "pcie_test", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
-  extern function void run_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
 
 endclass: pcie_test
 
@@ -64,3 +64,40 @@ function void spi_test_base::build_phase(uvm_phase phase);
   uvm_config_db #(pcie_env_config)::set(this, "*", "pcie_env_config", pcie_env_config_h);
   pcie_env_h = spi_env::type_id::create("pcie_env_h", this);
 endfunction: build_phase
+
+
+task pcie_test::run_phase(uvm_phase phase);
+
+  //get a string from the commandline arguments
+  uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
+  string used_vsequence = "base_vseq"; //default value needs to be reviewed default value
+  cmdline_proc.get_arg_value("+VSEQ=", used_vsequence);
+
+
+  //checking which vseq should be used
+  case(used_vsequence)
+    "base_vseq":
+      base_vseq vseq = base_vseq::type_id::create("vseq");
+    "link_up_vseq":
+      link_up_vseq vseq = link_up_vseq::type_id::create("vseq");
+    "data_exchange_vseq":
+      data_exchange_vseq vseq = data_exchange_vseq::type_id::create("vseq");
+    "reset_vseq":
+      reset_vseq vseq = reset_vseq::type_id::create("vseq");
+    "enter_recovery_vseq":
+      enter_recovery_vseq vseq = enter_recovery_vseq::type_id::create("vseq");
+    "enter_l0s_vseq":
+      enter_l0s_vseq vseq = enter_l0s_vseq::type_id::create("vseq");
+    "exit_l0s_vseq":
+      exit_l0s_vseq vseq = exit_l0s_vseq::type_id::create("vseq");
+    "speed_change_vseq":
+      speed_change_vseq vseq = speed_change_vseq::type_id::create("vseq");
+  endcase
+
+  //assigning the secquencers handles
+  vseq.lpif_sequencer_h = pcie_env_h.lpif_agent_h.lpif_sequencer_h;
+  vseq.pipe_sequencer_h = pcie_env_h.pipe_agent_h.pipe_sequencer_h;
+
+  vseq.start(null); // null because no target sequencer
+
+endtask: run_phase
