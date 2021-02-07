@@ -35,12 +35,12 @@ function void lpif_agent::build_phase(uvm_phase phase);
     `uvm_fatal(this.get_name(), "Cannot get LPIF Agent configuration from uvm_config_db");
   end
   `uvm_info (get_type_name (), $sformatf (" building lpif agent"), UVM_MEDIUM)
-
-  lpif_monitor_h = lpif_monitor::type_id::create("lpif_monitor_h", this);
-  lpif_monitor_h.lpif_agent_config_h = lpif_agent_config_h;
   ap_sent=new("ap_sent",this);
   ap_received=new("ap_received",this);
+  lpif_monitor_h = lpif_monitor::type_id::create("lpif_monitor_h", this);
+  lpif_monitor_h.lpif_agent_config_h = lpif_agent_config_h;
   
+
   if(lpif_agent_config_h.active == UVM_ACTIVE) 
   begin
     lpif_sequencer_h = lpif_sequencer::type_id::create("lpif_sequencer_h", this);
