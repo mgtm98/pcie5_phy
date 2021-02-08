@@ -34,7 +34,7 @@ function void pcie_env::build_phase(uvm_phase phase);
 
   uvm_config_db #(pipe_agent_config)::set(this, "pipe_agent_h*",
                                          "pipe_agent_config_h",
-                                         pcie_env_config_h.pipe_agent_cfg_h);
+                                         pcie_env_config_h.pipe_agent_config_h);
   pipe_agent_h = pipe_agent::type_id::create("pipe_agent_h", this);
 
   if(pcie_env_config_h.has_scoreboard) 

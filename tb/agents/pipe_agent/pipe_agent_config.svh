@@ -1,11 +1,11 @@
 class pipe_agent_config extends uvm_object;
   
   // UVM Factory Registration Macro
-  `uvm_object_utils(spi_agent_config)
+  `uvm_object_utils(pipe_agent_config)
   
   // BFM Virtual Interfaces
-  virtual pipe_driver_bfm pipe_driver_bfm_h
-  virtual pipe_monitor_bfm pipe_monitor_bfm_h
+  virtual pipe_driver_bfm pipe_driver_bfm_h;
+  virtual pipe_monitor_bfm pipe_monitor_bfm_h;
     
   //------------------------------------------
   // Data Members

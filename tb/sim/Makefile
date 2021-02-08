@@ -1,26 +1,8 @@
-#
-#------------------------------------------------------------------------------
-#   Copyright 2018 Mentor Graphics Corporation
-#   All Rights Reserved Worldwide
-#
-#   Licensed under the Apache License, Version 2.0 (the
-#   "License"); you may not use this file except in
-#   compliance with the License.  You may obtain a copy of
-#   the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in
-#   writing, software distributed under the License is
-#   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-#   CONDITIONS OF ANY KIND, either express or implied.  See
-#   the License for the specific language governing
-#   permissions and limitations under the License.
-#------------------------------------------------------------------------------
 RTL          ?= ../../../rtl
 AGENTS       ?= ../agents
 TAR_PATH     ?= ../../../../
 TEST         ?= pipe_interrupt_test
+SEQUENCES    ?= pipe_interrupt_test
 
 all: work build run
 
@@ -29,10 +11,17 @@ tarball: clean tar
 work:
 	vlib work
 
+# TODO
+# Remove Timescale option
+# Remove suppress message
+# Make it one vlog command not one for every unit
+# Make a Makefile for every package (In Future)
+# .f files in reference manual (-f in vlog)
 build: work
 	# vlog -incr +incdir+$(RTL)/pipe/rtl/verilog $(RTL)/pipe/rtl/verilog/*.v
 	vlog -incr +incdir+$(AGENTS)/lpif_agent $(AGENTS)/lpif_agent/lpif_agent_pkg.sv -suppress 2263
 	vlog -incr +incdir+$(AGENTS)/pipe_agent $(AGENTS)/pipe_agent/pipe_agent_pkg.sv -suppress 2263
+	vlog -incr +incdir+$(PIPE_AGENT) $(AGENTS)/pipe_agent/pipe_agent_pkg.sv -suppress 2263
 	vlog -incr $(AGENTS)/lpif_agent/lpif_if.sv -timescale 1ns/10ps -suppress 2263
 	vlog -incr $(AGENTS)/lpif_agent/lpif_monitor_bfm.sv -timescale 1ns/10ps -suppress 2263
 	vlog -incr $(AGENTS)/lpif_agent/lpif_driver_bfm.sv -timescale 1ns/10ps -suppress 2263
@@ -52,7 +41,7 @@ debug:
 	visualizer -designfile design.bin -wavefile qwave.db
 
 run:
-	vsim -c -do "run -all" hvl_top hdl_top +UVM_TESTNAME="$(TEST)" -suppress 8887
+	vsim -c -do "run -all" hvl_top hdl_top +UVM_TESTNAME="$(TEST)" +SEQUENCES="sequences" -suppress 8887
 
 clean:
 	@rm -rf work transcript *~ vsim.wlf *.log *.tgz

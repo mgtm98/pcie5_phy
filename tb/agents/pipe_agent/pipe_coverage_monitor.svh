@@ -10,7 +10,7 @@ endgroup
 
 extern function new(string name = "pipe_coverage_monitor", uvm_component parent = null);
 extern function void report_phase(uvm_phase phase);
-extern function void write(uvm_phase phase); 
+extern function void write(pipe_seq_item seq_item); 
 endclass: pipe_coverage_monitor
 
 
@@ -24,8 +24,8 @@ function void pipe_coverage_monitor::report_phase(uvm_phase phase);
 	//write function
 endfunction: report_phase
 
-function void pipe_coverage_monitor::write(pipe_seq_item seqitem);
-  pipe_seq_item_h = seqitem; 
+function void pipe_coverage_monitor::write(pipe_seq_item seq_item);
+  pipe_seq_item_h = seq_item; 
   pipe_seq_item_cov.sample();
 endfunction
 
