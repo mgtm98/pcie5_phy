@@ -63,4 +63,6 @@ function void lpif_agent::connect_phase(uvm_phase phase);
     lpif_monitor_h.ap_received.connect(lpif_coverage_monitor_h.analysis_export_received);
     lpif_monitor_h.ap_sent.connect(lpif_coverage_monitor_h.analysis_export_sent);
   end
+  lpif_monitor_h.ap_received.connect(lpif_agent.ap_received);
+  lpif_monitor_h.ap_sent.connect(lpif_agent.ap_sent);
 endfunction: connect_phase
