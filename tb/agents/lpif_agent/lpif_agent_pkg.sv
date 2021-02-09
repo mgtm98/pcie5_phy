@@ -3,6 +3,10 @@ package lpif_agent_pkg;
   import uvm_pkg::*;
 
   `include "uvm_macros.svh"
+
+  `uvm_analysis_imp_decl(_sent)
+  `uvm_analysis_imp_decl(_received)
+
   `include "lpif_seq_item.svh"
   `include "lpif_agent_config.svh"
   `include "lpif_driver.svh"
