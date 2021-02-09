@@ -4,8 +4,8 @@ class lpif_coverage_monitor extends uvm_component;
 
   lpif_seq_item lpif_seq_item_h;
 
-  uvm_analysis_imp_sent #(lpif_seq_item, lpif_coverage_monitor) sent_export;
-  uvm_analysis_imp_received #(lpif_seq_item, lpif_coverage_monitor) received_export;
+  uvm_analysis_imp_sent #(lpif_seq_item, lpif_coverage_monitor) analysis_export_sent;
+  uvm_analysis_imp_received #(lpif_seq_item, lpif_coverage_monitor) analysis_export_received;
 
   covergroup lpif_seq_item_cov;
     
