@@ -3,27 +3,26 @@ interface pipe_driver_bfm(
   input bit reset,
   // TODO Change the size of RxData, RxDataK, TxData, TxDataK
   // Parametrization not mentioned in the document
-  output logic [31:0] RxData,
-  output logic [3:0] RxDataK,
-  output logic RxValid,
-  output logic PhyStatus,
-  output logic RxElecidle,
-  output logic [2:0] RxStatus,
-  output logic RxstartBlock,
-  output logic [3:0] RxsynchHeader,
-  input logic [31:0] TxData,
-  input logic [3:0] TxDataK,
-  input logic TxDataValid,
-  input logic TxDetectRx,
-  input logic [3:0] TxEelecIdle,
-  input logic [1:0] Width,
-  input logic [3:0] Rate,
-  input logic PCLK,
-  input logic [4:0] PCLKRate,
-  input logic Reset,
-  input logic TxStartBlock,
-  input logic [3:0] TxSynchHeader,
-  input logic [3:0] Powerdown
+  input logic [31:0] rx_data,   //for 32 bit interface
+  input logic [3:0]  rx_data_K,  //for 32 bit interface
+  input logic        rx_valid,
+  input logic        phy_status,
+  input logic        rx_elec_idle,
+  input logic [2:0]  rx_status, 
+  input logic        rx_start_block, 
+  input logic [3:0]  rx_synch_header,
+  input logic [31:0] tx_data,  //for 32 bit interface
+  input logic [3:0]  tx_data_K, //for 32 bit interface
+  input logic        tx_data_valid,
+  input logic        tx_detect_rx,
+  input logic [3:0]  tx_elec_idle,
+  input logic [1:0]  width,
+  input logic [3:0]  rate, 
+  input logic [3:0]  pclk_rate, 
+  input logic        reset,
+  input logic        tx_start_block,
+  input logic [3:0]  tx_synch_header,
+  input logic [3:0]  power_down
 );
 
 
