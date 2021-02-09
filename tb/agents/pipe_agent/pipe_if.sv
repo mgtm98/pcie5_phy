@@ -5,8 +5,8 @@ interface pipe_if
   #(
     pipe_width_t bus_width = BUS_WIDTH_32
   )(
-    input bit clk,
-    input bit reset
+    input bit clk
+    // input bit reset
   );
 
   

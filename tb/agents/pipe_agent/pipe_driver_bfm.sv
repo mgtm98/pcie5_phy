@@ -1,6 +1,6 @@
 interface pipe_driver_bfm(
   input bit clk,
-  input bit reset,
+  // input bit reset,
   // TODO Change the size of RxData, RxDataK, TxData, TxDataK
   // Parametrization not mentioned in the document
   output logic [31:0] rx_data,   //for 32 bit interface

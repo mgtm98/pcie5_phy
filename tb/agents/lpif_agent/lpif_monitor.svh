@@ -12,6 +12,8 @@ class lpif_monitor extends uvm_monitor;
   //------------------------------------------
   //  notification Methods
   //------------------------------------------
+  extern function void lpif_monitor_dummy();
+
   extern function void notify_link_up_sent();
   extern function void notify_link_up_received();
   extern function void notify_tlp_sent(tlp_s tlp);
@@ -47,13 +49,13 @@ endfunction
 function void lpif_monitor::build_phase(uvm_phase phase);
 
   super.build_pahse(phase);
-  `uvm_info (get_type_name (), $sformatf ("building lpif monitor"), UVM_MEDIUM)
+  `uvm_info (get_type_name (), "building lpif monitor", UVM_MEDIUM)
 
   //analysis ports creation
   ap_sent = new("ap_sent",this);
   ap_received = new("ap_received",this);
 
-  `uvm_info (get_type_name (), $sformatf ("lpif monitor built"), UVM_MEDIUM)
+  `uvm_info (get_type_name (), "lpif monitor built", UVM_MEDIUM)
 endfunction
 
 //connect   

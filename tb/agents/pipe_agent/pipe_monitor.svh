@@ -27,6 +27,8 @@ class pipe_monitor extends uvm_monitor;
   extern function void connect_phase(uvm_phase phase);
 
   // Proxy Methods:
+  extern function void pipe_monitor_dummy();
+
   extern function void notify_link_up_req();
   extern function void notify_send_tlp(tlp_t tlp);
   extern function void notify_send_dllp(dllp_t dllp);
@@ -66,6 +68,18 @@ function void pipe_monitor::connect_phase(uvm_phase phase);
   pipe_monitor_bfm_h.proxy = this;
 endfunction: connect_phase
 
+function void pipe_monitor::pipe_monitor_dummy();
+  pipe_seq_item pipe_seq_item_h;
+  `uvm_info (get_type_name (), $sformatf ("pipe_monitor_dummy is called"), UVM_MEDIUM)
+  //creating sequnce item
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h", this);
+  //determining the detected operation
+  pipe_seq_item_h.pipe_operation = LINK_UP;
+  //sending sequnce item to the anlysis components
+  `uvm_info (get_type_name (), "pipe_monitor_dummy sent a link-up seq_item to anlysis components", UVM_MEDIUM)
+  ap_sent.write(pipe_seq_item_h);
+  ap_received.write(pipe_seq_item_h);
+ endfunction
 
 function void pipe_monitor::notify_link_up_req();
   //to be implemented

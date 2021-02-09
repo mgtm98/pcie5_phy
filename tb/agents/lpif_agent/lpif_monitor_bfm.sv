@@ -35,7 +35,7 @@ interface lpif_monitor_bfm(
   begin
     forever
     begin
-      @($rose(irdy))
+      @(irdy)
       begin
         `uvm_info("lpif_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
         proxy.lpif_monitor_dummy();

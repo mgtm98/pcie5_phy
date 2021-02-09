@@ -1,6 +1,6 @@
 interface pipe_monitor_bfm (
   input bit clk, 
-  input bit reset, 
+  // input bit reset, 
 
   input logic PCLK,
   //RxData,RxDataK,TxData and TxDataK sizes can be changed according to interface size
@@ -26,21 +26,23 @@ interface pipe_monitor_bfm (
   input logic [3:0]  power_down
 );
 
-import uvm_pkg::*;
-import pipe_agent_pkg::*;
+  `include "uvm_macros.svh"
 
-pipe_monitor proxy;
+  import uvm_pkg::*;
+  import pipe_agent_pkg::*;
 
-initial
-begin
-  forever
+  pipe_monitor proxy;
+
+  initial
   begin
-    @($rose(rx_valid))
+    forever
     begin
-      `uvm_info("pipe_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
-      proxy.pipe_monitor_dummy();
+      @(rx_valid)
+      begin
+        `uvm_info("pipe_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
+        proxy.pipe_monitor_dummy();
+      end
     end
   end
-end
   
 endinterface
