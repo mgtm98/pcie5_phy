@@ -25,5 +25,17 @@ interface pipe_monitor_bfm (
   input logic [3:0]  TxsynchHeader,
   input logic [3:0]  Powerdown
 );
+
+initial
+begin
+  forever
+  begin
+    @($rose(rx_valid))
+    begin
+      `uvm_info("pipe_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
+      proxy.pipe_monitor_dummy();
+    end
+  end
+end
   
 endinterface

@@ -26,7 +26,7 @@ endclass: pcie_coverage_monitor
 
 function pcie_coverage_monitor::new(string name = "pcie_coverage_monitor", uvm_component parent = null);
   super.new(name, parent);
-  pcie_coverage_monitor_cov = new("pcie_coverage_monitor_cov",this);
+  pcie_coverage_monitor_cov = new;
 endfunction
 
 function void pcie_coverage_monitor::build_phase(uvm_phase phase);

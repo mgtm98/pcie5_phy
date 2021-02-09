@@ -1,7 +1,5 @@
 module hdl_top;
 
-`include "timescale.v"
-
 // clk and reset
 //
 logic clk;
@@ -128,19 +126,19 @@ pipe_driver_bfm PIPE_drv_bfm(
 
   
 // DUT
-pcie_top DUT(
-    // PCIE Interface:
-);
+// pcie_top DUT(
+//     // PCIE Interface:
+// );
 
 
 // UVM initial block:
 // Virtual interface wrapping & run_test()
 initial begin //tbx vif_binding_block
   import uvm_pkg::uvm_config_db;
-  uvm_config_db #(virtual lpif_monitor_bfm)::set(null, "uvm_test_top", "LPIF_mon_bfm", LPIF_mon_bfm);
-  uvm_config_db #(virtual lpif_driver_bfm) ::set(null, "uvm_test_top", "LPIF_drv_bfm", LPIF_drv_bfm);
-  uvm_config_db #(virtual pipe_monitor_bfm)::set(null, "uvm_test_top", "PIPE_mon_bfm", PIPE_mon_bfm);
-  uvm_config_db #(virtual pipe_driver_bfm) ::set(null, "uvm_test_top", "PIPE_drv_bfm", PIPE_drv_bfm);
+  uvm_config_db #(virtual lpif_monitor_bfm)::set(null, "uvm_test_top", "lpif_monitor_bfm", LPIF_mon_bfm);
+  uvm_config_db #(virtual lpif_driver_bfm) ::set(null, "uvm_test_top", "lpif_driver_bfm", LPIF_drv_bfm);
+  uvm_config_db #(virtual pipe_monitor_bfm)::set(null, "uvm_test_top", "pipe_monitor_bfm", PIPE_mon_bfm);
+  uvm_config_db #(virtual pipe_driver_bfm) ::set(null, "uvm_test_top", "pipe_driver_bfm", PIPE_drv_bfm);
 end
 
 //
@@ -150,10 +148,10 @@ initial begin
   clk = 0;
   forever #10ns clk = ~clk;
 end
-initial begin 
-  reset = 0;
-  repeat(4) @(posedge clk);
-  reset = 1;
-end
+// initial begin 
+//   reset = 0;
+//   repeat(4) @(posedge clk);
+//   reset = 1;
+// end
 
 endmodule: hdl_top
