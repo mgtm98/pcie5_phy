@@ -27,7 +27,7 @@ endfunction: new
 function void pipe_agent::build_phase(uvm_phase phase);
  
   // Get configuration object from UVM database
-  if(!uvm_config_db#(pipe_agent_config)::get(this, "", "pipe_config_h", pipe_agent_config_h)) begin
+  if(!uvm_config_db#(pipe_agent_config)::get(this, "", "pipe_agent_config_h", pipe_agent_config_h)) begin
     `uvm_fatal(this.get_name(), "Can't get PIPE Agent configuration object");
   end
 
