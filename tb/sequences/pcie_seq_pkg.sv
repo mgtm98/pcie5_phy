@@ -3,8 +3,71 @@ package pcie_seq_pkg;
   import pipe_agent_pkg::*;
 
   // LPIF seq
+  class lpif_dummy_seq extends uvm_sequence #(lpif_seq_item);
 
+    `uvm_object_utils(lpif_dummy_seq)
+    
+    //------------------------------------------
+    // Data Members (Outputs rand, inputs non-rand)
+    //------------------------------------------
+
+    //------------------------------------------
+    // Constraints
+    //------------------------------------------
+    
+    
+    
+    //------------------------------------------
+    // Methods
+    //------------------------------------------
+    
+    // Standard UVM Methods:
+    extern function new(string name = "lpif_dummy_seq");
+    extern task body;
+    
+    endclass:lpif_dummy_seq
+    
+    function lpif_dummy_seq::new(string name = "lpif_dummy_seq");
+      super.new(name);
+    endfunction
+    
+    task lpif_dummy_seq::body;
+      lpif_seq_item req = lpif_seq_item::type_id::create("req");;
+    
+      begin
+        start_item(req);
+        req.randomise();
+        finish_item(req);
+      end
+    
+    endtask: body
+    
   // PIPE seq
+  class pipe_seq extends uvm_sequence #(pipe_seq_item);
+
+`uvm_object_utils(pipe_seq)
+
+// Standard UVM Methods:
+extern function new(string name = "pipe_seq");
+extern task body;
+endclass:pipe_seq
+
+function pipe_seq::new(string name = "pipe_seq");
+  super.new(name);
+endfunction
+
+task pipe_seq::body;
+  pipe_seq_item pipe_seq_item_h ;
+  begin
+    pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+    start_item(pipe_seq_item_h);
+    if(!pipe_seq_item_h.randomize()) begin
+      `uvm_error("body", "pipe_seq_item randomization failure")
+    end
+    `uvm_info(get_name(), "pipe_seq_item randomized", UVM_MEDIUM)
+    finish_item(pipe_seq_item_h);
+  end
+endtask:body
 
   // Virtual seq
   class pcie_vseq extends uvm_sequence #(uvm_sequence_item);
