@@ -7,6 +7,7 @@ pipe_agent_config pipe_agent_config_h;
   
 extern function new(string name = "pipe_driver", uvm_component parent = null);
 extern function void build_phase(uvm_phase phase);
+extern function void connect_phase(uvm_phase phase);
 extern task run_phase(uvm_phase phase);
 
 endclass: pipe_driver
@@ -19,8 +20,14 @@ endfunction
 function void pipe_driver::build_phase(uvm_phase phase);
   super.build_phase(phase);
   `uvm_info(get_name(), "Enter pipe_driver build_phase", UVM_MEDIUM)
-  pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
   `uvm_info(get_name(), "Exit pipe_driver build_phase", UVM_MEDIUM)
+endfunction
+
+function void pipe_driver::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+  `uvm_info(get_name(), "Enter pipe_driver connect_phase", UVM_MEDIUM)
+  pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
+  `uvm_info(get_name(), "Exit pipe_driver connect_phase", UVM_MEDIUM)
 endfunction
 
 task pipe_driver::run_phase(uvm_phase phase);
