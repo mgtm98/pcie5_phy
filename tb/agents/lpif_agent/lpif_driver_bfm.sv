@@ -1,7 +1,3 @@
-`include "uvm_macros.svh"
-import uvm_pkg::*;
-import pipe_agent_pkg::*;
-
 interface lpif_driver_bfm
   (
     input  bit   clk,
@@ -29,6 +25,10 @@ interface lpif_driver_bfm
     input  logic stall_req,
     input  logic phyinl1
   );
+  
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+  import pipe_agent_pkg::*;
     
   lpif_driver lpif_driver_proxy;
 
