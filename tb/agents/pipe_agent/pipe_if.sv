@@ -1,9 +1,8 @@
-`include "common_pkg.sv"
+`include "pipe_types.svh"
 
-interface pipe_if
-  import common_pkg::*; 
+interface pipe_if 
   #(
-    pipe_data_width_e bus_width = BUS_WIDTH_32
+    pipe_width_t bus_width = BUS_WIDTH_32
   )(
     input bit clk,
     input bit reset
