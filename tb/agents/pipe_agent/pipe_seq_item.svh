@@ -4,22 +4,14 @@ class pipe_seq_item extends uvm_sequence_item;
 //
 `uvm_object_utils(pipe_seq_item)
 
-//------------------------------------------
-// Data Members (Outputs rand, inputs non-rand)
-//------------------------------------------
 
-pipe_operation_t pipe_operation;
-rand bit [7:0] tlp_data [];
-rand bit [7:0] dllp_data [];
+rand pipe_operation_t pipe_operation;
+rand tlp_t tlp;
+rand dllp_t dllp;
 rand pipe_width_t pipe_width;
 rand pclk_rate_t pclk_rate;
 
-// Analysis members: ???
-
-
-//------------------------------------------
-// Constraints
-//------------------------------------------
+constraint c1 {tlp.size()>20; tlp.size()<1000;}
 
 
 //------------------------------------------
