@@ -1,7 +1,3 @@
-`include "uvm_macros.svh"
-import uvm_pkg::*;
-import pipe_agent_pkg::*;
-
 interface lpif_driver_bfm
   (
     input  bit   clk,
@@ -29,6 +25,10 @@ interface lpif_driver_bfm
     input  logic stall_req,
     input  logic phyinl1
   );
+  
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+  import pipe_agent_pkg::*;
     
   lpif_driver lpif_driver_proxy;
 
@@ -68,7 +68,7 @@ interface lpif_driver_bfm
     //to be implemented
   endtask
 
-  task exit l0s();
+  task exit_l0s();
     //to be implemented
   endtask
   

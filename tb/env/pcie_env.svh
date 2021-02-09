@@ -37,24 +37,28 @@ function void pcie_env::build_phase(uvm_phase phase);
                                          pcie_env_config_h.pipe_agent_config_h);
   pipe_agent_h = pipe_agent::type_id::create("pipe_agent_h", this);
 
-  if(pcie_env_config_h.has_pcie_scoreboard) begin
+  if(pcie_env_config_h.has_scoreboard) 
+  begin
     pcie_scoreboard_h = pcie_scoreboard::type_id::create("pcie_scoreboard_h", this);
   end
 
-  if(pcie_env_config_h.has_pcie_coverage_monitor) begin
+  if(pcie_env_config_h.has_coverage_monitor) 
+  begin
     pcie_coverage_monitor_h = pcie_coverage_monitor::type_id::create("pcie_coverage_monitor_h", this);
   end
 endfunction:build_phase
 
 function void pcie_env::connect_phase(uvm_phase phase);
-  if(pcie_env_config_h.has_pcie_scoreboard) begin
+  if(pcie_env_config_h.has_pcie_scoreboard) 
+  begin
     lpif_agent_h.ap_sent.connect(pcie_scoreboard_h.lpif_export_sent);
     lpif_agent_h.ap_received.connect(pcie_scoreboard_h.lpif_export_received);
     pipe_agent_h.ap_sent.connect(pcie_scoreboard_h.pipe_export_sent);
     pipe_agent_h.ap_received.connect(pcie_scoreboard_h.pipe_export_received);
   end
 
-  if(pcie_env_config_h.has_pcie_coverage_monitor) begin
+  if(pcie_env_config_h.has_pcie_coverage_monitor) 
+  begin
     lpif_agent_h.ap_sent.connect(pcie_coverage_monitor_h.lpif_export_sent);
     lpif_agent_h.ap_received.connect(pcie_coverage_monitor_h.lpif_export_received);    
     pipe_agent_h.ap_sent.connect(pcie_coverage_monitor_h.pipe_export_sent);

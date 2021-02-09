@@ -8,8 +8,8 @@ class pcie_env_config extends uvm_object;
   // Data Members
   //------------------------------------------
   // Whether env analysis components are used:
-  bit has_pcie_scoreboard = 1;
-  bit has_pcie_coverage_monitor = 1;
+  bit has_scoreboard = 1;
+  bit has_coverage_monitor = 1;
 
   // Configurations for the sub_components
   lpif_agent_config lpif_agent_config_h;
