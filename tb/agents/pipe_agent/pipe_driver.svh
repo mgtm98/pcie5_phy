@@ -18,15 +18,19 @@ endfunction
 
 function void pipe_driver::build_phase(uvm_phase phase);
   super.build_phase(phase);
+  `uvm_info(get_name(), "Enter pipe_driver build_phase", UVM_MEDIUM)
   pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
+  `uvm_info(get_name(), "Exit pipe_driver build_phase", UVM_MEDIUM)
 endfunction
 
 task pipe_driver::run_phase(uvm_phase phase);
-  pipe_seq_item seqitem;
+  pipe_seq_item pipe_seq_item_h;
+  `uvm_info(get_name(), "Enter pipe_driver run_phase", UVM_MEDIUM)
   forever
    begin
-     seq_item_port.get_next_item(seqitem);
-     //call function in bfm to drive signals depeding on seq_item
+     seq_item_port.get_next_item(pipe_seq_item_h);
+     pipe_driver_bfm_h.drive(pipe_seq_item_h);
      seq_item_port.item_done();
-   end
+     `uvm_info(get_name(), "Exit pipe_driver run_phase", UVM_MEDIUM)
+  endtask
 endtask: run_phase
