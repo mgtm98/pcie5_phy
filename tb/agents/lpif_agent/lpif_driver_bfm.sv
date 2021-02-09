@@ -1,3 +1,5 @@
+`include "common_pkg.sv"
+
 interface lpif_driver_bfm
   (
     input  bit   clk,
@@ -28,9 +30,7 @@ interface lpif_driver_bfm
   
   `include "uvm_macros.svh"
   import uvm_pkg::*;
-  import pipe_agent_pkg::*;
-    
-  lpif_driver lpif_driver_proxy;
+  import common_pkg::*;
 
   //dummy task used only for tesring our work---------------------------------------------------------------------  
   task lpif_driver_bfm_dummy();
@@ -38,23 +38,23 @@ interface lpif_driver_bfm
     irdy=1;
   endtask 
   
-  task link_up();
+  // task link_up();
+  //   //to be implemented
+  // endtask
+
+
+  task send_tlp(tlp_t tlp);
     //to be implemented
   endtask
 
 
-  task send_tlp(tlp_s tlp);
+  task send_dllp(dllp_t dllp);
     //to be implemented
   endtask
 
-
-  task send_dllp(dllp_s dllp);
-    //to be implemented
-  endtask
-
-  task reset ();
-    //to be implemented
-  endtask
+  // task reset ();
+  //   //to be implemented
+  // endtask
 
   task change_speed(speed_mode_t speed);
     //to be implemented

@@ -14,22 +14,22 @@ class lpif_monitor extends uvm_monitor;
   //------------------------------------------
   extern function void lpif_monitor_dummy();
 
-  extern function void notify_link_up_sent();
-  extern function void notify_link_up_received();
-  extern function void notify_tlp_sent(tlp_s tlp);
-  extern function void notify_dllp_sent(dllp_s dllp);
-  extern function void notify_tlp_received(tlp_s tlp);
-  extern function void notify_dllp_received(dllp_s dllp);
-  extern function void notify_reset_received();
-  extern function void notify_reset_sent();
-  extern function void notify_speed_mode_change_sent();
-  extern function void notify_speed_mode_change_received();
-  extern function void notify_retrain_sent ();
-  extern function void notify_retrain_received ();
-  extern function void notify_enter_l0s_sent ();
-  extern function void notify_enter_l0s_received ();
-  extern function void notify_exit_l0s_sent();
-  extern function void notify_exit_l0s_received();
+  // extern function void notify_link_up_sent();
+  // extern function void notify_link_up_received();
+  // extern function void notify_tlp_sent(tlp_t tlp);
+  // extern function void notify_dllp_sent(dllp_t dllp);
+  // extern function void notify_tlp_received(tlp_t tlp);
+  // extern function void notify_dllp_received(dllp_t dllp);
+  // extern function void notify_reset_received();
+  // extern function void notify_reset_sent();
+  // extern function void notify_speed_mode_change_sent();
+  // extern function void notify_speed_mode_change_received();
+  // extern function void notify_retrain_sent ();
+  // extern function void notify_retrain_received ();
+  // extern function void notify_enter_l0s_sent ();
+  // extern function void notify_enter_l0s_received ();
+  // extern function void notify_exit_l0s_sent();
+  // extern function void notify_exit_l0s_received();
 
     
     
@@ -47,8 +47,7 @@ endfunction
 
 //build   
 function void lpif_monitor::build_phase(uvm_phase phase);
-
-  super.build_pahse(phase);
+  super.build_phase(phase);
   `uvm_info (get_type_name (), "building lpif monitor", UVM_MEDIUM)
 
   //analysis ports creation
@@ -61,7 +60,7 @@ endfunction
 //connect   
 function void lpif_monitor::connect_phase(uvm_phase phase);
 
-  super.connect_pahse(phase);
+  super.connect_phase(phase);
   `uvm_info (get_type_name (), "connecting lpif monitor", UVM_MEDIUM)
   //getting bfm handle from the agent config object
   lpif_monitor_bfm_h = lpif_agent_config_h.lpif_monitor_bfm_h;  
@@ -73,9 +72,9 @@ endfunction
 
   //dummy function used only for tesring our work----------------------------------------------------------------------------  
  function void lpif_monitor::lpif_monitor_dummy();
+  lpif_seq_item lpif_seq_item_h;
    `uvm_info (get_type_name (), $sformatf ("lpif_monitor_dummy is called"), UVM_MEDIUM)
    //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
    //determining the detected operation
    lpif_seq_item_h.lpif_operation = LINK_UP;
@@ -85,162 +84,162 @@ endfunction
    ap_received.write(lpif_seq_item_h);
   endfunction
 
- function void lpif_monitor::notify_link_up_sent();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=LINK_UP;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_link_up_sent();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=LINK_UP;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_link_up_received();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=LINK_UP;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h);
-  endfunction  
+//  function void lpif_monitor::notify_link_up_received();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=LINK_UP;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h);
+//   endfunction  
 
- function void lpif_monitor::notify_tlp_sent(tlp_s tlp);
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=TLP_TRANSFER;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
- endfunction
+//  function void lpif_monitor::notify_tlp_sent(tlp_t tlp);
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=TLP_TRANSFER;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//  endfunction
 
- function void lpif_monitor::notify_dllp_sent(dllp_s dllp);
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=DLLP_TRANSFER;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
- endfunction
+//  function void lpif_monitor::notify_dllp_sent(dllp_t dllp);
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=DLLP_TRANSFER;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//  endfunction
 
- function void lpif_monitor::notify_tlp_received(tlp_s tlp);
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=TLP_TRANSFER;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h);
- endfunction
+//  function void lpif_monitor::notify_tlp_received(tlp_t tlp);
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=TLP_TRANSFER;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h);
+//  endfunction
 
- function void lpif_monitor::notify_dllp_received(dllp_s dllp);
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=DLLP_TRANSFER;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_dllp_received(dllp_t dllp);
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=DLLP_TRANSFER;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_reset_received();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=RESET;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_reset_received();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=RESET;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_reset_sent();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=RESET;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_reset_sent();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=RESET;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_speed_mode_change_sent();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=SPEED_CHANGE;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_speed_mode_change_sent();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=SPEED_CHANGE;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_speed_mode_change_received();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=SPEED_CHANGE;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h);
- endfunction
+//  function void lpif_monitor::notify_speed_mode_change_received();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=SPEED_CHANGE;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h);
+//  endfunction
 
- function void lpif_monitor::notify_retrain_sent ();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=ENTER_RECOVERY;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_retrain_sent ();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=ENTER_RECOVERY;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_retrain_received ();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=ENTER_RECOVERY;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h); 
- endfunction
+//  function void lpif_monitor::notify_retrain_received ();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=ENTER_RECOVERY;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h); 
+//  endfunction
 
- function void lpif_monitor::notify_enter_l0s_sent ();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=ENTER_L0S;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_enter_l0s_sent ();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=ENTER_L0S;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_enter_l0s_received ();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=ENTER_L0S;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h); 
-  endfunction
+//  function void lpif_monitor::notify_enter_l0s_received ();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=ENTER_L0S;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h); 
+//   endfunction
 
- function void lpif_monitor::notify_exit_l0s_sent();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=EXIT_L0S;
-   //sending sequnce item to the anlysis components
-   ap_sent.write(lpif_seq_item_h);
-  endfunction
+//  function void lpif_monitor::notify_exit_l0s_sent();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=EXIT_L0S;
+//    //sending sequnce item to the anlysis components
+//    ap_sent.write(lpif_seq_item_h);
+//   endfunction
 
- function void lpif_monitor::notify_exit_l0s_received();
-   //creating sequnce item
-   lpif_seq_item lpif_seq_item_h;
-   lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
-   //determining the detected operation
-   lpif_seq_item_h.lpif_operation=EXIT_L0S;
-   //sending sequnce item to the anlysis components
-   ap_received.write(lpif_seq_item_h); 
-  endfunction
+//  function void lpif_monitor::notify_exit_l0s_received();
+//    //creating sequnce item
+//    lpif_seq_item lpif_seq_item_h;
+//    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+//    //determining the detected operation
+//    lpif_seq_item_h.lpif_operation=EXIT_L0S;
+//    //sending sequnce item to the anlysis components
+//    ap_received.write(lpif_seq_item_h); 
+//   endfunction

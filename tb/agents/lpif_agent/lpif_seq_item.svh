@@ -1,7 +1,7 @@
 //  Class: lpif_seq_item
 //
 class lpif_seq_item extends uvm_sequence_item;
-  `uvm_object_utils(lpif_seq_item);
+  `uvm_object_utils(lpif_seq_item)
 
   //  Group: Variables
   rand lpif_operation_t lpif_operation;
@@ -63,9 +63,9 @@ function bit lpif_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
     return 0;
   end
   return super.do_compare(rhs, comparer) &&
-        lpif_operation = rhs_.lpif_operation &&
-        tlp = rhs_.tlp &&
-        dllp = rhs_.dllp ;
+        lpif_operation == rhs_.lpif_operation &&
+        tlp == rhs_.tlp &&
+        dllp == rhs_.dllp ;
 endfunction:do_compare
 
 function string lpif_seq_item::convert2string();

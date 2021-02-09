@@ -24,8 +24,8 @@ class lpif_driver extends uvm_driver #(lpif_seq_item);
   endfunction
 
   task run_phase(uvm_phase phase);
-    super.run_phase(phase);
     lpif_seq_item lpif_seq_item_h;
+    super.run_phase(phase);
     `uvm_info(get_name(), "Enter lpif_driver run_phase", UVM_MEDIUM)
     forever
     begin

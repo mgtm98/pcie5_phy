@@ -26,6 +26,7 @@ interface lpif_monitor_bfm(
   input logic phyinl1
 );
 
+  `include "uvm_macros.svh"
   import uvm_pkg::*;
   import lpif_agent_pkg::*;
 
