@@ -9,11 +9,11 @@ class pipe_seq_item extends uvm_sequence_item;
 // Data Members (Outputs rand, inputs non-rand)
 //------------------------------------------
 
-Pipe_operation_t pipe_operation
-rand bit [7:0] tlp_data []
-rand bit [7:0] dllp_data []
-rand pipe_width_t pipe_width
-rand pclk_rate_t pclk_rate
+pipe_operation_t pipe_operation;
+rand bit [7:0] tlp_data [];
+rand bit [7:0] dllp_data [];
+rand pipe_width_t pipe_width;
+rand pclk_rate_t pclk_rate;
 
 // Analysis members: ???
 
