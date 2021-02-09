@@ -4,14 +4,13 @@ class lpif_seq_item extends uvm_sequence_item;
   `uvm_object_utils(lpif_seq_item);
 
   //  Group: Variables
-  rand logic [7:0] data_d;
-  rand Lpif_operation_t lpif_operation;
-  rand Tlp_t tlp;
-  rand Dllp_t dllp;
+  rand lpif_operation_t lpif_operation;
+  rand tlp_t tlp;
+  rand dllp_t dllp;
   
 
   //  Group: Constraints
-
+  constraint c1 {tlp.size()>20; tlp.size()<1000;}
 
   //  Group: Functions
 
