@@ -44,20 +44,20 @@ function void pipe_agent::build_phase(uvm_phase phase);
 endfunction: build_phase
 
 function void pipe_agent::connect_phase(uvm_phase phase);
-  super.connect_phase(phase);
+  // super.connect_phase(phase);
 
-  // pass monitor virtual interface (monitor_bfm) to the monitor
-  pipe_monitor_h.pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
+  // // pass monitor virtual interface (monitor_bfm) to the monitor
+  // pipe_monitor_h.pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
 
-  // connecting monitor analysis port by the agent analysis port
-  pipe_monitor_h.ap.connect(this.ap);
+  // // connecting monitor analysis port by the agent analysis port
+  // pipe_monitor_h.ap.connect(this.ap);
 
-  // check ig agent is active
-  if(pipe_agent_config_h.active == UVM_ACTIVE) 
-  begin
-    // pass driver virtual interface (driver_bfm) to the driver
-    pipe_driver_h.pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
-    // connecting driver sequence item port with the driver sequence item export
-    pipe_driver_h.seq_item_port.connect(pipe_sequencer_h.seq_item_export);
-  end
+  // // check ig agent is active
+  // if(pipe_agent_config_h.active == UVM_ACTIVE) 
+  // begin
+  //   // pass driver virtual interface (driver_bfm) to the driver
+  //   pipe_driver_h.pipe_driver_bfm_h = pipe_agent_config_h.pipe_driver_bfm_h;
+  //   // connecting driver sequence item port with the driver sequence item export
+  //   pipe_driver_h.seq_item_port.connect(pipe_sequencer_h.seq_item_export);
+  // end
 endfunction: connect_phase  
