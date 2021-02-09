@@ -1,7 +1,7 @@
 INCLUDE_DIR  	:= ../..
-FILES 				:= lpif_if.sv lpif_agent_pkg.sv lpif_driver_bfm.sv lpif_monitor_bfm.sv
+FILES 				:= lpif_agent_pkg.sv lpif_if.sv lpif_driver_bfm.sv lpif_monitor_bfm.sv
 
-pipe_build:
+pipe_build: clean
 	vlog +incdir+${INCLUDE_DIR} ${FILES}  -suppress 2275 -suppress 2286
 
 clean:

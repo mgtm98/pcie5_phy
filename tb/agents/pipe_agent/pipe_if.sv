@@ -31,7 +31,7 @@ interface pipe_if
   logic [3:0]                     rate;
   logic                           pclk;
   logic [4:0]                     pclk_rate ;
-  logic                           _reset;
+  logic                           reset;
   logic                           tx_start_block;
   logic [3:0]                     tx_synch_header;
   logic [3:0]                     power_down;
