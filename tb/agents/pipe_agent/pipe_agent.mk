@@ -1,5 +1,5 @@
 INCLUDE_DIR  	:= ../..
-FILES 				:= pipe_if.sv pipe_agent_pkg.sv pipe_driver_bfm.sv pipe_monitor_bfm.sv
+FILES 				:= pipe_agent_pkg.sv pipe_if.sv pipe_driver_bfm.sv pipe_monitor_bfm.sv
 
 pipe_build:
 	vlog +incdir+${INCLUDE_DIR} ${FILES}  -suppress 2275 -suppress 2286

@@ -1,4 +1,3 @@
-
 class pipe_seq_item extends uvm_sequence_item;
 
 // UVM Factory Registration Macro

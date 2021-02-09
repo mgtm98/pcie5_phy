@@ -1,7 +1,12 @@
-package sequence_pkg;
+package pcie_seq_pkg;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
 
+  // LPIF seq
+
+  // PIPE seq
+
+  // Virtual seq
   class pcie_vseq extends uvm_sequence #(uvm_sequence_item);
     // UVM Factory Registration Macro
     `uvm_object_utils(pcie_vseq);

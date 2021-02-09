@@ -47,11 +47,11 @@ endfunction
 function void lpif_monitor::build_phase(uvm_phase phase);
 
   super.build_pahse(phase);
-  `uvm_info (get_type_name (), $sformatf (" building lpif monitor"), UVM_MEDIUM)
+  `uvm_info (get_type_name (), $sformatf ("building lpif monitor"), UVM_MEDIUM)
 
   //analysis ports creation
-  ap_sent=new("ap_sent",this);
-  ap_received=new("ap_received",this);
+  ap_sent = new("ap_sent",this);
+  ap_received = new("ap_received",this);
 
   `uvm_info (get_type_name (), $sformatf ("lpif monitor built"), UVM_MEDIUM)
 endfunction
@@ -60,13 +60,13 @@ endfunction
 function void lpif_monitor::connect_phase(uvm_phase phase);
 
   super.connect_pahse(phase);
-  `uvm_info (get_type_name (), $sformatf (" connecting lpif monitor"), UVM_MEDIUM)
+  `uvm_info (get_type_name (), "connecting lpif monitor", UVM_MEDIUM)
   //getting bfm handle from the agent config object
   lpif_monitor_bfm_h = lpif_agent_config_h.lpif_monitor_bfm_h;  
 
   //passing proxy of the monitor to the bfm
-  lpif_monitor_bfm_h.lpif_monitor_proxy = this;
-  `uvm_info (get_type_name (), $sformatf ("lpif monitor connected"), UVM_MEDIUM)
+  lpif_monitor_bfm_h.proxy = this;
+  `uvm_info (get_type_name (), "lpif monitor connected", UVM_MEDIUM)
 endfunction
 
   //dummy function used only for tesring our work----------------------------------------------------------------------------  
@@ -76,9 +76,9 @@ endfunction
    lpif_seq_item lpif_seq_item_h;
    lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
    //determining the detected operation
-   lpif_seq_item_h.lpif_operation=LINK_UP;
+   lpif_seq_item_h.lpif_operation = LINK_UP;
    //sending sequnce item to the anlysis components
-   `uvm_info (get_type_name (), $sformatf ("lpif_monitor_dummy sent a link-up seq_item to anlysis components"), UVM_MEDIUM)
+   `uvm_info (get_type_name (), "lpif_monitor_dummy sent a link-up seq_item to anlysis components", UVM_MEDIUM)
    ap_sent.write(lpif_seq_item_h);
    ap_received.write(lpif_seq_item_h);
   endfunction

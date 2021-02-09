@@ -1,12 +1,15 @@
-`include "pipe_types.svh"
+// `include "pipe_types.svh"
 
-interface pipe_if 
+interface pipe_if
+  import pipe_agent_pkg::*;
   #(
     pipe_width_t bus_width = BUS_WIDTH_32
   )(
     input bit clk,
     input bit reset
   );
+
+  
 
   localparam bus_data_width_param = bus_width - 1;  
   localparam bus_kontrol_param = (bus_width/8) - 1;

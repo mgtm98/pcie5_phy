@@ -40,5 +40,5 @@ class lpif_dummy_seq extends uvm_sequence #(lpif_seq_item);
         finish_item(req);
       end
     
-    endtask:body
+    endtask: body
     

@@ -31,4 +31,8 @@ class lpif_coverage_monitor extends uvm_component;
     this.lpif_seq_item_h = lpif_seq_item_h;
     lpif_seq_item_cov.sample();
   endfunction
+
+  function void report_phase(uvm_phase phase);
+    //write function
+  endfunction: report_phase
 endclass

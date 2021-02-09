@@ -26,19 +26,21 @@ interface lpif_monitor_bfm(
   input logic phyinl1
 );
 
-import lpif_agent_pkg::*;
+  import uvm_pkg::*;
+  import lpif_agent_pkg::*;
 
-lpif_monitor proxy;
+  lpif_monitor proxy;
 
-initial
-begin
-  forever begin
-    @($rose(irdy))
+  initial
+  begin
+    forever
     begin
-      `uvm_info("lpif_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
-      proxy.lpif_monitor_dummy();
+      @($rose(irdy))
+      begin
+        `uvm_info("lpif_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
+        proxy.lpif_monitor_dummy();
+      end
     end
   end
-end
-  
+    
 endinterface
