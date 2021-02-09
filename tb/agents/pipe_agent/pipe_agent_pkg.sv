@@ -1,4 +1,5 @@
 `include "common_pkg.sv"
+`include "settings.svh"
 
 package pipe_agent_pkg;
 
