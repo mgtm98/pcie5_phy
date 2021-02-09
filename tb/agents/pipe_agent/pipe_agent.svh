@@ -18,7 +18,7 @@ class pipe_agent extends uvm_agent;
 
 endclass: pipe_agent
 
-function pipe_agent::new(string name = "pipe_agent", uvm_component parent = null);
+function pipe_agent::new(string name = "pipe_agent_h", uvm_component parent = null);
   super.new(name, parent);
   
 endfunction: new
