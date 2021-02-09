@@ -20,12 +20,11 @@ endclass: pipe_agent
 
 function pipe_agent::new(string name = "pipe_agent_h", uvm_component parent = null);
   super.new(name, parent);
-  
 endfunction: new
 
 
 function void pipe_agent::build_phase(uvm_phase phase);
- 
+  `uvm_info(get_name(), "Building pipe agent", COMPONENT_STRUCTURE_VERBOSITY);
   // Get configuration object from UVM database
   if(!uvm_config_db#(pipe_agent_config)::get(this, "", "pipe_agent_config_h", pipe_agent_config_h)) begin
     `uvm_fatal(this.get_name(), "Can't get PIPE Agent configuration object");
@@ -53,7 +52,7 @@ endfunction: build_phase
 
 function void pipe_agent::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
-
+  `uvm_info(get_name(), "Pipe agent connect phase", COMPONENT_STRUCTURE_VERBOSITY);
   // connecting monitor analysis port by the agent analysis port
   pipe_monitor_h.ap_sent.connect(this.ap_sent);
   pipe_monitor_h.ap_received.connect(this.ap_received);
