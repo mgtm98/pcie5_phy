@@ -8,16 +8,14 @@ logic reset;
 //
 // Instantiate the pin interfaces:
 //
-lpif_if LPIF(clk, reset);   // LPIF interface
-pipe_if PIPE(clk, reset);  // PIPE Interface                                      // NA2IS L PARAMETRISE LMA YKHLS
+lpif_if LPIF(clk);   // LPIF interface
+pipe_if PIPE(clk);  // PIPE Interface                                      // NA2IS L PARAMETRISE LMA YKHLS
 
 //
 // Instantiate the BFM interfaces:
 //
 lpif_monitor_bfm LPIF_mon_bfm(
   .clk             (LPIF.clk),
-  .reset           (LPIF.reset),
-
   .data            (LPIF.data),
   .valid           (LPIF.valid),
   .irdy            (LPIF.irdy),
@@ -44,8 +42,6 @@ lpif_monitor_bfm LPIF_mon_bfm(
 
 lpif_driver_bfm LPIF_drv_bfm(
 	.clk             (LPIF.clk),
-	.reset           (LPIF.reset),
-
 	.data            (LPIF.data),
 	.valid           (LPIF.valid),
 	.irdy            (LPIF.irdy),
@@ -71,58 +67,55 @@ lpif_driver_bfm LPIF_drv_bfm(
 );
 
 pipe_monitor_bfm PIPE_mon_bfm(
-  .clk            (PIPE.clk),
-  .reset          (PIPE.reset),
-   
-  .RxData         (PIPE.rx_data),
-  .RxDataK        (PIPE.rx_data_k),
-  .RxValid        (PIPE.rx_valid),
-  .PhyStatus      (PIPE.phy_status),
-  .RxElecidle     (PIPE.rx_elec_idle),
-  .RxStatus       (PIPE.rx_status),
-  .RxstartBlock   (PIPE.rx_start_block),
-  .RxsynchHeader  (PIPE.rx_synch_Header),
-  .TxData         (PIPE.tx_data),
-  .TxDataK        (PIPE.tx_data_k),
-  .TxDataValid    (PIPE.tx_data_valid),
-  .TxDetectRx     (PIPE.tx_detect_rx),
-  .TxEelecIdle    (PIPE.tx_elec_idle),
-  .Width          (PIPE.width),
-  .Rate           (PIPE.rate),
-  .PCLK           (PIPE.pclk),
-  .PCLKRate       (PIPE.pclk_rate),
-  .Reset#         (PIPE.reset#),
-  .TxStartBlock   (PIPE.tx_start_block),
-  .TxSynchHeader  (PIPE.tx_synch_header),
-  .Powerdown      (PIPE.power_down)
+  .clk              (PIPE.clk), 
+  .rx_data          (PIPE.rx_data),
+  .rx_data_k        (PIPE.rx_data_k),
+  .rx_valid         (PIPE.rx_valid),
+  .phy_status       (PIPE.phy_status),
+  .rx_elec_idle     (PIPE.rx_elec_idle),
+  .rx_status        (PIPE.rx_status),
+  .rx_start_block   (PIPE.rx_start_block),
+  .rx_synch_header  (PIPE.rx_synch_header),
+  .tx_data          (PIPE.tx_data),
+  .tx_data_k        (PIPE.tx_data_k),
+  .tx_data_valid    (PIPE.tx_data_valid),
+  .tx_detect_rx     (PIPE.tx_detect_rx),
+  .tx_elec_idle     (PIPE.tx_elec_idle),
+  .width            (PIPE.width),
+  .rate             (PIPE.rate),
+  .pclk             (PIPE.pclk),
+  .pclk_rate        (PIPE.pclk_rate),
+  .reset            (PIPE.reset),                      
+  .tx_start_block   (PIPE.tx_start_block),
+  .tx_synch_header  (PIPE.tx_synch_header),
+  .power_down       (PIPE.power_down)
 );
 
 pipe_driver_bfm PIPE_drv_bfm(
-  .clk            (PIPE.clk),
-  .reset          (PIPE.reset),
-   
-  .RxData         (PIPE.rx_data),
-  .RxDataK        (PIPE.rx_data_k),
-  .RxValid        (PIPE.rx_valid),
-  .PhyStatus      (PIPE.phy_status),
-  .RxElecidle     (PIPE.rx_elec_idle),
-  .RxStatus       (PIPE.rx_status),
-  .RxstartBlock   (PIPE.rx_start_block),
-  .RxsynchHeader  (PIPE.rx_synch_header),
-  .TxData         (PIPE.tx_data),
-  .TxDataK        (PIPE.tx_data_k),
-  .TxDataValid    (PIPE.tx_data_valid),
-  .TxDetectRx     (PIPE.tx_detect_rx),
-  .TxEelecIdle    (PIPE.tx_elec_idle),
-  .Width          (PIPE.width),
-  .Rate           (PIPE.rate),
-  .PCLK           (PIPE.pclk),
-  .PCLKRate       (PIPE.pclk_rate),
-  .Reset#         (PIPE.reset#),
-  .TxStartBlock   (PIPE.tx_start_block),
-  .TxSynchHeader  (PIPE.tx_synch_header),
-  .Powerdown      (PIPE.power_down)
+  .clk              (PIPE.clk),  
+  .rx_data          (PIPE.rx_data),
+  .rx_data_k        (PIPE.rx_data_k),
+  .rx_valid         (PIPE.rx_valid),
+  .phy_status       (PIPE.phy_status),
+  .rx_elec_idle     (PIPE.rx_elec_idle),
+  .rx_status        (PIPE.rx_status),
+  .rx_start_block   (PIPE.rx_start_block),
+  .rx_synch_header  (PIPE.rx_synch_header),
+  .tx_data          (PIPE.tx_data),
+  .tx_data_k        (PIPE.tx_data_k),
+  .tx_data_valid    (PIPE.tx_data_valid),
+  .tx_detect_rx     (PIPE.tx_detect_rx),
+  .tx_elec_idle     (PIPE.tx_elec_idle),
+  .width            (PIPE.width),
+  .rate             (PIPE.rate),
+  .pclk             (PIPE.pclk),
+  .pclk_rate        (PIPE.pclk_rate),
+  .reset            (PIPE.reset),
+  .tx_start_block   (PIPE.tx_start_block),
+  .tx_synch_header  (PIPE.tx_synch_header),
+  .power_down       (PIPE.power_down)
 );
+
 
   
 // DUT

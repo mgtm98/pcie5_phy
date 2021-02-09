@@ -1,3 +1,6 @@
+`uvm_analysis_imp_decl(_sent)
+`uvm_analysis_imp_decl(_received)
+
 class pipe_coverage_monitor extends uvm_component;
 
 	`uvm_component_utils(pipe_coverage_monitor);

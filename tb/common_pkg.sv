@@ -1,10 +1,3 @@
-//  Package: common_pkg
-//  All common types used by the agents are defined here
-
-`ifndef __COMMON_PKG_SV
-`define __COMMON_PKG_SV
-
-
 package common_pkg;
 
 // Note: bit is used instead of logic as the (dllp, tlp) packets were contain only 0/1 
@@ -40,8 +33,6 @@ typedef enum
   PCLK_4000   = 4000
 }pclk_rate_t;
 
+typdef pipe_if#(`PIPE_WIDTH) pipe;
 
 endpackage: common_pkg
-
-
-`endif

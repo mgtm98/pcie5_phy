@@ -27,7 +27,7 @@ class pcie_test extends uvm_test;
 
 endclass: pcie_test
 
-function pcie_test_test_base::new(string name = "pcie_test", uvm_component parent = null);
+function pcie_test::new(string name = "pcie_test", uvm_component parent = null);
   super.new(name, parent);
 endfunction
 
@@ -61,35 +61,39 @@ endfunction: build_phase
 
 
 task pcie_test::run_phase(uvm_phase phase);
+  string arguments_value = "base_vseq"; //default value needs to be reviewed default value
+  string used_vsequences[$];
+  pcie_vseq vseq;
+  uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
+
   phase.raise_objection(this, "pcie_test");
   //get a string from the commandline arguments
-  uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
-  string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   cmdline_proc.get_arg_value("+VSEQ=", arguments_value);
-  string used_vsequences[$]
   uvm_split_string(arguments_value, ",", used_vsequences);
 
-  uvm_sequence #(uvm_sequence_item) vseq;
+  
   foreach (used_vsequences[ii]) 
   begin
       //checking which vseq should be used
     case(used_vsequences[ii])
-      "base_vseq":
-        vseq = base_vseq::type_id::create("vseq");
-      "link_up_vseq":
-        vseq = link_up_vseq::type_id::create("vseq");
-      "data_exchange_vseq":
-        vseq = data_exchange_vseq::type_id::create("vseq");
-      "reset_vseq":
-        vseq = reset_vseq::type_id::create("vseq");
-      "enter_recovery_vseq":
-        vseq = enter_recovery_vseq::type_id::create("vseq");
-      "enter_l0s_vseq":
-        vseq = enter_l0s_vseq::type_id::create("vseq");
-      "exit_l0s_vseq":
-        vseq = exit_l0s_vseq::type_id::create("vseq");
-      "speed_change_vseq":
-        vseq = speed_change_vseq::type_id::create("vseq");
+      "pcie_vseq":
+        vseq = pcie_vseq::type_id::create("vseq");
+        // "base_vseq":
+        // vseq = base_vseq::type_id::create("vseq");
+      // "link_up_vseq":
+      //   vseq = link_up_vseq::type_id::create("vseq");
+      // "data_exchange_vseq":
+      //   vseq = data_exchange_vseq::type_id::create("vseq");
+      // "reset_vseq":
+      //   vseq = reset_vseq::type_id::create("vseq");
+      // "enter_recovery_vseq":
+      //   vseq = enter_recovery_vseq::type_id::create("vseq");
+      // "enter_l0s_vseq":
+      //   vseq = enter_l0s_vseq::type_id::create("vseq");
+      // "exit_l0s_vseq":
+      //   vseq = exit_l0s_vseq::type_id::create("vseq");
+      // "speed_change_vseq":
+      //   vseq = speed_change_vseq::type_id::create("vseq");
     endcase
 
     //assigning the secquencers handles

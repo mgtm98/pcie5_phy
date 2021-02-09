@@ -36,7 +36,7 @@ task pipe_driver::run_phase(uvm_phase phase);
   forever
   begin
     seq_item_port.get_next_item(pipe_seq_item_h);
-    pipe_driver_bfm_h.drive(pipe_seq_item_h);
+    // pipe_driver_bfm_h.drive(pipe_seq_item_h);
     seq_item_port.item_done();
   end
   `uvm_info(get_name(), "Exit pipe_driver run_phase", UVM_MEDIUM)

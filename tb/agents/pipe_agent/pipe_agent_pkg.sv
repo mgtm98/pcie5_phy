@@ -6,10 +6,8 @@ package pipe_agent_pkg;
   import common_pkg::*;
 
   `include "uvm_macros.svh"
-
-  `uvm_analysis_imp_decl(_sent)
-  `uvm_analysis_imp_decl(_received)
   `include "settings.svh"
+  
   `include "pipe_types.svh"
   `include "pipe_agent_config.svh"
   `include "pipe_seq_item.svh"

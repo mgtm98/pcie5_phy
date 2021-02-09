@@ -1,8 +1,8 @@
-LPIF_INCLUDE_DIR  	?= ../..
-LPIF_FILES 					?= lpif_agent_pkg.sv lpif_if.sv lpif_driver_bfm.sv lpif_monitor_bfm.sv
+# INCLUDE_DIR  	:= ../..
+FILES 				:= pcie_seq.sv
 
-lpif_build: 
-	vlog +incdir+${LPIF_INCLUDE_DIR} ${LPIF_FILES}  -suppress 2275 -suppress 2286
+env_build: 
+	vlog  ${FILES}  -suppress 2275 -suppress 2286
 
 clean:
 	rm -r work

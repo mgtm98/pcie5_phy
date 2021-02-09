@@ -30,7 +30,7 @@ class lpif_driver extends uvm_driver #(lpif_seq_item);
     forever
     begin
       seq_item_port.get_next_item(lpif_seq_item_h);
-      lpif_driver_bfm_h.drive(lpif_seq_item_h);
+      lpif_driver_bfm_h.lpif_driver_bfm_dummy();
       seq_item_port.item_done();
     end
     `uvm_info(get_name(), "Exit lpif_driver run_phase", UVM_MEDIUM)

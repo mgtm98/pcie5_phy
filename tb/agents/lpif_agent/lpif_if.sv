@@ -1,8 +1,7 @@
-interface lpif_if(input Clk,
-                 input reset);
+interface lpif_if(input clk);
 
-logic [7:0][7:0] Data;
-logic [7:0]      Valid;
+logic [7:0][7:0] data;
+logic [7:0]      valid;
 logic            irdy;
 logic            ex_cg_ack;
 logic [3:0]      state_req;

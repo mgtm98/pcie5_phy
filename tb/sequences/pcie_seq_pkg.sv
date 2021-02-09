@@ -1,11 +1,13 @@
 package pcie_seq_pkg;
+  `include "uvm_macros.svh"
+
+  import uvm_pkg::*;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
 
   // LPIF seq
-  class lpif_dummy_seq extends uvm_sequence #(lpif_seq_item);
-
-    `uvm_object_utils(lpif_dummy_seq)
+  class lpif_seq extends uvm_sequence #(lpif_seq_item);
+    `uvm_object_utils(lpif_seq)
     
     //------------------------------------------
     // Data Members (Outputs rand, inputs non-rand)
@@ -22,26 +24,25 @@ package pcie_seq_pkg;
     //------------------------------------------
     
     // Standard UVM Methods:
-    extern function new(string name = "lpif_dummy_seq");
+    extern function new(string name = "lpif_seq");
     extern task body;
     
-    endclass:lpif_dummy_seq
+    endclass:lpif_seq
     
-    function lpif_dummy_seq::new(string name = "lpif_dummy_seq");
-      super.new(name);
-    endfunction
+  function lpif_seq::new(string name = "lpif_seq");
+    super.new(name);
+  endfunction
     
-    task lpif_dummy_seq::body;
-      lpif_seq_item req = lpif_seq_item::type_id::create("req");;
-    
-      begin
-        start_item(req);
-        req.randomise();
-        finish_item(req);
-      end
-    
-    endtask: body
-    
+  task lpif_seq::body;
+    lpif_seq_item req = lpif_seq_item::type_id::create("req");;
+    start_item(req);
+    if (!req.randomize())
+    begin
+      `uvm_error(get_name(), "Can't randomize sequence item")
+    end
+    finish_item(req);
+  endtask: body
+  
   // PIPE seq
   class pipe_seq extends uvm_sequence #(pipe_seq_item);
 
@@ -58,15 +59,12 @@ endfunction
 
 task pipe_seq::body;
   pipe_seq_item pipe_seq_item_h ;
+  start_item(pipe_seq_item_h);
+  if (!pipe_seq_item_h.randomize())
   begin
-    pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-    start_item(pipe_seq_item_h);
-    if(!pipe_seq_item_h.randomize()) begin
-      `uvm_error("body", "pipe_seq_item randomization failure")
-    end
-    `uvm_info(get_name(), "pipe_seq_item randomized", UVM_MEDIUM)
-    finish_item(pipe_seq_item_h);
+    `uvm_error(get_name(), "Can't randomize sequence item")
   end
+  finish_item(pipe_seq_item_h);
 endtask:body
 
   // Virtual seq
@@ -84,8 +82,8 @@ endtask:body
         
     task body();
       //handels of sequnces
-      lpif_seq lpif_seq_h = lpif_seq::type_id::create ("lpif_seq_h");
-      pipe_seq pipe_seq_h = pipe_seq::type_id::create ("pipe_seq_h");
+      lpif_seq lpif_seq_h = lpif_seq::type_id::create("lpif_seq_h");
+      pipe_seq pipe_seq_h = pipe_seq::type_id::create("pipe_seq_h");
       `uvm_info (get_type_name (), $sformatf ("starting lpif_seq from pcie_vseq"), UVM_MEDIUM)
       lpif_seq_h.start (lpif_sequencer_h,this);
       `uvm_info (get_type_name (), $sformatf ("starting pipe_seq from pcie_vseq"), UVM_MEDIUM)
@@ -98,4 +96,5 @@ endtask:body
       // join	
     endtask
   endclass: pcie_vseq
+
 endpackage

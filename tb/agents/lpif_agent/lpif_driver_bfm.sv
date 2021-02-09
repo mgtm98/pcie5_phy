@@ -34,7 +34,7 @@ interface lpif_driver_bfm
 
   //dummy task used only for tesring our work---------------------------------------------------------------------  
   task lpif_driver_bfm_dummy();
-   `uvm_info (get_type_name (), $sformatf ("lpif_driver_bfm_dummy is setting irdy to 1"), UVM_MEDIUM)
+   `uvm_info ("lpif_driver_bfm", $sformatf ("lpif_driver_bfm_dummy is setting irdy to 1"), UVM_MEDIUM)
     irdy=1;
   endtask 
   

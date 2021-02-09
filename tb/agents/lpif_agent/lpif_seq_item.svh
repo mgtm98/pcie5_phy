@@ -72,7 +72,7 @@ function string lpif_seq_item::convert2string();
   string s;
 
   $sformat(s, "%s\n", super.convert2string());
-  $sformat(s, "%s\n lpif_operation\t%0h\n tlp\t%0h\n dllp\t%0b\n delay\t%0d\n", s, lpif_operation, tlp, dllp);
+  // $sformat(s, "%s\n lpif_operation\t%0h\n tlp\t%0h\n dllp\t%0b\n delay\t%0d\n", s, lpif_operation, tlp, dllp);
   return s;
 
 endfunction:convert2string
