@@ -19,7 +19,6 @@ class pipe_seq extends uvm_sequence #(pipe_seq_item);
 // Standard UVM Methods:
 extern function new(string name = "pipe_seq");
 extern task body;
-
 endclass:pipe_seq
 
 function pipe_seq::new(string name = "spi_seq");
@@ -27,15 +26,14 @@ function pipe_seq::new(string name = "spi_seq");
 endfunction
 
 task pipe_seq::body;
-  pipe_seq_item seq_item ;
-
+  pipe_seq_item pipe_seq_item_h ;
   begin
-    seq_item = pipe_seq_item::type_id::create("seq_item");
-    start_item(seq_item);
-    if(!seq_item.randomize()) begin
-      `uvm_error("body", "seq_item randomization failure")
+    seq_item = pipe_seq_item::type_id::create("pipe_seq_item_h");
+    start_item(pipe_seq_item_h);
+    if(!pipe_seq_item_h.randomize()) begin
+      `uvm_error("body", "pipe_seq_item randomization failure")
     end
-    finish_item(seq_item);
+    `uvm_info(get_name(), "pipe_seq_item randomized", UVM_MEDIUM)
+    finish_item(pipe_seq_item_h);
   end
-
 endtask:body
