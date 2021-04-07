@@ -33,6 +33,4 @@ typedef enum
   PCLK_4000   = 4000
 }pclk_rate_t;
 
-typdef pipe_if#(`PIPE_WIDTH) pipe;
-
 endpackage: common_pkg
