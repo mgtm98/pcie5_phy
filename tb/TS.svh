@@ -38,8 +38,8 @@
 //            - Bit1: Gen1 support (must be set to 1) 
 //            - Bit2: Gen2 support (bit 1 must be set if Gen2 is supported)
 //            - Bit3: Gen3 support (bit 1-2 must be set if Gen3 is supported)
-//            - Bit4: Reserved TODO: Gen4 ?!
-//            - Bit5: Reserved TODO: Gen5 ?!
+//            - Bit4: Reserved TODO: Gen4 ?!  TOBE: for Gen4
+//            - Bit5: Reserved TODO: Gen5 ?!  TOBE: for Gen5
 //            - Bit6: Autonomus Change/Selectable De-emphasis
 //            - Bit7: Speed change
 //
@@ -151,7 +151,7 @@
 //                * Bit 3:6: Transimitter preset hint
 //                * Bit 7: Equalization command
 //            - For Gen3:
-//              + Bit 0:5 Reserved TODO: Value ?!
+//              + Bit 0:5: Reserved TODO: Value ?!
 //              + Bit6: Quiesce Guarantee
 //              + Bit7: Request Equalization
 //
@@ -163,11 +163,39 @@
 //            - For Gen1/2: TS1 ID 0x45 encoded as D5.2      
 //            - For Gen3: TS2 ID 0x45, OR DC Blance Symbol
 
+// TODO: What is bits values in TS related to Electrical part?
+// TODO: If two devices tries to be downstream and publish link number, both of them will wait random time and try again? what is that time?
+// TODO: DO we need to implement scrambling ?! from env -> pipe
+
+// NOTE: Double number of signals
+ 
+// N_FTS#, LINK#, LAN#, Supported Speeds, 
+
+`define True  1
+`define False 0
+
+typedef enum{
+  TS1,
+  TS2
+} ts_type_t;
+
+typedef enum{
+  GEN1,
+  GEN2,
+  GEN3,
+  GEN4,
+  GEN5
+} max_gen_supported_t;
 
 typedef struct{
+  bit [7:0]             n_fts,
+  bit                   use_n_fts,
+  bit [7:0]             link_number,
+  bit                   use_link_number,
+  bit [7:0]             lane_number [NUM_OF_LANES],
+  bit                   use_lane_number,
+  max_gen_supported_t   max_suported,
+  ts_type_t             ts_type
+}TS_config;
 
-} TS1;
-
-typedef struct{
-
-} TS2;
+task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
