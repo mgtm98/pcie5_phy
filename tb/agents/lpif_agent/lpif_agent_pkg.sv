@@ -6,6 +6,7 @@ package lpif_agent_pkg;
   import common_pkg::*;
 
   `include "uvm_macros.svh"
+  `include "settings.svh"
 
   `uvm_analysis_imp_decl(_sent)
   `uvm_analysis_imp_decl(_received)

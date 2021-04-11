@@ -40,30 +40,35 @@ lpif_monitor_bfm LPIF_mon_bfm(
   .phyinl1         (LPIF.phyinl1)
 );
 
-lpif_driver_bfm LPIF_drv_bfm(
-	.clk             (LPIF.clk),
-	.data            (LPIF.data),
-	.valid           (LPIF.valid),
-	.irdy            (LPIF.irdy),
-	.ex_cg_req       (LPIF.ex_cg_req),
-	.ex_cg_ack       (LPIF.ex_cg_ack),
-	.state_req       (LPIF.state_req),
-	.stall_ack       (LPIF.stall_ack),
-	.tlp_start       (LPIF.tlp_start),
-	.tlp_end         (LPIF.tlp_end),
-	.dllp_start      (LPIF.dllp_start),
-	.dllp_end        (LPIF.dllp_end),
-	.block_dl_init   (LPIF.block_dl_init),
-	.protocol_valid  (LPIF.protocol_valid),
-	.protocol        (LPIF.protocol),
-	.link_up         (LPIF.link_up),
-	.state_sts       (LPIF.state_sts),
-	.trdy            (LPIF.trdy),
-	.phyinrecenter   (LPIF.phyinrecenter),
-	.rxframe_errmask (LPIF.rxframe_errmask),
-	.link_cfg        (LPIF.link_cfg),
-	.stall_req       (LPIF.stall_req),
-	.phyinl1         (LPIF.phyinl1)
+lpif_driver_bfm.bfm LPIF_drv_bfm(
+	.lclk             (LPIF.lclk),
+	.pl_data            (LPIF.pl_data),
+	.pl_valid           (LPIF.pl_valid),
+	.lp_irdy            (LPIF.lp_irdy),
+	.lp_data       (LPIF.lp_data),
+	.lp_valid       (LPIF.lp_valid),
+	.lp_state_req       (LPIF.lp_state_req),
+	.pl_state_sts       (LPIF.pl_state_sts),
+	.lp_force_detect       (LPIF.lp_force_detect),
+	.pl_speed_mode         (LPIF.pl_speed_mode),
+
+
+
+	.pl_tlp_start      (LPIF.pl_tlp_start),
+	.pl_tlp_end        (LPIF.pl_tlp_end),
+	.pl_dllp_start   (LPIF.pl_dllp_start),
+
+	.pl_dllp_end  (LPIF.pl_dllp_end),
+	.pl_tlpedb        (LPIF.pl_tlpedb),
+
+	.lp_tlp_start         (LPIF.lp_tlp_start),
+	.lp_tlp_end       (LPIF.lp_tlp_end),
+	.lp_dllp_start            (LPIF.lp_dllp_start),
+	.lp_dllp_end   (LPIF.lp_dllp_end),
+	.lp_tlpedb (LPIF.lp_tlpedb),
+
+	.pl_exit_cg_req        (LPIF.pl_exit_cg_req),
+	.lp_exit_cg_ack       (LPIF.lp_exit_cg_ack),
 );
 
 pipe_monitor_bfm PIPE_mon_bfm(
