@@ -29,30 +29,28 @@ interface lpif_driver_bfm(input logic lclk);
   logic [bus_kontrol_param:0]         lp_dllp_end;
   logic [bus_kontrol_param:0]         lp_tlpedb;
   
-  logic                               pl_exit_cg_req;
-  logic                               lp_exit_cg_ack;
+//  logic                               pl_exit_cg_req;
+//  logic                               lp_exit_cg_ack;
 
   modport bfm(
     input  pl_trdy, pl_data, pl_valid, pl_state_sts, pl_tlp_start,
-           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb, pl_exit_cg_req;
+           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb, pl_exit_cg_req,
     
     output lp_irdy, lp_data, lp_valid, lp_state_req, lp_force_detect, pl_speed_mode,
-           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb, lp_exit_cg_ack;
+           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb, lp_exit_cg_ack
   );
   
   `include "uvm_macros.svh"
   import uvm_pkg::*;
   import common_pkg::*;
 
-  //dummy task used only for tesring our work---------------------------------------------------------------------  
-  task lpif_driver_bfm_dummy();
-   `uvm_info ("lpif_driver_bfm", $sformatf ("lpif_driver_bfm_dummy is setting irdy to 1"), UVM_MEDIUM)
-    irdy=1;
-  endtask 
-  
-  // task link_up();
-  //   //to be implemented
-  // endtask
+
+  task link_up();
+  lp_state_req <= LinkReset;
+  // l mafrod y7sl haga hna t2oli amta ha3mlha active
+  lp_state_req <= Active;
+  wait(pl_state_sts == Active);
+  endtask
 
 
   task send_tlp(tlp_t tlp);
@@ -73,14 +71,6 @@ interface lpif_driver_bfm(input logic lclk);
   endtask
 
   task retrain();
-    //to be implemented
-  endtask
-
-  task enter_l0s();
-    //to be implemented
-  endtask
-
-  task exit_l0s();
     //to be implemented
   endtask
   
