@@ -56,7 +56,7 @@ import pipe_agent_pkg::*;
 // Methods
 //------------------------------------------
 
-task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = 4 );
+task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
