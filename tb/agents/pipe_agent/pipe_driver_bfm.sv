@@ -7,7 +7,7 @@ interface pipe_driver_bfm(
   //Tx
   input logic [31:0] tx_data,  //for 32 bit interface
   input logic        tx_data_valid,
-  input logic        tx_elec_idle,
+  input logic        tx_elec_idle,                   
   input logic [3:0]  tx_data_k, //for 32 bit interface
   input logic        tx_start_block,
   input logic [1:0]  tx_synch_header,  
@@ -149,7 +149,51 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
         end
     end    
 endtask
+
   
+  task detect_state;
+  int temp[2:0];
+  @(resetn==1);  //check on signals default value when reset?
+
+  temp=pclk_rate;   //shared or per lane?
+  @(posedge pclk);
+    assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");       
+    @(resetn==0);
+
+    foreach(phystatus[i]) begin 
+      phystatus[i]=0;
+    end
+      
+  @ (TxdetectRx==1)  //shared or per lane?
+  //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
+
+  fork      
+    #12ms;    
+    for (int i = 0; i < NUM_OF_LANES; i++) begin  
+        rx_elec_idle[i]=0;    //??
+    end
+  join_any
+
+  foreach(Rx_status[i]) begin    // Rx_status='b011 on all lanes for one clk then ='b000
+    Rx_status[i]='b011;  
+  end
+
+    foreach(phystatus[i]) begin  //asserting phystatus for one clk on all lanes
+      phystatus[i]=1;
+    end 
+    @(posedge pclk);
+    foreach(phystatus[i]) begin
+      phystatus[i]=0;
+    end
+
+  foreach(Rx_status[i]) begin  
+    Rx_status[i]='b000;       
+  end
+
+  @ (TxdetectRx==0);
+  `uvm_info("Detect completed");
+
+endtask : detect_state
 
   task config_state;
     ts_config_t received_tses [NUM_OF_LANES];
@@ -353,3 +397,5 @@ Parameterization
   pipe_if
   pipe_driver_bfm
   pipe_monitor_bfm
+
+*/
