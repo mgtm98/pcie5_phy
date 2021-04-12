@@ -169,11 +169,8 @@ endtask
 
   fork      
     #12ms;    
-    for (int i = 0; i < NUM_OF_LANES; i++) begin 
-      fork
-        //automatic int j = i; 
-        (rx_elec_idle[i]==0);    //??
-      join_any
+    for (int i = 0; i < NUM_OF_LANES; i++) begin  
+        rx_elec_idle[i]=0;    //??
     end
   join_any
 
