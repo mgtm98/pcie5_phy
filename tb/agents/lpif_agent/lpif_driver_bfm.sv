@@ -1,46 +1,56 @@
-`include "common_pkg.sv"
+interface lpif_driver_bfm(input logic lclk);
+  
+  localparam bus_data_width_param = LPIF_BUS_WIDTH - 1; 
+  localparam bus_kontrol_param = (LPIF_BUS_WIDTH/8) - 1;
 
-interface lpif_driver_bfm
-  (
-    input  bit   clk,
-    output bit   reset,
-    output logic [7:0][7:0] data,
-    output logic [7:0] valid,
-    output logic irdy,
-    input  logic ex_cg_req,
-    output logic ex_cg_ack,
-    output logic [3:0] state_req,
-    output logic stall_ack,
-    input  logic [8:0] tlp_start,
-    input  logic [8:0] tlp_end,
-    input  logic [8:0] dllp_start,
-    input  logic [8:0] dllp_end,
-    input  logic block_dl_init,
-    input  logic protocol_valid,
-    input  logic [2:0] protocol,
-    input  logic link_up,
-    input  logic [3:0] state_sts,
-    input  logic trdy,
-    input  logic phyinrecenter,
-    input  logic rxframe_errmask,
-    input  logic [2:0] link_cfg,
-    input  logic stall_req,
-    input  logic phyinl1
+  logic                               pl_trdy;
+  logic [bus_data_width_param:0]      pl_data;
+  logic [bus_kontrol_param:0]         pl_valid;
+  
+  logic                               lp_irdy;
+  logic [bus_data_width_param:0]      lp_data;
+  logic [bus_kontrol_param:0]         lp_valid;
+  
+  logic [3:0]                         lp_state_req;
+  logic [3:0]                         pl_state_sts;
+  logic                               lp_force_detect;
+  
+  logic [2:0]                         pl_speed_mode;
+  
+  logic [bus_kontrol_param:0]         pl_tlp_start;
+  logic [bus_kontrol_param:0]         pl_tlp_end;
+  logic [bus_kontrol_param:0]         pl_dllp_start;
+  logic [bus_kontrol_param:0]         pl_dllp_end;
+  logic [bus_kontrol_param:0]         pl_tlpedb;
+  
+  logic [bus_kontrol_param:0]         lp_tlp_start;
+  logic [bus_kontrol_param:0]         lp_tlp_end;
+  logic [bus_kontrol_param:0]         lp_dllp_start;
+  logic [bus_kontrol_param:0]         lp_dllp_end;
+  logic [bus_kontrol_param:0]         lp_tlpedb;
+  
+//  logic                               pl_exit_cg_req;
+//  logic                               lp_exit_cg_ack;
+
+  modport bfm(
+    input  pl_trdy, pl_data, pl_valid, pl_state_sts, pl_tlp_start,
+           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb, pl_exit_cg_req,
+    
+    output lp_irdy, lp_data, lp_valid, lp_state_req, lp_force_detect, pl_speed_mode,
+           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb, lp_exit_cg_ack
   );
   
   `include "uvm_macros.svh"
   import uvm_pkg::*;
   import common_pkg::*;
 
-  //dummy task used only for tesring our work---------------------------------------------------------------------  
-  task lpif_driver_bfm_dummy();
-   `uvm_info ("lpif_driver_bfm", $sformatf ("lpif_driver_bfm_dummy is setting irdy to 1"), UVM_MEDIUM)
-    irdy=1;
-  endtask 
-  
-  // task link_up();
-  //   //to be implemented
-  // endtask
+
+  task link_up();
+  lp_state_req <= LinkReset;
+  // l mafrod y7sl haga hna t2oli amta ha3mlha active
+  lp_state_req <= Active;
+  wait(pl_state_sts == Active);
+  endtask
 
 
   task send_tlp(tlp_t tlp);
@@ -61,14 +71,6 @@ interface lpif_driver_bfm
   endtask
 
   task retrain();
-    //to be implemented
-  endtask
-
-  task enter_l0s();
-    //to be implemented
-  endtask
-
-  task exit_l0s();
     //to be implemented
   endtask
   

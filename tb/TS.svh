@@ -255,21 +255,31 @@ typedef enum{
   GEN3,
   GEN4,
   GEN5
-} max_gen_supported_t;
+} gen_t;
 
-typedef struct{
+typedef struct {
   bit [7:0]             n_fts,
   bit                   use_n_fts,
   bit [7:0]             link_number,
   bit                   use_link_number,
-  bit [7:0]             lane_number [NUM_OF_LANES],
+  bit [7:0]             lane_number,
   bit                   use_lane_number,
-  max_gen_supported_t   max_suported,
+  gen_t                 max_gen_suported,
   ts_type_t             ts_type
-}TS_config;
+} ts_t;
 
+<<<<<<< HEAD
 task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
   //Symbol 0:
   @(posedge pclk);
 
 endtask
+||||||| b09a191
+task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
+=======
+task send_ts(ts_t ts, int start_lane = 0, int end_lane = NUM_OF_LANES);
+task send_tses(ts_t ts [], int start_lane = 0, int end_lane = NUM_OF_LANES);
+
+task receive_ts(output ts_t ts, int start_lane = 0, int end_lane = NUM_OF_LANES);
+task receive_tses(output ts_t ts [], int start_lane = 0, int end_lane = NUM_OF_LANES);
+>>>>>>> origin/master
