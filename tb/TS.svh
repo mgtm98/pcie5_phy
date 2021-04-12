@@ -171,6 +171,76 @@
  
 // N_FTS#, LINK#, LAN#, Supported Speeds, 
 
+
+// RxData Valid
+// allows the PHY to instruct the MAC to ignore the data interface for one clock cycle. A value of one indicates the MAC will use the data
+// RxDataValid shall not assert when RXvalid is de-asserted in PHY modes that require the use of RxDataValid. 
+// If a PHY supports the RxDataValid signal it shall keep RxDataValid asserted when the PHY is in a mode that does not require the signal. 
+// The MAC may ignore RxDataValid when it is in a mode that does not require the signal. 
+
+// RxElecIdle
+// indicates receiver detection of an electrical idle. While deasserted with the PHY in P2 (PCI Express mode) 
+// indicates detection of: PCI Express Mode: a beacon
+// PCI Express Mode: It is required at the 5.0 GT/s, to GT/s, 16 GT/s, 32 GT/s, and 64 GT/s rates that a 
+// MAC uses logic to detect electrical idle entry instead of relying on the RxElecldle signal. 
+
+// RxDataK
+// Data/Control bit for the symbols of receive data.A value of zero indicates a data byte;
+// a value of 1 indicates a control byte. 
+// Not used in PCI Express mode at 8 GT/s, 16 GT/s, 32 GT/s, or 64 GT/s
+
+// RxStartBlock
+// PCI Express Mode : Only used at the 8.0 GT/s, 16 GT/s, and 32 GT/s PCI Express signaling rates.
+// This signal allows the PHY to tell the MAC the starting byte for a 128b block. The starting byte for a 128b block 
+// must always start with byte 0 of the data interface. 
+// Note: If there is an invalid sync header decoded on RxSyncHeader[3:0] and block alignment is still present
+// ( RxValid == 1), then the PHY will assert RxStartBlock with the invalid sync header on RxSyncHeader[3:0] 
+// RxStartBlock shall not assert when RxValid is de-asserted 
+
+// RxSynchHeader
+// PCI Express Mode: Only the lower two bits ([1:0]) are utilized. 
+// Provides the sync header for the MAC to use with the next 128b block. 
+// The MAC reads this value when the RxStartBlock signal is asserted. 
+// This signal is only used at the 8.0 GT/s, 16 GT/s, and 32 GT/s signaling rates. 
+// Note: The PHY shall pass blocks and headers normally across the PIPE interface 
+// even if the decoded SyncHeader is invalid. 
+
+// RxValid
+// Indicates symbol lock and valid data on RxData and RxDataK and further qualifies RxDataValid when used. 
+// PCI Express Mode at 8 GT/s, 16 GT/s, and 32 GT/s: When BlockAlignControl=1:
+// RxValid indicates that the block aligner is conceptually in the "Aligned" state (see PCI Express Spec)
+// If the block aligner transitions "Aligned" -> "Unaligned" state RxValid can deassert anywhere within a block
+// If the block aligner transitions "Unaligned" -> "Aligned" state RxValid is asserted at the start of a block 
+// Note that a PHY is not required to force its block aligner to the unaligned state when BlockAlignControl 
+// transitions to one. When BlockAlignControl=0
+// RxValid is constantly high indicating that the block aligner is conceptually in the "Locked" state 
+// (see PCI Express Spec). RxValid can be dropped on detecting and elastic buffer underflow or overflow. 
+// If de-asserted it must not re-assert while BlockAlignControl is de-asserted. 
+
+// RxStatus
+// Encodes receiver status and error codes for the received data stream when receiving data. 
+// 000 : Received Data is ok
+// 001 : 1 Skp Added 
+// 010 : 1 Skp Removed
+// 011 : Reciever Detected
+// 100 : 8/10b or 128/130b decode error
+// 101 : Elastic Buffer overflow
+// 110 : Elastic Buffer underflow (not used if the bufffer operating in nominal empty mode)
+// 111 : Recieve disparity error (Reserved if receive disparity error code is reported with 0b100)
+
+// RxStandBy
+// Controls whether the PHY RX is active when the PHY is in PO or POs. 0 — Active  , 1 — Standby 
+// RxStandby is ignored when the PHY is in states other than PO or POs. 
+// If RxStandby changes during 10Recal, RxEqEval, or RxEqTraining operations, 
+// the PHY must abort the request and return the handshake acknowledgement. 
+
+// RxStandbyStatus
+// The PHY uses this signal to indicate its RxStandby state. 0 — Active 1 — Standby
+// RxStandbyStatus reflects the state of the high speed receiver. 
+// The high speed receiver is always off in PHY states that do not provide PCLK. 
+// RxStandbyStatus is undefined when the power state is P1 or P2. 
+
+
 `define True  1
 `define False 0
 
@@ -199,3 +269,7 @@ typedef struct{
 }TS_config;
 
 task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
+  //Symbol 0:
+  @(posedge pclk);
+
+endtask
