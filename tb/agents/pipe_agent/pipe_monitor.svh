@@ -29,18 +29,19 @@ class pipe_monitor extends uvm_monitor;
   // Proxy Methods:
   extern function void pipe_monitor_dummy();
 
-  extern function void notify_link_up_req();
-  extern function void notify_send_tlp(tlp_t tlp);
-  extern function void notify_send_dllp(dllp_t dllp);
-  extern function void notify_state_change(state_t state);
-  extern function void notify_device_speed_mode_change(speed_mode_t speed_mode);
-  extern function void notify_reset();
-  extern function void notify_pclk_rate_change(bit [4:0] pclk_rate);
-  extern function void notify_rate_change(bit [3:0] rate);
-  extern function void notify_link_up_res();
-  extern function void notify_receive_tlp(tlp_t tlp);
-  extern function void notify_receive_dllp(dllp_t dllp);
-  extern function void notify_host_speed_mode_change(speed_mode_t speed_mode);
+  extern function void notify_link_up_sent();
+  extern function void notify_link_up_received();
+  extern function void notify_tlp_sent(tlp_t tlp);
+  extern function void notify_tlp_received(tlp_t tlp);
+  extern function void notify_dllp_sent(dllp_t dllp);
+  extern function void notify_dllp_received(dllp_t dllp);
+  extern function void notify_enter_recovery_sent();
+  extern function void notify_enter_recovery_received();
+  extern function void notify_gen_change_sent(gen_t gen);
+  extern function void notify_gen_change_received(gen_t gen);
+  extern function void notify_reset_received();
+  extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
+  extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
 
   
 endclass: pipe_monitor
@@ -50,20 +51,14 @@ function pipe_monitor::new(string name = "pipe_monitor", uvm_component parent = 
 endfunction
   
 function void pipe_monitor::build_phase(uvm_phase phase);
-  
-  // if( !uvm_config_db #( pipe_agent_config )::get( this , "" ,"pipe_agent_config_h" , pipe_agent_config_h )) 
-  // begin
-  //   `uvm_error("Config Error" , "uvm_config_db #( pipe_agent_config )::get cannot find resource pipe_agent_config" )
-  // end
-
+  super.build_phase;
   ap_sent = new("ap_sent", this);
   ap_received = new("ap_received", this);
-
-
 endfunction: build_phase
     
 
 function void pipe_monitor::connect_phase(uvm_phase phase);
+  super.connect_phase;
   pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
   pipe_monitor_bfm_h.proxy = this;
 endfunction: connect_phase
@@ -81,61 +76,148 @@ function void pipe_monitor::pipe_monitor_dummy();
   ap_received.write(pipe_seq_item_h);
  endfunction
 
-function void pipe_monitor::notify_link_up_req();
-  //to be implemented
+function void pipe_monitor::notify_link_up_sent();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = LINK_UP;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_send_tlp(tlp_t tlp);
-  //to be implemented
+function void pipe_monitor::notify_link_up_received();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = LINK_UP;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_send_dllp(dllp_t dllp);
-  //to be implemented
+function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.tlp = new tlp;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_state_change(state_t state);
-  //to be implemented
+function void pipe_monitor::notify_tlp_received(tlp_t tlp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.tlp = new tlp;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_device_speed_mode_change(speed_mode_t speed_mode);
-  //to be implemented
+function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.dllp = new dllp;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_reset();
-  //to be implemented
+function void pipe_monitor::notify_dllp_received(dllp_t dllp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.dllp = new dllp;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_pclk_rate_change(bit [4:0] pclk_rate);
-  //to be implemented
+function void notify_enter_recovery_sent();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = ENTER_RECOVERY;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_rate_change(bit [3:0] rate);
-  //to be implemented
+function void notify_enter_recovery_received();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = ENTER_RECOVERY;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_link_up_res();
-  //to be implemented
+function void pipe_monitor::notify_gen_change_sent(gen_t gen);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = SPEED_CHANGE;
+  // Copying the value of the generation to the sequence item
+  pipe_seq_item_h.gen = gen;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_receive_tlp(tlp_t tlp);
-  //to be implemented
+function void pipe_monitor::notify_gen_change_received(gen_t gen);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = SPEED_CHANGE;
+  // Copying the value of the generation to the sequence item
+  pipe_seq_item_h.gen = gen;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
-
-function void pipe_monitor::notify_receive_dllp(dllp_t dllp);
-  //to be implemented
+function void pipe_monitor::notify_reset_received();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = RESET;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction
 
+function void pipe_monitor::notify_pclk_rate_change_sent(pclk_rate_t  pclk_rate);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = PCLK_RATE_CHANGE;
+  // Copying the value of the PCLK rate to the sequence item
+  pipe_seq_item_h.pclk_rate = pclk_rate;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
+endfunction
 
-function void pipe_monitor::notify_host_speed_mode_change(speed_mode_t speed_mode);
-  //to be implemented
+function void pipe_monitor::notify_pclk_rate_change_received(pclk_rate_t  pclk_rate);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = PCLK_RATE_CHANGE;
+  // Copying the value of the PCLK rate to the sequence item
+  pipe_seq_item_h.pclk_rate = pclk_rate;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction

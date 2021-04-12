@@ -75,7 +75,7 @@ function void lpif_monitor::lpif_monitor_dummy();
   lpif_seq_item lpif_seq_item_h;
   `uvm_info (get_type_name (), $sformatf ("lpif_monitor_dummy is called"), UVM_MEDIUM)
   //creating sequnce item
-  lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+  lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h");
   //determining the detected operation
   lpif_seq_item_h.lpif_operation = LINK_UP;
   //sending sequnce item to the anlysis components
@@ -87,7 +87,7 @@ endfunction
 function void lpif_monitor::notify_link_up_sent();
   //creating sequnce item
   lpif_seq_item lpif_seq_item_h;
-  lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h", this);
+  lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h");
   //determining the detected operation
   lpif_seq_item_h.lpif_operation=LINK_UP;
   //sending sequnce item to the anlysis components
