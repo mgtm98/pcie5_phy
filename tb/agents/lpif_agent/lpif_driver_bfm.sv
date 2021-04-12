@@ -46,10 +46,10 @@ interface lpif_driver_bfm(input logic lclk);
 
 
   task link_up();
-  lp_state_req <= LinkReset;
-  // l mafrod y7sl haga hna t2oli amta ha3mlha active
-  lp_state_req <= Active;
-  wait(pl_state_sts == Active);
+    pl_state_sts <= LinkReset;
+    pl_trdy <= 0;
+    lp_state_req <= Active;
+    wait(pl_state_sts == Active);
   endtask
 
 
