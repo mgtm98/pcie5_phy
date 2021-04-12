@@ -268,18 +268,127 @@ typedef struct {
   ts_type_t             ts_type
 } ts_t;
 
-<<<<<<< HEAD
-task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
-  //Symbol 0:
-  @(posedge pclk);
+task send_ts(ts_t config, int start_lane = 0, int end_lane = NUM_OF_LANES);
+
+  if(config.ts_type == TS1)
+  begin
+
+    //Symbol 0:
+    @(posedge pclk);
+    if(config.max_gen_suported <= GEN2)
+    begin
+      rx_data <= 8'b1011110;
+      rx_data_k <= 1;
+    end
+    else 
+      rx_data <= 8'h1E;
+    //Symbol 1
+    @(posedge pclk);
+
+    if(config.use_link_number)
+    begin
+      rx_data <= config.link_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 2
+    @(posedge pclk);
+    if(config.use_lane_number)
+    begin
+      rx_data <= config.lane_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 3
+    @(posedge pclk);
+    if(config.use_n_fts)
+    begin
+      rx_data <= config.n_fts
+      rx_data_k <= 0;
+    end
+    else
+    begin
+    //missing part ?!!
+    end
+
+    //Symbol 4
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0'hff; // bits 0,6,7 value needs to be discuessed
+
+    if(config.max_gen_suported == GEN1)
+      rx_data[5:2] <= 0;
+    else if(config.max_gen_suported == GEN2)
+      rx_data[5:3] <= 0;
+    else if(config.max_gen_suported == GEN3)
+      rx_data[5:4] <= 0;
+    else if(config.max_gen_suported == GEN4)
+      rx_data[5] <= 0;
+
+
+    //Symbol 5
+    //needs to be discussed
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0; 
+
+
+    //Symbol 6
+    //needs to be discussed
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0; 
+
+    //Symbol 7~15 in case of Gen 1 and 2
+    if(config.max_gen_suported == GEN1 || config.max_gen_suported == GEN2)
+    begin
+      @(posedge pclk);
+      rx_data_k <= 0;
+      rx_data <= 8'h4A; 
+      repeat(8)@(posedge pclk);
+    end
+
+    //Symbol 7~15 in case of Gen 3
+    else 
+    begin
+
+      //Symbol 7
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 8
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 9
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 10~13
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(3)@(posedge pclk);
+
+      //Symbol 14~15
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(1)@(posedge pclk);
+    end
+
+  end
 
 endtask
-||||||| b09a191
-task send_ts(TS_config config, int start_lane = 0, int end_lane = NUM_OF_LANES);
-=======
-task send_ts(ts_t ts, int start_lane = 0, int end_lane = NUM_OF_LANES);
-task send_tses(ts_t ts [], int start_lane = 0, int end_lane = NUM_OF_LANES);
-
-task receive_ts(output ts_t ts, int start_lane = 0, int end_lane = NUM_OF_LANES);
-task receive_tses(output ts_t ts [], int start_lane = 0, int end_lane = NUM_OF_LANES);
->>>>>>> origin/master
