@@ -201,6 +201,105 @@ endtask
 
 endtask : detect_state
 
+task polling_state;
+
+	ts_t config_h;
+	//check array description
+	`uvm_info("Waiting for powerdown change on lane");
+	for (int i = 0; i < NUM_OF_LANES; i++) begin
+		@ (powerdown[i] == 'b00);
+ 	end
+	// assert all lanes at the same time
+	for (int i = 0; i < NUM_OF_LANES ; i++) begin
+		phy_status[i]=1;
+	end
+
+	@(posedge pclk);
+	for (int i = 0; i < NUM_OF_LANES ; i++) begin
+		phy_status[i]=0;
+	end
+
+	`uvm_info("Waiting for deassertion Txelecidle signal"); 
+	for (int i = 0; i < NUM_OF_LANES; i++) begin
+		@ (tx_elec_idle[i] == 0)	;
+	end
+
+	for (i = 0; i < 1024; i++) begin
+		receive_ts(config_h);
+	end
+	
+	int counter1_ts1_case1, counter2_ts1_case1, counter_ts2_case1;
+	int counter1_ts1_case2, counter2_ts1_case2, counter2_ts2_case2;
+	fork
+	begin
+		for (i = 0; i < 23; i++) begin
+			send_ts(config_h); 
+
+			//compliance we loopback supportedd?
+			if (config_h.ts_type == TS1 & config_h.compliance == 0) begin
+				counter1_ts1_case1 ++ ;
+			end
+
+			if (config_h.ts_type == TS2) begin
+				counter_ts2_case1 ++ ;
+			end
+
+			if (config_h.ts_type == TS1 & config_h.loopback == 'b10) begin
+				counter2_ts1_case1 ++ ;
+			end
+
+			if (counter1_ts1_case1 == 8 | counter2_ts1_case1 == 8 | counter_ts2_case1 == 8) begin
+				break; 
+			end
+		end
+	end
+
+	begin
+	#24ms; 
+	fork
+		begin
+		for (i = 0; i < 23; i++) begin
+			send_ts(config_h);
+
+			if (config_h.ts_type == TS1 & config_h.compliance == 0) begin
+				counter1_ts1_case2 ++ ;
+			end
+
+			if (config_h.ts_type == TS2) begin
+				counter_ts2_case2 ++ ;
+			end
+
+			if (config_h.ts_type == TS1 & config_h.loopback == 'b10) begin
+				counter2_ts1_case2 ++ ;
+			end
+
+			if (counter1_ts1_case2 == 8 | counter2_ts1_case2 == 8 | counter_ts2_case2 == 8) begin
+				break; 
+			end
+		end
+	    end
+		begin
+			for (int i = 0; i < NUM_OF_LANES; i++) begin //num of predetermined lanes?
+				@ (rx_elec_idle[i] == 0);	
+			end
+		end
+	join_any
+	end	
+    join_any
+
+    config_h.ts_type = TS2;
+	fork
+		for (int i = 0; i < 16; i++) begin  
+			receive_ts(config_h);
+		end
+
+		for (int j = 0;  j< 8; j++) begin
+			send_ts(config_h);
+		end
+	join
+
+endtask : polling_state
+
   task config_state;
     ts_config_t received_tses [NUM_OF_LANES];
     // -------------------- Config.Linkwidth.Start --------------------
