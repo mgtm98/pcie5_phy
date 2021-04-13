@@ -167,10 +167,16 @@ endtask
   @ (TxdetectRx==1)  //shared or per lane?
   //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
 
+  for (int i = 0; i < NUM_OF_LANES; i++) begin  
+      rx_elec_idle[i]=0;    //??
+  end 
+
   fork      
     #12ms;    
     for (int i = 0; i < NUM_OF_LANES; i++) begin  
-        rx_elec_idle[i]=0;    //??
+      fork
+        @(Tx_elec_idle[i]==0);
+      join_any
     end
   join_any
 
@@ -178,13 +184,13 @@ endtask
     Rx_status[i]='b011;  
   end
 
-    foreach(phystatus[i]) begin  //asserting phystatus for one clk on all lanes
-      phystatus[i]=1;
-    end 
-    @(posedge pclk);
-    foreach(phystatus[i]) begin
-      phystatus[i]=0;
-    end
+  foreach(phystatus[i]) begin  //asserting phystatus for one clk on all lanes
+    phystatus[i]=1;
+  end 
+  @(posedge pclk);
+  foreach(phystatus[i]) begin
+    phystatus[i]=0;
+  end
 
   foreach(Rx_status[i]) begin  
     Rx_status[i]='b000;       
