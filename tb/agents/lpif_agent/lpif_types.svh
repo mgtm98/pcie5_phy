@@ -14,7 +14,7 @@ SPEED_MODE_CHANGE} lpif_operation_t;
 typedef enum
 {NOP,
 Active,
-Active.L0s,
+Active_L0s,
 Deepest_Allowable_PM_State,  // [L1_Substates_only],
 L1_1,
 L1_2,

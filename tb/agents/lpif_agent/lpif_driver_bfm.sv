@@ -46,6 +46,9 @@ interface lpif_driver_bfm(input logic lclk);
 
 
   task link_up();
+  	lp_state_req <= LinkReset;
+  	@posedge(lclk);
+    wait(pl_state_sts == LinkReset);
     lp_state_req <= Active;
     wait(pl_state_sts == Active);
   endtask
