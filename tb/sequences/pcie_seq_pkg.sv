@@ -9,6 +9,7 @@ package pcie_seq_pkg;
   `include "lpif_enter_recovery_seq.svh"
 
   // PIPE Sequences
+  `include "lpif_speed_change_seq.svh"
 
   // Virtual Sequences
   
