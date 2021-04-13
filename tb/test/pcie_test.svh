@@ -77,9 +77,9 @@ task pcie_test::run_phase(uvm_phase phase);
       //checking which vseq should be used
     case(used_vsequences[ii])
       "pcie_vseq":
-        vseq = pcie_vseq::type_id::create("vseq");
-        // "base_vseq":
-        // vseq = base_vseq::type_id::create("vseq");
+      vseq = pcie_vseq::type_id::create("vseq");
+      // "base_vseq":
+      // vseq = base_vseq::type_id::create("vseq");
       // "link_up_vseq":
       //   vseq = link_up_vseq::type_id::create("vseq");
       // "data_exchange_vseq":
