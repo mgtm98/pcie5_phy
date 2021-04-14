@@ -280,7 +280,7 @@ task polling_state;
 	    end
 		begin
 			for (int i = 0; i < NUM_OF_LANES; i++) begin //num of predetermined lanes?
-				@ (rx_elec_idle[i] == 0);	
+				@ (tx_elec_idle[i] == 0);	
 			end
 		end
 	join_any
