@@ -59,7 +59,7 @@ interface pipe_monitor_bfm (
 initial begin //Detect linkup 
   detect_state();
   polling_state();
-  configuration_state();
+  config_state();
 
   proxy.notify_link_up_received(); //leha parameter?
 end
@@ -81,6 +81,7 @@ task detect_state;
   @ (TxdetectRx==1);  //shared or per lane?
   //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
 
+  /*
   fork        //12 ms timeout or any lane exits electricalidle
     #12ms;    
     for (int i = 0; i < NUM_OF_LANES; i++) begin 
@@ -91,10 +92,10 @@ task detect_state;
     end
   join_any
 
-  
   foreach(Rx_status[i]) begin //wait on Rx_status='b011 for 1 clk then ='b000 
       @(Rx_status[i]='b011);
     end
+  */
 
   foreach(phystatus[i]) begin  //wait on phystatus assertion for 1 clk
       @(phystatus[i]=1);

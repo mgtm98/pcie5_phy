@@ -167,6 +167,7 @@ endtask
   @ (TxdetectRx==1)  //shared or per lane?
   //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
 
+  /*
   for (int i = 0; i < NUM_OF_LANES; i++) begin  
       rx_elec_idle[i]=0;    //??
   end 
@@ -178,7 +179,8 @@ endtask
         @(Tx_elec_idle[i]==0);
       join_any
     end
-  join_any
+  join_any 
+  */
 
   foreach(Rx_status[i]) begin    // Rx_status='b011 on all lanes for one clk then ='b000
     Rx_status[i]='b011;  

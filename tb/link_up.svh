@@ -8,6 +8,6 @@ task link_up(link_up_config link_up_config_h);
 
 	detect_state();  
 	polling_state();      
-	configuration_state();
+	config_state();
 	
 endtask : link_up
