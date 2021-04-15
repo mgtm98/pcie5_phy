@@ -63,55 +63,47 @@ initial begin //Detect linkup
 
   proxy.notify_link_up_received(); //leha parameter?
 end
-
+/*
 task detect_state;
   int temp[2:0];
-  @(resetn==1);
+  wait(resetn==1);
+  @(posedge pclk);
 
   temp=pclk_rate;   //shared or per lane??
   @(posedge pclk);
     assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");
 
-  @(resetn==0);
+  wait(resetn==0);
+  @(posedge pclk);
 
   foreach(phystatus[i]) begin  
-      @(phystatus[i]=0);
+      wait(phystatus[i]=0);
     end
+  @(posedge pclk);
 
-  @ (TxdetectRx==1);  //shared or per lane?
+  wait(TxdetectRx==1);  //shared or per lane?
+  @(posedge pclk);
   //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
 
-  /*
-  fork        //12 ms timeout or any lane exits electricalidle
-    #12ms;    
-    for (int i = 0; i < NUM_OF_LANES; i++) begin 
-      fork
-        //automatic int j = i;
-        @(rx_elec_idle[i]==0);   
-      join_any
-    end
-  join_any
-
-  foreach(Rx_status[i]) begin //wait on Rx_status='b011 for 1 clk then ='b000 
-      @(Rx_status[i]='b011);
-    end
-  */
-
   foreach(phystatus[i]) begin  //wait on phystatus assertion for 1 clk
-      @(phystatus[i]=1);
+      wait(phystatus[i]=1);
     end
   @(posedge pclk);
   foreach(phystatus[i]) begin  
-      @(phystatus[i]=0);
+      wait(phystatus[i]=0);
     end
-  
-  foreach(Rx_status[i]) begin 
-      @(Rx_status[i]='b000);
-    end
+  @(posedge pclk);
 
-  @ (TxdetectRx==0);
+  foreach(Rx_status[i]) begin 
+      wait(Rx_status[i]='b000);
+    end
+  @(posedge pclk);
+
+  wait(TxdetectRx==0);
+  @(posedge pclk);
   `uvm_info("Receiver Detected");
 
 endtask : detect_state
+*/
   
 endinterface

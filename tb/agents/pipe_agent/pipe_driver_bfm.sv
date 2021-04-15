@@ -154,17 +154,19 @@ endtask
   task detect_state;
   int temp[2:0];
   @(resetn==1);  //check on signals default value when reset?
+  @(posedge pclk);
 
   temp=pclk_rate;   //shared or per lane?
   @(posedge pclk);
-    assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");       
-    @(resetn==0);
+  assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");       
+  wait(resetn==0);
 
-    foreach(phystatus[i]) begin 
-      phystatus[i]=0;
-    end
+  foreach(phystatus[i]) begin 
+    phystatus[i]=0;
+  end
       
-  @ (TxdetectRx==1)  //shared or per lane?
+  wait(TxdetectRx==1)  //shared or per lane?
+  @(posedge pclk);
   //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
 
   /*
@@ -198,7 +200,8 @@ endtask
     Rx_status[i]='b000;       
   end
 
-  @ (TxdetectRx==0);
+  wait(TxdetectRx==0);
+  @(posedge pclk);
   `uvm_info("Detect completed");
 
 endtask : detect_state
