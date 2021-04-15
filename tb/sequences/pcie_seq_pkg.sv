@@ -7,12 +7,16 @@ package pcie_seq_pkg;
 
   // LPIF Sequences
   `include "lpif_enter_recovery_seq.svh"
+  `include "lpif_link_up_seq.svh"
 
   // PIPE Sequences
-  `include "lpif_speed_change_seq.svh"
+  `include "pipe_speed_change_seq.svh"
+  `include "pipe_enter_recovery_seq.svh"
+  `include "pipe_link_up_seq.svh"
 
   // Virtual Sequences
   `include "enter_recovery_vseq.svh"
+  `include "reset_vseq.svh"
 
 endpackage
 
