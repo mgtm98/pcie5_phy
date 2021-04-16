@@ -1,7 +1,10 @@
+`include "settings.svh"
+`include "lpif_types.svh"
+
 interface lpif_driver_bfm(input logic lclk);
   
-  localparam bus_data_width_param = LPIF_BUS_WIDTH - 1; 
-  localparam bus_kontrol_param = (LPIF_BUS_WIDTH/8) - 1;
+  localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1; 
+  localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1;
 
   logic                               pl_trdy;
   logic [bus_data_width_param:0]      pl_data;
@@ -33,11 +36,11 @@ interface lpif_driver_bfm(input logic lclk);
 //  logic                               lp_exit_cg_ack;
 
   modport bfm(
-    input  pl_trdy, pl_data, pl_valid, pl_state_sts, pl_tlp_start,
-           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb, pl_exit_cg_req,
+    input  pl_trdy, pl_data, pl_valid, pl_state_sts, pl_tlp_start, lclk,
+           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb,
     
     output lp_irdy, lp_data, lp_valid, lp_state_req, lp_force_detect, pl_speed_mode,
-           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb, lp_exit_cg_ack
+           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb
   );
   
   `include "uvm_macros.svh"
