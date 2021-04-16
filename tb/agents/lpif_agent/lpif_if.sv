@@ -1,7 +1,11 @@
-interface lpif_if(input lclk);
+`include "settings.svh"
 
-  localparam bus_data_width_param = LPIF_BUS_WIDTH - 1; 
-  localparam bus_kontrol_param = (LPIF_BUS_WIDTH/8) - 1;
+interface lpif_if();
+
+  localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1; 
+  localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1;
+
+  logic                               lclk;
 
   logic                               pl_trdy;
   logic [bus_data_width_param:0]      pl_data;
