@@ -90,6 +90,8 @@ function Lpif_seq_item_s lpif_seq_item::to_struct ();
   return lpif_seq_item_struct;
 endfunction : to_struct 
 
+
+//TODO: avoid static
 function lpif_seq_item_h lpif_seq_item::from_struct (Lpif_seq_item_s Lpif_seq_item_s_h);
   lpif_seq_item_h.tlp= Lpif_seq_item_struct.tlp;
   lpif_seq_item_h.dllp = Lpif_seq_item_struct.dllp;
