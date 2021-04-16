@@ -312,7 +312,7 @@ endtask : polling_state
       num_of_ts1s_with_non_pad_link_number[i] = 0;
     end
     // Detect ts1s until 2 consecutive ts1s have a non-pad link number
-    while(num_of_ts1s_with_non_pad_link_number < 2)
+    while(1)
     begin
       receive_ts(received_tses);
       // Make sure the received tses are ts1s
@@ -356,6 +356,7 @@ endtask : polling_state
     begin
       ts_configs[i].link_number = used_link_num;
       ts_configs[i].use_link_number = 1;
+      ts_configs[i].use_lane_number = 0;
     end
     // Send ts1s with this link number until some ts1s are received with non PAD lane number
     ts1_with_non_pad_lane_number_detected = 0
@@ -391,6 +392,7 @@ endtask : polling_state
       assert (received_tses[i].lane_number == i) 
       else   `uvm_error(get_name(), "the order of lane numbers are incorrect")
       ts_configs[i].lane_number = received_tses[i].lane_number;
+      ts_configs[i].use_lane_number = 1;
     end
 
     // -------------------- Config.Lanenum.Wait --------------------
