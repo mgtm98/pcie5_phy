@@ -13,7 +13,7 @@ task pipe_data_transmit_seq::body();
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
   // Wait for the sequencer to give grant
   start_item(pipe_seq_item_h);
-  if (!pipe_seq_item_h.randomize() with {pipe_operation == ENTER_RETRAIN;})
+  if (!pipe_seq_item_h.randomize() with {pipe_operation == TLP_TRANSFER || pipe_operation == DLLP_TRANSFER;})
   begin
     `uvm_fatal(get_name(), "Couldn't randomize the pipe_seq_item")
   end
