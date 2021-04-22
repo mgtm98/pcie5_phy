@@ -13,6 +13,8 @@ class pipe_agent_config extends uvm_object;
   // Is the agent active or passive
   uvm_active_passive_enum active = UVM_ACTIVE;
   bit has_coverage_monitor = 1;
+  event detected_tses;
+  ts_t tses_received [NUM_OF_LANES];
   
   //------------------------------------------
   // Methods

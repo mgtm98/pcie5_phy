@@ -9,12 +9,14 @@ typedef enum
   DLLP_TRANSFER, 
   LINK_UP, 
   ENTER_RECOVERY, 
-  ENTER_L0S, 
-  EXIT_L0S, 
+  // ENTER_L0S, 
+  // EXIT_L0S, 
   SPEED_CHANGE, 
   RESET, 
   PCLK_RATE_CHANGE,
-  WIDTH_CHANGE
+  WIDTH_CHANGE,
+  SEND_TS,
+  SEND_TSES
 } pipe_operation_t;
 
   // Pipe bus width between the MAC layer and PHY layer

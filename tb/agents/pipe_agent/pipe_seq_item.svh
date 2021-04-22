@@ -10,6 +10,8 @@ rand tlp_t tlp;
 rand dllp_t dllp;
 rand pipe_width_t pipe_width;
 rand pclk_rate_t pclk_rate;
+rand ts_t ts_sent;
+rand ts_t tses_sent [NUM_OF_LANES];
 
 constraint c1 {tlp.size()>20; tlp.size()<1000;}
 
