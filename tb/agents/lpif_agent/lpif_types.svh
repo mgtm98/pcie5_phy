@@ -26,6 +26,6 @@ typedef enum{
   Reserved,
   Retrain,
   Disable
-} lpif_states;
+} lpif_states_t;
 
 `endif
