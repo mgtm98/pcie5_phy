@@ -38,14 +38,11 @@ interface lpif_monitor_bfm#(
   import uvm_pkg::*;
   import lpif_agent_pkg::*;
 
-  // lpif_monitor proxy;
+  lpif_monitor proxy;
 
   initial begin
     forever begin
-      @(lp_irdy) begin
-        `uvm_info("lpif_monitor_bfm", "dummy seq_item detected", UVM_MEDIUM)
-        // proxy.lpif_monitor_dummy();
-      end
+      
     end
   end
     
