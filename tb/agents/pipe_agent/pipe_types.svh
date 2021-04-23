@@ -26,6 +26,20 @@ typedef enum{
   PCLK_4000   = 4000
 } pclk_rate_t;
 
+typedef struct{
+  pipe_operation_t pipe_operation;
+  tlp_t tlp;
+  dllp_t dllp;
+  pipe_width_t pipe_width;
+  pclk_rate_t pclk_rate;
+} pipe_seq_item_c;
+
+typedef enum{
+  PIPE_WIDTH_8_BIT,
+  PIPE_WIDTH_16_BIT,
+  PIPE_WIDTH_32_BIT,
+}pipe_width_t;
+
 
 `endif
 
