@@ -19,9 +19,7 @@ class lpif_seq_item extends uvm_sequence_item;
   extern virtual function void do_print(uvm_printer printer);
   extern         function Lpif_seq_item_s to_struct();
   extern static  function lpif_seq_item_h from_struct(Lpif_seq_item_s Lpif_seq_item_s_h);
-    
-  endfunction : 
-  
+     
 endclass: lpif_seq_item
 
   function void lpif_seq_item::new(string name = "lpif_seq_item");
