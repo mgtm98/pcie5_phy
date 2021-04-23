@@ -1,59 +1,50 @@
 `include "settings.svh"
-`include "lpif_types.svh"
 
-interface lpif_driver_bfm(input logic lclk);
-  
-  localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1; 
-  localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1;
-
-  logic                               pl_trdy;
-  logic [bus_data_width_param:0]      pl_data;
-  logic [bus_kontrol_param:0]         pl_valid;
-  
-  logic                               lp_irdy;
-  logic [bus_data_width_param:0]      lp_data;
-  logic [bus_kontrol_param:0]         lp_valid;
-  
-  logic [3:0]                         lp_state_req;
-  logic [3:0]                         pl_state_sts;
-  logic                               lp_force_detect;
-  
-  logic [2:0]                         pl_speed_mode;
-  
-  logic [bus_kontrol_param:0]         pl_tlp_start;
-  logic [bus_kontrol_param:0]         pl_tlp_end;
-  logic [bus_kontrol_param:0]         pl_dllp_start;
-  logic [bus_kontrol_param:0]         pl_dllp_end;
-  logic [bus_kontrol_param:0]         pl_tlpedb;
-  
-  logic [bus_kontrol_param:0]         lp_tlp_start;
-  logic [bus_kontrol_param:0]         lp_tlp_end;
-  logic [bus_kontrol_param:0]         lp_dllp_start;
-  logic [bus_kontrol_param:0]         lp_dllp_end;
-  logic [bus_kontrol_param:0]         lp_tlpedb;
-  
-//  logic                               pl_exit_cg_req;
-//  logic                               lp_exit_cg_ack;
-
-  modport bfm(
-    input  pl_trdy, pl_data, pl_valid, pl_state_sts, pl_tlp_start, lclk,
-           pl_tlp_end, pl_dllp_start, pl_dllp_end, pl_tlpedb,
+interface lpif_driver_bfm
+  #(
+    localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1,
+    localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1
+  )
+  (
+    input logic lclk,
+    input logic                                pl_trdy,
+    input logic [bus_data_width_param:0]       pl_data,
+    input logic [bus_kontrol_param:0]          pl_valid,
     
-    output lp_irdy, lp_data, lp_valid, lp_state_req, lp_force_detect, pl_speed_mode,
-           lp_tlp_start, lp_tlp_end, lp_dllp_start, lp_dllp_end, lp_tlpedb
+    output logic                               lp_irdy,
+    output logic [bus_data_width_param:0]      lp_data,
+    output logic [bus_kontrol_param:0]         lp_valid,
+    
+    output logic [3:0]                         lp_state_req,
+    input logic [3:0]                          pl_state_sts,
+    output logic                               lp_force_detect,
+    
+    input logic [2:0]                          pl_speed_mode,
+    
+    input logic [bus_kontrol_param:0]          pl_tlp_start,
+    input logic [bus_kontrol_param:0]          pl_tlp_end,
+    input logic [bus_kontrol_param:0]          pl_dllp_start,
+    input logic [bus_kontrol_param:0]          pl_dllp_end,
+    input logic [bus_kontrol_param:0]          pl_tlpedb,
+    
+    output logic [bus_kontrol_param:0]         lp_tlp_start,
+    output logic [bus_kontrol_param:0]         lp_tlp_end,
+    output logic [bus_kontrol_param:0]         lp_dllp_start,
+    output logic [bus_kontrol_param:0]         lp_dllp_end,
+    output logic [bus_kontrol_param:0]         lp_tlpedb
   );
-  
+
   `include "uvm_macros.svh"
+  import lpif_agent_pkg::*;
   import uvm_pkg::*;
   import common_pkg::*;
 
-
   task link_up;
-  	lp_state_req <= LINK_RESET;
-    wait(pl_state_sts == LINK_RESET);
+  	lp_state_req <= LinkReset;
+    wait(pl_state_sts == LinkReset);
   	@(posedge lclk);
-    lp_state_req <= ACTIVE;
-    wait(pl_state_sts == ACTIVE);
+    lp_state_req <= Active;
+    wait(pl_state_sts == Active);
   	@(posedge lclk);
   endtask
 
