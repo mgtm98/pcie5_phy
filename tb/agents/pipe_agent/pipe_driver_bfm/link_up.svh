@@ -15,7 +15,7 @@ task config_state;
     foreach(received_tses[i])
     begin
       // Make sure the tses received are ts1s
-      assert (received_tses[i].ts_type == TS1) 
+      assert (received_tses[i].ts_sype == TS1) 
       else   `uvm_error(get_name(), "Expected TS1s but detected TS2s")
       // Non PAD link number
       if(received_ts[i].use_link_number)
@@ -70,7 +70,7 @@ task config_state;
         foreach(received_tses[i])
         begin
           // Make sure the tses received are ts1s
-          assert (received_tses[i].ts_type == TS1) 
+          assert (received_tses[i].ts_sype == TS1) 
           else   `uvm_error(get_name(), "Expected TS1s but detected TS2s")
           // Non PAD lane number
           if(received_tses[i].use_lane_num)
@@ -112,7 +112,7 @@ task config_state;
         receive_ts(received_tses);
         foreach(received_tses[i])
         begin
-          if(received_tses[i].ts_type == TS2)
+          if(received_tses[i].ts_sype == TS2)
           begin
             num_of_ts2_received[i] += 1;
           end
@@ -148,7 +148,7 @@ endtask
 
 
 
-task automatic receive_tses (output ts_t ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
+task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface
     begin
         for (int i=start_lane;i<=end_lane;i++)
@@ -188,8 +188,8 @@ task automatic receive_tses (output ts_t ts [] ,input int start_lane = 0,input i
                 10:begin // ts1 or ts2 determine
                         for(int i=start_lane;i<=end_lane;i++)
                         begin
-                            if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_type=TS1;
-                            else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_type=TS2;
+                            if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
+                            else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
                         end
                     end
             endcase
@@ -231,8 +231,8 @@ task automatic receive_tses (output ts_t ts [] ,input int start_lane = 0,input i
                  8:begin // ts1 or ts2 determine
                         for(int i=start_lane;i<=end_lane;i++)
                         begin
-                            if(tx_data[i][23:16]==8'b010_01010) ts[i].ts_type=TS1;
-                            else if(tx_data[i][23:16]==8'b010_00101) ts[i].ts_type=TS2;
+                            if(tx_data[i][23:16]==8'b010_01010) ts[i].ts_sype=TS1;
+                            else if(tx_data[i][23:16]==8'b010_00101) ts[i].ts_sype=TS2;
                         end
                     end
             endcase
@@ -279,8 +279,8 @@ task automatic receive_tses (output ts_t ts [] ,input int start_lane = 0,input i
                 10:begin // ts1 or ts2 determine
                         for(int i=start_lane;i<=end_lane;i++)
                         begin
-                            if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_type=TS1;
-                            else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_type=TS2;
+                            if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
+                            else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
                         end
                     end
             endcase
@@ -289,7 +289,7 @@ task automatic receive_tses (output ts_t ts [] ,input int start_lane = 0,input i
 endtask
 
 
-task automatic receive_ts (output ts_t ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
+task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
@@ -312,8 +312,8 @@ task automatic receive_ts (output ts_t ts ,input int start_lane = 0,input int en
                     end
     
                 10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
+                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
+                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
                     end
             endcase
         end
@@ -337,8 +337,8 @@ task automatic receive_ts (output ts_t ts ,input int start_lane = 0,input int en
                     end
     
                  8:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][23:16]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][23:16]==8'b010_00101) ts.ts_type=TS2;
+                        if(tx_data[start_lane][23:16]==8'b010_01010) ts.ts_sype=TS1;
+                        else if(tx_data[start_lane][23:16]==8'b010_00101) ts.ts_sype=TS2;
                     end
             endcase
         end
@@ -361,8 +361,8 @@ task automatic receive_ts (output ts_t ts ,input int start_lane = 0,input int en
                         else ts.max_gen_suported=GEN1;	
                     end
                 10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
+                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
+                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
                     end
             endcase
         end
