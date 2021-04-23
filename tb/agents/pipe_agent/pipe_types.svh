@@ -1,10 +1,7 @@
 `ifndef __PIPE_TYPES_SVH
 `define __PIPE_TYPES_SVH
 
-
-
-typedef enum
-{
+typedef enum{
   TLP_TRANSFER, 
   DLLP_TRANSFER, 
   LINK_UP, 
@@ -19,17 +16,15 @@ typedef enum
   SEND_TSES
 } pipe_operation_t;
 
-  // Pipe bus width between the MAC layer and PHY layer
-  // width can either be 32bit - 16bit - 8bit
-  // for more info check Pipe interface refence Page 18 
-typedef enum 
-{
-  BUS_WIDTH_8  = 8,
-  BUS_WIDTH_16 = 16,
-  BUS_WIDTH_32 = 32,
-  BUS_WIDTH_64 = 64
-} pipe_width_t;
-
+typedef enum{
+  PCLK_62     = 62,
+  PCLK_125    = 125,
+  PCLK_250    = 250,
+  PCLK_500    = 500,
+  PCLK_1000   = 1000,
+  PCLK_2000   = 2000,
+  PCLK_4000   = 4000
+} pclk_rate_t;
 
 
 `endif
