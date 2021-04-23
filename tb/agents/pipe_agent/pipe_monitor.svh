@@ -39,9 +39,11 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_enter_recovery_received();
   extern function void notify_gen_change_sent(gen_t gen);
   extern function void notify_gen_change_received(gen_t gen);
-  extern function void notify_reset_received();
+  extern function void notify_reset_detected();
+  extern function void notify_receiver_detected(); //??
   extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
+
 
   
 endclass: pipe_monitor
@@ -188,7 +190,7 @@ function void pipe_monitor::notify_gen_change_received(gen_t gen);
   ap_received.write(pipe_seq_item_h);
 endfunction
 
-function void pipe_monitor::notify_reset_received();
+function void pipe_monitor::notify_reset_detected();
   // Creating the sequnce item
   pipe_seq_item pipe_seq_item_h;
   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
@@ -196,6 +198,12 @@ function void pipe_monitor::notify_reset_received();
   pipe_seq_item_h.pipe_operation = RESET;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
+
+  -> pipe_agent_config_h.reset_detected;
+endfunction
+
+function void pipe_monitor::notify_receiver_detected();
+  -> pipe_agent_config_h.receiver_detected;
 endfunction
 
 function void pipe_monitor::notify_pclk_rate_change_sent(pclk_rate_t  pclk_rate);

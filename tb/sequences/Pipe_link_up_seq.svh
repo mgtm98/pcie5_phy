@@ -6,8 +6,8 @@ class pipe_link_up_seq extends uvm_sequence #(pipe_seq_item);
 
   // Methods
   extern local task detect_state;
-  extern local task detect_quiet_state;
-  extern local task detect_active_state;
+  //extern local task detect_quiet_state;
+  //extern local task detect_active_state;
   extern local task polling_state;
   extern local task polling_active_state;
   extern local task polling_configuration_state;
@@ -42,15 +42,10 @@ task pipe_link_up_seq::body;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
-
-endtask
-
-task pipe_link_up_seq::detect_quiet_state;
-
-endtask
-
-task pipe_link_up_seq::detect_active_state;
-
+  wait(pipe_agent_config_h.reset_detected.triggered);
+  `uvm_info("Reset detected");
+  wait(pipe_agent_config_h.receiver_detected.triggered);
+  `uvm_info("Receiver detected");
 endtask
 
 task pipe_link_up_seq::polling_state;

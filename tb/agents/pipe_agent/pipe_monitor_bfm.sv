@@ -2,11 +2,11 @@ interface pipe_monitor_bfm (
 //Tx
   input logic [31:0] tx_data,  //for 32 bit interface
   input logic        tx_data_valid,
-  input logic        tx_elec_idle,
+  input logic        TxElecIdle,
   input logic [3:0]  tx_data_k, //for 32 bit interface
   input logic        tx_start_block,
   input logic [1:0]  tx_synch_header,  
-  input logic        tx_detect_rx,
+  input logic        TxDetectRx,
   
   //Rx
   output logic [31:0] rx_data,   //for 32 bit interface
@@ -21,10 +21,10 @@ interface pipe_monitor_bfm (
   output logic        rx_stand_by_status,
   
   //Commands and Status signals
-  input logic [3:0]  power_down,
+  input logic [3:0]  PowerDown,
   input logic [3:0]  rate, 
   input logic [3:0]  phy_mode,  //=0  means PCIe
-  output logic       phy_status,
+  output logic       PhyStatus,
   input logic [1:0]  width,
   input logic [4:0]  pclk_rate,
   input logic        pclk_change_ack,
@@ -55,7 +55,7 @@ interface pipe_monitor_bfm (
       end
     end
   end
-
+/*
 initial begin //Detect linkup 
   detect_state();
   polling_state();
@@ -63,47 +63,69 @@ initial begin //Detect linkup
 
   proxy.notify_link_up_received(); //leha parameter?
 end
-/*
-task detect_state;
-  int temp[2:0];
-  wait(resetn==1);
-  @(posedge pclk);
-
-  temp=pclk_rate;   //shared or per lane??
-  @(posedge pclk);
-    assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");
-
-  wait(resetn==0);
-  @(posedge pclk);
-
-  foreach(phystatus[i]) begin  
-      wait(phystatus[i]=0);
-    end
-  @(posedge pclk);
-
-  wait(TxdetectRx==1);  //shared or per lane?
-  @(posedge pclk);
-  //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
-
-  foreach(phystatus[i]) begin  //wait on phystatus assertion for 1 clk
-      wait(phystatus[i]=1);
-    end
-  @(posedge pclk);
-  foreach(phystatus[i]) begin  
-      wait(phystatus[i]=0);
-    end
-  @(posedge pclk);
-
-  foreach(Rx_status[i]) begin 
-      wait(Rx_status[i]='b000);
-    end
-  @(posedge pclk);
-
-  wait(TxdetectRx==0);
-  @(posedge pclk);
-  `uvm_info("Receiver Detected");
-
-endtask : detect_state
 */
+
+//RESET DETECTION
+  int temp[2:0];
+forever begin   //initial or forever?
+
+  wait(reset==1);
+  @(posedge pclk);
+  //check on default values
+  assert property (TxDetectRx==0) else `uvm_error ("TxDetectRx isn't setted by default value during reset");
+  assert property (TxElecIdle==1) else `uvm_error ("TxElecIdle isn't setted by default value during reset");
+  //assert property (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during reset");
+  assert property (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P1 during reset");
+
+  //check that pclk is operational
+  temp=pclk_rate;   //shared or per lane?
+  @(posedge pclk);
+  assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");
+
+  wait(reset==0);
+  @(posedge pclk);
+
+  foreach(PhyStatus[i]) begin 
+    wait(PhyStatus[i]==0);
+  end
+  @(posedge pclk);
+  proxy.notify_reset_detected();
+  `uvm_info ("Monitor BFM Detected (Reset scenario)");
+end
+
+//RECEIVER DETECTION
+forever begin   //initial or forever?
+  wait(TxDetectRx==1);
+  @(posedge clk);
+
+
+  fork
+    foreach(PhyStatus[i]) begin
+      wait(PhyStatus[i]==1);
+    end
+
+    foreach(RxStatus[i]) begin 
+      wait(RxStatus[i]=='b011);
+    end    
+  join
+  @(posedge clk);
+
+  fork
+    foreach(PhyStatus[i]) begin
+      wait(PhyStatus[i]==0);
+    end
+
+    foreach(RxStatus[i]) begin 
+      wait(RxStatus[i]=='b000);  //??
+    end    
+  join
+  @(posedge clk);
+
+  wait(TxDetectRx==1);
+  @(posedge clk);
+  proxy.notify_receiver_detected();
+  `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
+
+end
   
 endinterface

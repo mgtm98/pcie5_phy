@@ -7,20 +7,16 @@ class pipe_agent_config extends uvm_object;
   virtual pipe_driver_bfm pipe_driver_bfm_h;
   virtual pipe_monitor_bfm pipe_monitor_bfm_h;
     
-  //------------------------------------------
-  // Data Members
-  //------------------------------------------
-  // Is the agent active or passive
+
   uvm_active_passive_enum active = UVM_ACTIVE;
   bit has_coverage_monitor = 1;
-  event detected_tses;
-  ts_t tses_received [NUM_OF_LANES];
   
-  //------------------------------------------
-  // Methods
-  //------------------------------------------
+  ts_t tses_received [NUM_OF_LANES];
 
-  // Standard UVM Methods:
+  event detected_tses;
+  event reset_detected;
+  event receiver_detected;
+  
   extern function new(string name = "pipe_agent_config");
   
 endclass

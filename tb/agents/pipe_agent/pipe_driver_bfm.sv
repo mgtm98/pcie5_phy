@@ -150,61 +150,37 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
     end    
 endtask
 
-  
-  task detect_state;
-  int temp[2:0];
-  @(resetn==1);  //check on signals default value when reset?
-  @(posedge pclk);
+forever begin 
+  wait(reset==0);
+  @(posedge clk);
 
-  temp=pclk_rate;   //shared or per lane?
-  @(posedge pclk);
-  assert property (temp==pclk_rate) else `uvm_error ("PCLK is not stable");       
-  wait(resetn==0);
-
-  foreach(phystatus[i]) begin 
-    phystatus[i]=0;
+  foreach(PhyStatus) begin
+    PhyStatus[i]=0;
   end
-      
-  wait(TxdetectRx==1)  //shared or per lane?
-  @(posedge pclk);
-  //Transmitter starts in Electrical Idle //Gen 1 (2.5GT/s) //variables set to 0 
+end
 
-  /*
-  for (int i = 0; i < NUM_OF_LANES; i++) begin  
-      rx_elec_idle[i]=0;    //??
+forever begin 
+  wait(TxDetectRx==1);
+  @(posedge clk);
+
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=1;
+  end
+
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b011;
   end 
 
-  fork      
-    #12ms;    
-    for (int i = 0; i < NUM_OF_LANES; i++) begin  
-      fork
-        @(Tx_elec_idle[i]==0);
-      join_any
-    end
-  join_any 
-  */
+  @(posedge clk);
 
-  foreach(Rx_status[i]) begin    // Rx_status='b011 on all lanes for one clk then ='b000
-    Rx_status[i]='b011;  
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=0;
   end
 
-  foreach(phystatus[i]) begin  //asserting phystatus for one clk on all lanes
-    phystatus[i]=1;
-  end 
-  @(posedge pclk);
-  foreach(phystatus[i]) begin
-    phystatus[i]=0;
-  end
-
-  foreach(Rx_status[i]) begin  
-    Rx_status[i]='b000;       
-  end
-
-  wait(TxdetectRx==0);
-  @(posedge pclk);
-  `uvm_info("Detect completed");
-
-endtask : detect_state
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b000;  //??
+  end    
+end
 
 task polling_state;
 
