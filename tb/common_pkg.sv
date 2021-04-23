@@ -4,7 +4,7 @@ package common_pkg;
   typedef bit [7:0] dllp_t [0:5];
 
   // DLLP type (queue of bytes) TODO: Check tlp size from pcie spec and write it
-  typedef bit [7:0] tlp_t [$];
+  typedef bit [7:0] tlp_t [];
 
   typedef enum{
     ACTIVE_state,
