@@ -15,6 +15,8 @@ class pipe_agent_config extends uvm_object;
   bit has_coverage_monitor = 1;
   event detected_tses;
   ts_t tses_received [NUM_OF_LANES];
+  //event for starting polling state in linkup
+  event power_down_detected;
   
   //------------------------------------------
   // Methods

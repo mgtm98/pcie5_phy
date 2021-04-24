@@ -43,6 +43,8 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
 
+  extern function void pipe_polling_state_start();
+
   
 endclass: pipe_monitor
    
@@ -221,3 +223,8 @@ function void pipe_monitor::notify_pclk_rate_change_received(pclk_rate_t  pclk_r
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
 endfunction
+
+function void pipe_monitor::pipe_polling_state_start();
+  `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
+  -> pipe_agent_config_h.power_down_detected;
+ endfunction

@@ -58,6 +58,26 @@ gen_t current_gen;
 // Methods
 //------------------------------------------
 
+//power down detetction
+initial 
+begin
+  forever
+  begin
+    @(pipe_agent_config_h.power_down_detected)
+    begin
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      phy_status[i]=1;
+    end
+  
+    @(posedge pclk);
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      phy_status[i]=0;
+    end
+    end
+  end
+end
+
+
   `include "link_up.svh"
 task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface

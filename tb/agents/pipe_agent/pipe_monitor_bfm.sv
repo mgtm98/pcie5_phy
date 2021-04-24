@@ -55,6 +55,18 @@ interface pipe_monitor_bfm (
       end
     end
   end
+  
+  //waiting on power down to be P0
+  initial 
+  begin
+    forever
+    begin
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (powerdown[i] == 'b00);
+      end
+      proxy.pipe_polling_state_start();
+      end
+  end
 
 initial begin //Detect linkup 
   detect_state();
