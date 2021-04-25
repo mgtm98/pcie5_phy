@@ -75,30 +75,74 @@ task pipe_link_up_seq::polling_active_state;
     fork
     begin
       for (i = 0; i < 23; i++) begin
-        send_ts(config_h); 
-  
-        //compliance we loopback supportedd?
-        if (config_h.ts_type == TS1 & config_h.compliance == 0) begin
+        wait(pipe_agent_config_h.detected_tses.triggered)
+        begin
+        //compliance we loopback supportedd? ts_rec contain config of tses
+        if (pipe_agent_config_h.ts_rec.ts_type == TS1 & pipe_agent_config_h.ts_rec.compliance == 0) begin
           counter1_ts1_case1 ++ ;
         end
   
-        if (config_h.ts_type == TS2) begin
+        if (pipe_agent_config_h.ts_rec.ts_type == TS2) begin
           counter_ts2_case1 ++ ;
         end
   
-        if (config_h.ts_type == TS1 & config_h.loopback == 'b10) begin
+        if (pipe_agent_config_h.ts_rec.ts_type == TS1 & pipe_agent_config_h.ts_rec.loopback == 'b10) begin
           counter2_ts1_case1 ++ ;
         end
   
         if (counter1_ts1_case1 == 8 | counter2_ts1_case1 == 8 | counter_ts2_case1 == 8) begin
           break; 
         end
+        end
       end
     end
+    begin
+      #24ms; 
+      for (i = 0; i < 23; i++) begin
+        wait(pipe_agent_config_h.detected_tses.triggered)
+        begin
+        if (ts_rec.ts_type == TS1 & ts_rec.compliance == 0) begin
+          counter1_ts1_case2 ++ ;
+        end
+    
+        if (ts_rec.ts_type == TS2) begin
+          counter_ts2_case2 ++ ;
+        end
+    
+        if (ts_rec.ts_type == TS1 & ts_rec.loopback == 'b10) begin
+          counter2_ts1_case2 ++ ;
+        end
+    
+        if (counter1_ts1_case2 == 8 | counter2_ts1_case2 == 8 | counter_ts2_case2 == 8) begin
+          break; 
+        end
+        end
+      end
+    end
+    join_any
 endtask
 
 task pipe_link_up_seq::polling_configuration_state;
-
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");;
+  int j = 0;
+  start_item (pipe_seq_item_h);
+  fork
+    begin
+    for (i = 0; i < 16; i++) begin
+    if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; & ts_sent.ts_type == TS2})
+    begin
+      `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
+    end
+    end
+    finish_item (pipe_seq_item_h);
+    end
+		while(j<8) begin
+			wait(pipe_agent_config_h.detected_tses.triggered)
+      if(pipe_agent_config_h.ts_rec.ts_type == TS2) begin
+        j++;
+      end
+		end
+	join
 endtask
 
 task pipe_link_up_seq::config_state;
