@@ -58,13 +58,13 @@ interface lpif_driver_bfm
     //to be implemented
   endtask
 
-  // task reset ();
-  //   //to be implemented
-  // endtask
-
-  task change_speed(speed_mode_t speed);
+  task reset ();
     //to be implemented
   endtask
+
+  // task change_speed(speed_mode_t speed);
+  //   //to be implemented
+  // endtask
 
   task retrain();
     //to be implemented
