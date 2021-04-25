@@ -1,4 +1,4 @@
-class pipe_data_transmit_seq extends uvm_sequence #(pipe_seq_item);
+class pipe_data_transmit_seq extends pipe_base_seq;
   `uvm_object_utils(pipe_data_transmit_seq)
 
   extern function new(string name = "pipe_data_transmit_seq");
@@ -11,6 +11,7 @@ endfunction
 
 task pipe_data_transmit_seq::body();
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  super.body;
   // Wait for the sequencer to give grant
   start_item(pipe_seq_item_h);
   if (!pipe_seq_item_h.randomize() with {pipe_operation == TLP_TRANSFER || pipe_operation == DLLP_TRANSFER;})
