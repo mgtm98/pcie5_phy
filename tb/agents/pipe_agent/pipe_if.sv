@@ -1,9 +1,9 @@
 `include "settings.svh"
 
 interface pipe_if(
-    input bit   clk,
-    input bit   reset,
-    input logic phy_reset
+    input bit   Clk,
+    input bit   Reset,
+    input logic PhyReset
   );
 
   localparam bus_data_width_param       = `PCIE_LANE_NUMBER  * `PIPE_MAX_WIDTH - 1;  
@@ -36,7 +36,7 @@ interface pipe_if(
   logic                               PhyStatus;
   logic [1:0]                         Width;
   logic                               PclkChangeAck;
-  logic                               pclkChangeOk;
+  logic                               PclkChangeOk;
   /*************************************************************************************/
 
   /******************************* Message Bus Interface *******************************/
