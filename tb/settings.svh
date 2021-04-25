@@ -1,5 +1,5 @@
-`ifndef SETTINGS
-`define SETTINGS
+`ifndef __SETTINGS_SVH
+`define __SETTINGS_SVH
 
   /********************** Verbosity Level Settings *************************************/
   `define COMPONENT_STRUCTURE_VERBOSITY UVM_MEDIUM
@@ -7,7 +7,7 @@
   
   /**************************** PIPE Agent Settings ************************************/
   `define PIPE_MAX_WIDTH                32
-  `define PCIE_LANE_NUMBER              2
+  `define NUM_OF_LANES                  2
   /*************************************************************************************/
 
   /**************************** LPIF Agent Settings ************************************/
