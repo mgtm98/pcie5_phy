@@ -1,13 +1,12 @@
-class pipe_link_up_seq extends uvm_sequence #(pipe_seq_item);
+class pipe_link_up_seq extends pipe_base_seq;
+
   `uvm_object_utils(pipe_link_up_seq)
 
-  // Data Members
-  pipe_agent_config pipe_agent_config_h;
+  ts_s ts_sent;
+  ts_s tses_sent [NUM_OF_LANES];
 
   // Methods
   extern local task detect_state;
-  //extern local task detect_quiet_state;
-  //extern local task detect_active_state;
   extern local task polling_state;
   extern local task polling_active_state;
   extern local task polling_configuration_state;
@@ -36,9 +35,11 @@ function pipe_link_up_seq::new(string name = "pipe_link_up_seq");
 endfunction
   
 task pipe_link_up_seq::body;
+  super.body;
   detect_state;
   polling_state;
   config_state;
+  -> pipe_agent_config_h.link_up_finished;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
