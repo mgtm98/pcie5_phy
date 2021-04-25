@@ -13,9 +13,12 @@ class pipe_agent_config extends uvm_object;
   
   ts_t tses_received [NUM_OF_LANES];
 
+  //events
   event detected_tses;
   event reset_detected;
   event receiver_detected;
+  //event for starting polling state in linkup
+  event power_down_detected;
   
   extern function new(string name = "pipe_agent_config");
   
