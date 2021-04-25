@@ -6,19 +6,22 @@ class lpif_seq_item extends uvm_sequence_item;
   rand tlp_t tlp;
   rand dllp_t dllp;
 
-  lpif_seq_item_s lpif_seq_item_struct;
-  lpif_seq_item lpif_seq_item_h;
+  const longint unsigned TLP_MIN_SIZE = 20;
+  const longint unsigned TLP_MAX_SIZE  20;
 
   //  Group: Constraints
-  constraint c1 {tlp.size()>28; tlp.size()<1024;}  //??
+  constraint c1 {
+    tlp.size() > TLP_MIN_SIZE;
+    tlp.size() < TLP_MAX_SIZE;
+  };
 
   extern         function void new(string name);
   extern virtual function void do_copy(uvm_object rhs);
   extern virtual function bit do_compare(uvm_object rhs, uvm_comparer comparer);
   extern virtual function string convert2string();
   extern virtual function void do_print(uvm_printer printer);
-  extern         function Lpif_seq_item_s to_struct();
-  extern static  function lpif_seq_item_h from_struct(Lpif_seq_item_s Lpif_seq_item_s_h);
+  extern         function lpif_seq_item_s to_struct();
+  extern         function void from_struct(lpif_seq_item_s lpif_seq_item_s_h);
      
 endclass: lpif_seq_item
 
@@ -49,18 +52,18 @@ function bit lpif_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
     return 0;
   end
 
-  if (tlp != rhs_.tlp) begin
+  if (tlp.size() != rhs_.tlp.size()) begin
     return 0;
   end
 
   for (int i = 0; i < tlp.size(); i++) begin
-    if (tlp[i] != tlp[i] ) begin
+    if (tlp[i] != rhs_.tlp[i] ) begin
       return 0;
     end
   end
 
-  for (int i = 0; i < 6; i++) begin
-    if (dllp[i] != dllp[i] ) begin
+  for (int i = 0; i < $size(dllp); i++) begin
+    if (dllp[i] != rhs_.dllp[i] ) begin
       return 0;
     end
   end
@@ -69,30 +72,27 @@ function bit lpif_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
 endfunction:do_compare
 
 function string lpif_seq_item::convert2string();
-  string s;
-
-  $sformat(s, "%s\n", super.convert2string());
-  // $sformat(s, "%s\n lpif_operation\t%0h\n tlp\t%0h\n dllp\t%0b\n delay\t%0d\n", s, lpif_operation, tlp, dllp); //?
-  return s;
-
+  return $sformatf("LPIF Sequence Item: \n\toperation:%s, \n\ttlp size:%0d \n\tdllp size:%0d\n",
+                this.lpif_operation.name(),
+                this.tlp.size(),
+                this.dllp.size());
 endfunction:convert2string
 
 function void lpif_seq_item::do_print(uvm_printer printer);
-  printer.m_string = convert2string();
+  // printer.m_string = convert2string();
+  `uvm_info(get_name(), convert2string(), UVM_NONE)
 endfunction:do_print
 
-function Lpif_seq_item_s lpif_seq_item::to_struct (); 
+function lpif_seq_item_s lpif_seq_item::to_struct ();
+  lpif_seq_item_s lpif_seq_item_struct;
   lpif_seq_item_struct.tlp = tlp;
   lpif_seq_item_struct.dllp = dllp;
-  lpif_seq_item_struct.operation = operation;
+  lpif_seq_item_struct.lpif_operation = lpif_operation;
   return lpif_seq_item_struct;
 endfunction : to_struct 
 
-
-//TODO: avoid static
-function lpif_seq_item_h lpif_seq_item::from_struct (Lpif_seq_item_s Lpif_seq_item_s_h);
-  lpif_seq_item_h.tlp= Lpif_seq_item_struct.tlp;
-  lpif_seq_item_h.dllp = Lpif_seq_item_struct.dllp;
-  lpif_seq_item_h.operation = Lpif_seq_item_struct.operation;
-  return lpif_seq_item_h;
+function void lpif_seq_item::from_struct (lpif_seq_item_s lpif_seq_item_s_h);
+  tlp = lpif_seq_item_struct.tlp;
+  dllp = lpif_seq_item_struct.dllp;
+  lpif_operation = lpif_seq_item_struct.lpif_operation;
 endfunction : from_struct 
