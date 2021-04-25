@@ -81,7 +81,7 @@ begin
       PhyStatus[i]=1;
     end
   
-    @(posedge Pclk);
+    @(posedge PCLK);
     for (int i = 0; i < NUM_OF_LANES ; i++) begin
       PhyStatus[i]=0;
     end
@@ -101,7 +101,7 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
         ts.link_number=TxData[start_lane][15:8]; // link number
         for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
         begin
-            @(posedge Pclk);
+            @(posedge PCLK);
             case(sympol_count)
                 2:begin 
                     for(int i=start_lane;i<=end_lane;i++) //lanes numbers
@@ -137,7 +137,7 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
         ts.n_fts=TxData[start_lane][31:24]; // number of fast training sequnces
         for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
         begin
-            @(posedge Pclk);
+            @(posedge PCLK);
             case(sympol_count)
                 4:begin // supported speeds
                         if(TxData[start_lane][5]==1'b1) ts.max_suported=GEN5;
@@ -159,7 +159,7 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
         wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
         for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
         begin
-            @(posedge Pclk);
+            @(posedge PCLK);
             case(sympol_count)
                 1:ts.link_number=TxData[start_lane][7:0]; //link number
                 2:begin //lanes numbers
@@ -230,7 +230,7 @@ task polling_state;
 		PhyStatus[i]=1;
 	end
 
-	@(posedge Pclk);
+	@(posedge PCLK);
 	for (int i = 0; i < NUM_OF_LANES ; i++) begin
 		PhyStatus[i]=0;
 	end
