@@ -40,8 +40,8 @@ interface pipe_driver_bfm
   /*************************************************************************************/
   
   /******************************* Message Bus Interface *******************************/
-  output logic [7:0]                         m2p_message_bus,
-  input  logic [7:0]                         p2m_message_bus,
+  output logic [7:0]                         M2P_MessageBus,
+  input  logic [7:0]                         P2M_MessageBus,
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
