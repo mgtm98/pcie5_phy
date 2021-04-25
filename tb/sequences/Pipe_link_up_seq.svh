@@ -72,7 +72,7 @@ task pipe_link_up_seq::polling_active_state;
       for (i = 0; i < 23; i++) begin
         wait(pipe_agent_config_h.detected_tses.triggered)
         begin
-        //compliance we loopback supportedd? ts_rec contain config of tses
+        //compliance we loopback supportedd in ts configs? ts_rec contain config of tses
         if (pipe_agent_config_h.ts_rec.ts_type == TS1 & pipe_agent_config_h.ts_rec.compliance == 0) begin
           counter1_ts1_case1 ++ ;
         end
