@@ -27,10 +27,10 @@ class pipe_monitor extends uvm_monitor;
   extern function void connect_phase(uvm_phase phase);
 
   // Proxy Methods:
-  extern function void pipe_monitor_dummy();
-
-  extern function void notify_link_up_sent();
-  extern function void notify_link_up_received();
+  // extern function void notify_link_up_sent();
+  // extern function void notify_link_up_received();
+  extern function void detect_link_up();
+  extern function void notify_tses_received(ts_s ts [`NUM_OF_LANES]);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -44,8 +44,6 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
 
-
-  
 endclass: pipe_monitor
    
 function pipe_monitor::new(string name = "pipe_monitor", uvm_component parent = null);
@@ -65,38 +63,42 @@ function void pipe_monitor::connect_phase(uvm_phase phase);
   pipe_monitor_bfm_h.proxy = this;
 endfunction: connect_phase
 
-function void pipe_monitor::pipe_monitor_dummy();
-  pipe_seq_item pipe_seq_item_h;
-  `uvm_info (get_type_name (), $sformatf ("pipe_monitor_dummy is called"), UVM_MEDIUM)
-  //creating sequnce item
-  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h", this);
-  //determining the detected operation
-  pipe_seq_item_h.pipe_operation = LINK_UP;
-  //sending sequnce item to the anlysis components
-  `uvm_info (get_type_name (), "pipe_monitor_dummy sent a link-up seq_item to anlysis components", UVM_MEDIUM)
-  ap_sent.write(pipe_seq_item_h);
-  ap_received.write(pipe_seq_item_h);
- endfunction
-
-function void pipe_monitor::notify_link_up_sent();
-  // Creating the sequnce item
+function void pipe_monitor::detect_link_up();
   pipe_seq_item pipe_seq_item_h;
   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  // Determining the detected operation
-  pipe_seq_item_h.pipe_operation = LINK_UP;
-  // Sending the sequence item to the analysis components
-  ap_sent.write(pipe_seq_item_h);
-endfunction
-
-function void pipe_monitor::notify_link_up_received();
-  // Creating the sequnce item
-  pipe_seq_item pipe_seq_item_h;
-  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Wait till the sequence finishes the link up
+  wait(pipe_agent_config_h.link_up_finished.triggered);
   // Determining the detected operation
   pipe_seq_item_h.pipe_operation = LINK_UP;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
 endfunction
+
+
+function void notify_tses_received(ts_s tses [NUM_OF_LANES]);
+  pipe_agent_config_h.tses_received = tses;
+  -> pipe_agent_config_h.detected_tses;
+endfunction
+
+// function void pipe_monitor::notify_link_up_sent();
+//   // Creating the sequnce item
+//   pipe_seq_item pipe_seq_item_h;
+//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+//   // Determining the detected operation
+//   pipe_seq_item_h.pipe_operation = LINK_UP;
+//   // Sending the sequence item to the analysis components
+//   ap_sent.write(pipe_seq_item_h);
+// endfunction
+
+// function void pipe_monitor::notify_link_up_received();
+//   // Creating the sequnce item
+//   pipe_seq_item pipe_seq_item_h;
+//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+//   // Determining the detected operation
+//   pipe_seq_item_h.pipe_operation = LINK_UP;
+//   // Sending the sequence item to the analysis components
+//   ap_received.write(pipe_seq_item_h);
+// endfunction
 
 function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
   // Creating the sequnce item
@@ -146,20 +148,21 @@ function void pipe_monitor::notify_dllp_received(dllp_t dllp);
   ap_received.write(pipe_seq_item_h);
 endfunction
 
-function void notify_enter_recovery_sent();
-  // Creating the sequnce item
-  pipe_seq_item pipe_seq_item_h;
-  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  // Determining the detected operation
-  pipe_seq_item_h.pipe_operation = ENTER_RECOVERY;
-  // Sending the sequence item to the analysis components
-  ap_sent.write(pipe_seq_item_h);
-endfunction
+// function void notify_enter_recovery_sent();
+//   // Creating the sequnce item
+//   pipe_seq_item pipe_seq_item_h;
+//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+//   // Determining the detected operation
+//   pipe_seq_item_h.pipe_operation = ENTER_RECOVERY;
+//   // Sending the sequence item to the analysis components
+//   ap_sent.write(pipe_seq_item_h);
+// endfunction
 
 function void notify_enter_recovery_received();
-  // Creating the sequnce item
   pipe_seq_item pipe_seq_item_h;
   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Wait till the sequence finishes the link up
+  wait(pipe_agent_config_h.recovery_finished.triggered);
   // Determining the detected operation
   pipe_seq_item_h.pipe_operation = ENTER_RECOVERY;
   // Sending the sequence item to the analysis components
