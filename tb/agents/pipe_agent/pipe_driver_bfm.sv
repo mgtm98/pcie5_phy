@@ -1,33 +1,33 @@
-`include "settings.svh"
-
 interface pipe_driver_bfm
-#(
-  localparam bus_data_width_param       = `PCIE_LANE_NUMBER  * `PIPE_MAX_WIDTH - 1,  
-  localparam bus_data_kontrol_param     = (`PIPE_MAX_WIDTH / 8) * `PCIE_LANE_NUMBER - 1
-)(  
+  #(
+    param pipe_num_of_lanes,
+    param pipe_max_width,
+    localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
+    localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
+  )(  
   input bit   clk,
   input bit   reset,
   input logic phy_reset,
    
   /*************************** RX Specific Signals *************************************/
   output logic [bus_data_width_param:0]      rx_data,    
-  output logic [`PCIE_LANE_NUMBER-1:0]       rx_data_valid,
+  output logic [pipe_num_of_lanes-1:0]       rx_data_valid,
   output logic [bus_data_kontrol_param:0]    rx_data_k,
-  output logic [`PCIE_LANE_NUMBER-1:0]       rx_start_block,
-  output logic [2*`PCIE_LANE_NUMBER-1:0]     rx_synch_header,
-  output logic [`PCIE_LANE_NUMBER-1:0]       rx_valid,
-  output logic [3*`PCIE_LANE_NUMBER-1:0]     rx_status,
+  output logic [pipe_num_of_lanes-1:0]       rx_start_block,
+  output logic [2*pipe_num_of_lanes-1:0]     rx_synch_header,
+  output logic [pipe_num_of_lanes-1:0]       rx_valid,
+  output logic [3*pipe_num_of_lanes-1:0]     rx_status,
   output logic                               rx_elec_idle,
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
   input logic [bus_data_width_param:0]      tx_data,    
-  input logic [`PCIE_LANE_NUMBER-1:0]       tx_data_valid,
+  input logic [pipe_num_of_lanes-1:0]       tx_data_valid,
   input logic [bus_data_kontrol_param:0]    tx_data_k,
-  input logic [`PCIE_LANE_NUMBER-1:0]       tx_start_block,
-  input logic [2*`PCIE_LANE_NUMBER-1:0]     tx_synch_header,
-  input logic [`PCIE_LANE_NUMBER-1:0]       tx_elec_idle,
-  input logic [`PCIE_LANE_NUMBER-1:0]       tx_detect_rx__loopback,
+  input logic [pipe_num_of_lanes-1:0]       tx_start_block,
+  input logic [2*pipe_num_of_lanes-1:0]     tx_synch_header,
+  input logic [pipe_num_of_lanes-1:0]       tx_elec_idle,
+  input logic [pipe_num_of_lanes-1:0]       tx_detect_rx__loopback,
   /*************************************************************************************/
 
   /*********************** Comands and Status Signals **********************************/
@@ -45,18 +45,18 @@ interface pipe_driver_bfm
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  output logic [18*`PCIE_LANE_NUMBER-1:0]   local_tx_preset_coeffcients,
-  input  logic [18*`PCIE_LANE_NUMBER-1:0]   tx_deemph,
-  output logic [6*`PCIE_LANE_NUMBER-1:0]    local_fs,
-  output logic [6*`PCIE_LANE_NUMBER-1:0]    local_lf,
-  input  logic [`PCIE_LANE_NUMBER-1:0]      get_local_preset_coeffcients,
-  output logic [`PCIE_LANE_NUMBER-1:0]      local_tx_coeffcients_valid,
-  input  logic [6*`PCIE_LANE_NUMBER-1:0]    fs,    // TODO: Review specs for these values
-  input  logic [6*`PCIE_LANE_NUMBER-1:0]    lf,    // TODO: Review specs for these values
-  input  logic [`PCIE_LANE_NUMBER-1:0]      rx_eq_eval,
-  input  logic [4*`PCIE_LANE_NUMBER-1:0]    local_preset_index,
-  input  logic [`PCIE_LANE_NUMBER-1:0]      invalid_request,  // TODO: this signal needs to be checked
-  output logic [6*`PCIE_LANE_NUMBER-1:0]    link_evaluation_feedback_direction_change
+  output logic [18*pipe_num_of_lanes-1:0]   local_tx_preset_coeffcients,
+  input  logic [18*pipe_num_of_lanes-1:0]   tx_deemph,
+  output logic [6*pipe_num_of_lanes-1:0]    local_fs,
+  output logic [6*pipe_num_of_lanes-1:0]    local_lf,
+  input  logic [pipe_num_of_lanes-1:0]      get_local_preset_coeffcients,
+  output logic [pipe_num_of_lanes-1:0]      local_tx_coeffcients_valid,
+  input  logic [6*pipe_num_of_lanes-1:0]    fs,    // TODO: Review specs for these values
+  input  logic [6*pipe_num_of_lanes-1:0]    lf,    // TODO: Review specs for these values
+  input  logic [pipe_num_of_lanes-1:0]      rx_eq_eval,
+  input  logic [4*pipe_num_of_lanes-1:0]    local_preset_index,
+  input  logic [pipe_num_of_lanes-1:0]      invalid_request,  // TODO: this signal needs to be checked
+  output logic [6*pipe_num_of_lanes-1:0]    link_evaluation_feedback_direction_change
   /*************************************************************************************/
 );
 
@@ -75,99 +75,6 @@ gen_t current_gen;
 //------------------------------------------
 // Methods
 //------------------------------------------
-
-  `include "link_up.svh"
-task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
-    if(width==2'b01) // 16 bit pipe parallel interface
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        ts.link_number=tx_data[start_lane][15:8]; // link number
-        for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                2:begin 
-                    for(int i=start_lane;i<=end_lane;i++) //lanes numbers
-                    begin
-                        ts.lane_number[i]=tx_data[i][7:0];
-                    end
-                    ts.n_fts=tx_data[start_lane][15:8]; // number of fast training sequnces
-                  end
-    
-                4:begin // speeds supported
-                        if(tx_data[start_lane][5]==1'b1) ts.max_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_suported=GEN2;
-                        else ts.max_suported=GEN1;	
-                    end
-    
-                10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
-                    end
-            endcase
-        end
-    end
-    else if(width==2'b10) // 32 pipe parallel interface  
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        ts.link_number=tx_data[start_lane][15:8]; //link number
-        for(int i=start_lane;i<=end_lane;i++) // lane numbers
-        begin 
-            ts.lane_number[i]=tx_data[i][23:16];
-        end
-        ts.n_fts=tx_data[start_lane][31:24]; // number of fast training sequnces
-        for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                4:begin // supported speeds
-                        if(tx_data[start_lane][5]==1'b1) ts.max_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_suported=GEN2;
-                        else ts.max_suported=GEN1;	
-                    end
-    
-                 8:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][23:16]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][23:16]==8'b010_00101) ts.ts_type=TS2;
-                    end
-            endcase
-        end
-    end
-    else //8 bit pipe paraleel interface 
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                1:ts.link_number=tx_data[start_lane][7:0]; //link number
-                2:begin //lanes numbers
-                        for(int i=start_lane;i<=end_lane;i++)
-                        begin
-                            ts.lane_number[i]=tx_data[i][7:0];
-                        end
-                    end
-                3:ts.n_fts=tx_data[start_lane][7:0]; // number of fast training sequnces
-                4:begin  //supported sppeds
-                        if(tx_data[start_lane][5]==1'b1) ts.max_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_suported=GEN2;
-                        else ts.max_suported=GEN1;	
-                    end
-                10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
-                    end
-            endcase
-        end
-    end    
-endtask
-
 forever begin 
   wait(reset==0);
   @(posedge clk);
@@ -199,6 +106,266 @@ forever begin
     RxStatus[i]=='b000;  //??
   end    
 end
+
+task send_ts(ts_t config, int start_lane = 0, int end_lane = NUM_OF_LANES);
+
+
+  rx_data_valid <= 1;
+  rx_valid <= 1;
+  if(config.ts_type == TS1)
+  begin
+
+    //Symbol 0:
+    @(posedge pclk);
+    if(config.max_gen_suported <= GEN2)
+    begin
+      rx_data <= 8'b1011110;
+      rx_data_k <= 1;
+    end
+    else 
+      rx_data <= 8'h1E;
+    //Symbol 1
+    @(posedge pclk);
+
+    if(config.use_link_number)
+    begin
+      rx_data <= config.link_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 2
+    @(posedge pclk);
+    if(config.use_lane_number)
+    begin
+      rx_data <= config.lane_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 3
+    @(posedge pclk);
+    if(config.use_n_fts)
+    begin
+      rx_data <= config.n_fts
+      rx_data_k <= 0;
+    end
+    else
+    begin
+    //missing part ?!!
+    end
+
+    //Symbol 4
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0'hff; 
+    // bits 0,6,7 value needs to be discuessed
+    rx_data[0] <= 0;
+    rx_data[7:6] <= 0'b00;
+
+
+    if(config.max_gen_suported == GEN1)
+      rx_data[5:2] <= 0;
+    else if(config.max_gen_suported == GEN2)
+      rx_data[5:3] <= 0;
+    else if(config.max_gen_suported == GEN3)
+      rx_data[5:4] <= 0;
+    else if(config.max_gen_suported == GEN4)
+      rx_data[5] <= 0;
+
+
+    //Symbol 5
+    //needs to be discussed
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0; 
+
+    //Symbol 6~15 in case of Gen 1 and 2
+    if(config.max_gen_suported == GEN1 || config.max_gen_suported == GEN2)
+    begin
+      @(posedge pclk);
+      rx_data_k <= 0;
+      rx_data <= 8'h4A; 
+      repeat(8)@(posedge pclk);
+    end
+
+    //Symbol 6~15 in case of Gen 3
+    else 
+    begin
+
+      //Symbol 6
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 7
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 8
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 9
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 10~13
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(3)@(posedge pclk);
+
+      //Symbol 14~15
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(1)@(posedge pclk);
+    end
+
+  end
+
+
+  if(config.ts_type == TS2)
+  begin
+
+    //Symbol 0:
+    @(posedge pclk);
+    if(config.max_gen_suported <= GEN2)
+    begin
+      rx_data <= 8'b1011110;
+      rx_data_k <= 1;
+    end
+    else 
+      rx_data <= 8'h2D;
+    //Symbol 1
+    @(posedge pclk);
+
+    if(config.use_link_number)
+    begin
+      rx_data <= config.link_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 2
+    @(posedge pclk);
+    if(config.use_lane_number)
+    begin
+      rx_data <= config.lane_number;
+      rx_data_k <= 0;
+    end
+    else
+    begin
+      rx_data <= 8'b11110111; //PAD character
+      rx_data_k <= 1;
+    end
+
+    //Symbol 3
+    @(posedge pclk);
+    if(config.use_n_fts)
+    begin
+      rx_data <= config.n_fts
+      rx_data_k <= 0;
+    end
+    else
+    begin
+    //missing part ?!!
+    end
+
+    //Symbol 4
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0'hff; 
+    // bits 0,6,7 value needs to be discuessed
+    rx_data[0] <= 0;
+    rx_data[7:6] <= 0'b00;
+
+
+    if(config.max_gen_suported == GEN1)
+      rx_data[5:2] <= 0;
+    else if(config.max_gen_suported == GEN2)
+      rx_data[5:3] <= 0;
+    else if(config.max_gen_suported == GEN3)
+      rx_data[5:4] <= 0;
+    else if(config.max_gen_suported == GEN4)
+      rx_data[5] <= 0;
+
+
+    //Symbol 5
+    //needs to be discussed
+    @(posedge pclk);
+    rx_data_k <= 0;
+    rx_data <= 0; 
+
+    //Symbol 6~15 in case of Gen 1 and 2
+    if(config.max_gen_suported == GEN1 || config.max_gen_suported == GEN2)
+    begin
+      @(posedge pclk);
+      rx_data_k <= 0;
+      rx_data <= 8'h4A; 
+
+      @(posedge pclk);
+      rx_data_k <= 0;
+      rx_data <= 8'h45; 
+
+      repeat(7)@(posedge pclk);
+
+    end
+
+    //Symbol 6~15 in case of Gen 3
+    else 
+    begin
+
+      //Symbol 6
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+
+      //Symbol 7
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 8
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 9
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 0; 
+
+      //Symbol 10~13
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(3)@(posedge pclk);
+
+      //Symbol 14~15
+      //needs to be discussed
+      @(posedge pclk);
+      rx_data <= 8'h4A; 
+      repeat(1)@(posedge pclk);
+    end
+
+  end
+endtask
 
 task polling_state;
 
@@ -448,60 +615,3 @@ endtask : polling_state
     // -------------------- Config.Idle --------------------
   endtask
 endinterface
-
-/*
-
-
-Finish the verification plan
-
-Finish the detailed scenario
-  lpif normal data operation
-  pipe link up upstream
-
-seq
-  Lpif_link_up_seq
-  Lpif_data_transmit_seq
-  Lpif_reset_seq
-  Lpif_enter_recovery_seq
-  Lpif_enter_l0s_seq X
-  Lpif_exit_l0s_seq X
-
-  pipe_link_up_seq
-  pipe_data_transmit_seq
-  pipe_enter_recovery_seq
-  pipe_enter_l0s_seq X
-  pipe_exit_l0s_seq X
-  Pipe_speed_change_seq 
-
-vseq
-  base_vseq
-  link_up_vseq
-  data_exchange_vseq
-  reset_vseq
-  enter_recovery_vseq
-  enter_l0s_vseq X
-  exit_l0s_vseq X
-  speed_change_vseq
-
-seq_item
-  lpif_seq_item
-  pipe_seq_item
-
-lpif
-  lpif_driver
-  lpif_monitor
-
-pipe
-  pipe_driver
-  pipe_monitor
-
-Parameterization
-  lpif_if
-  lpif_driver_bfm
-  lpif_monitor_bfm
-
-  pipe_if
-  pipe_driver_bfm
-  pipe_monitor_bfm
-
-*/
