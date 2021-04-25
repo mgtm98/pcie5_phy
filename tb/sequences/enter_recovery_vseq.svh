@@ -1,15 +1,17 @@
-class enter_recovery_vseq extends uvm_sequence #(uvm_sequence_item); //inherit from base_vseq class??
+class enter_recovery_vseq extends base_vseq;
 
-`uvm_object_utils(enter_recovery_vseq);
-// handels of sequencers
-lpif_sequencer lpif_sequencer_h;
-pipe_sequencer pipe_sequencer_h;
+  `uvm_object_utils(enter_recovery_vseq);
 
-function new(string name = "enter_recovery_vseq");
+  extern function new(string name = "enter_recovery_vseq");
+  extern task body();
+
+endclass: enter_recovery_vseq
+
+function enter_recovery_vseq::new(string name = "enter_recovery_vseq");
   super.new(name);
 endfunction: new
-    
-task body();
+
+task enter_recovery_vseq::body();
   //handels of sequnces
   lpif_enter_recovery_seq lpif_enter_recovery_seq_h = lpif_enter_recovery_seq::type_id::create("lpif_enter_recovery_seq_h");
   pipe_enter_recovery_seq pipe_enter_recovery_seq_h = pipe_enter_recovery_seq::type_id::create("pipe_enter_recovery_seq_h");
@@ -20,4 +22,4 @@ task body();
     pipe_enter_recovery_seq_h.start (pipe_sequencer_h,this); 
   join	
 endtask
-endclass: enter_recovery_vseq
+
