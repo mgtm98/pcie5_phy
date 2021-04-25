@@ -40,11 +40,11 @@ interface lpif_driver_bfm
   import common_pkg::*;
 
   task link_up;
-  	lp_state_req <= LinkReset;
-    wait(pl_state_sts == LinkReset);
+  	lp_state_req <= LINK_RESET;
+    wait(pl_state_sts == LINK_RESET);
   	@(posedge lclk);
-    lp_state_req <= Active;
-    wait(pl_state_sts == Active);
+    lp_state_req <= ACTIVE;
+    wait(pl_state_sts == ACTIVE);
   	@(posedge lclk);
   endtask
 

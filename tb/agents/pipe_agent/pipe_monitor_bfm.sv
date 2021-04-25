@@ -221,9 +221,9 @@ forever begin   //initial or forever?
   @(posedge clk);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
-
 end
 
+<<<<<<< HEAD
 task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
   if(width==2'b01) // 16 bit pipe parallel interface
   begin
@@ -445,4 +445,17 @@ task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int en
   end    
 endtask
   
+=======
+//waiting on power down to be P0
+initial 
+begin
+  forever
+  begin
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (powerdown[i] == 'b00);
+      end
+      proxy.pipe_polling_state_start();
+  end
+end  
+>>>>>>> b7141c807e4ec15dee81af9e8ddfa0d120e939f3
 endinterface

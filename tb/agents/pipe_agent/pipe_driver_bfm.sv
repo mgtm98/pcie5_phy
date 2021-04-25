@@ -71,6 +71,23 @@ logic [4:0]  pclk_rate;     //TODO: This signal is removed
 //------------------------------------------
 gen_t current_gen;
 
+initial 
+begin
+  forever
+  begin
+    @(pipe_agent_config_h.power_down_detected)
+    begin
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      phy_status[i]=1;
+    end
+  
+    @(posedge pclk);
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      phy_status[i]=0;
+    end
+    end
+  end
+end
 
 //------------------------------------------
 // Methods
