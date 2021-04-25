@@ -146,7 +146,17 @@ forever begin   //initial or forever?
   @(posedge clk);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
-
 end
-  
+
+//waiting on power down to be P0
+initial 
+begin
+  forever
+  begin
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (powerdown[i] == 'b00);
+      end
+      proxy.pipe_polling_state_start();
+  end
+end  
 endinterface
