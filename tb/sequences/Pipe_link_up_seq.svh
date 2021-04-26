@@ -51,8 +51,8 @@ endtask
 task pipe_link_up_seq::polling_state;
   `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM);
   wait(pipe_agent_config_h.power_down_detected.triggered);
-  polling_active_state();
-  polling_configuration_state();
+  polling_active_state;
+  polling_configuration_state;
 endtask
 
 task pipe_link_up_seq::polling_active_state;
