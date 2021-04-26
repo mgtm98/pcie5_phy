@@ -1,4 +1,5 @@
 `include "settings.svh"
+`include "link_up.svh"
 
 interface pipe_driver_bfm
 #(
@@ -71,12 +72,31 @@ logic [4:0]  PclkRate;     //TODO: This signal is removed
 //------------------------------------------
 gen_t current_gen;
 
+forever
+  begin
+    @(power_down == 'b00)
+    begin
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      PhyStatus[i]=1;
+    end
+  
+    @(posedge PCLK);
+    for (int i = 0; i < NUM_OF_LANES ; i++) begin
+      PhyStatus[i]=0;
+    end
+
+    `uvm_info("Waiting for deassertion Txelecidle signal"); 
+  	for (int i = 0; i < NUM_OF_LANES; i++) begin
+		@ (TxElecIdle[i] == 0)	;
+	  end
+  end
+end
+
 
 //------------------------------------------
 // Methods
 //------------------------------------------
 
-  `include "link_up.svh"
 task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(Width==2'b01) // 16 bit pipe parallel interface
     begin
@@ -168,7 +188,6 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
     end    
 endtask
 
-/******************************* Communicate completion of RESET# *******************************/
 forever begin 
   wait(reset==0);
   @(posedge clk);
@@ -177,7 +196,7 @@ forever begin
     PhyStatus[i]=0;
   end
 end
-/******************************* Communicate receiver detection *******************************/
+
 forever begin 
   wait(TxDetectRx==1);
   @(posedge Clk);

@@ -156,6 +156,18 @@ begin
       for (int i = 0; i < NUM_OF_LANES; i++) begin
         @ (PowerDown[i] == 'b00);
       end
+      
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (PhyStatus[i] == 1);
+      end
+      @(posedge CLK);
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (PhyStatus[i] == 0);
+      end
+
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (TxElecIdle[i] == 0)	;
+      end
       proxy.pipe_polling_state_start();
   end
 end  

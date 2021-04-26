@@ -232,5 +232,5 @@ endfunction
 
 function void pipe_monitor::pipe_polling_state_start();
   `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
-  -> pipe_agent_config_h.power_down_detected;
+  -> pipe_agent_config_h.start_polling;
  endfunction

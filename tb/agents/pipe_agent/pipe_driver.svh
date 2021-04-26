@@ -10,24 +10,6 @@ extern function void build_phase(uvm_phase phase);
 extern function void connect_phase(uvm_phase phase);
 extern task run_phase(uvm_phase phase);
 
-initial 
-begin
-  forever
-  begin
-    @(pipe_agent_config_h.power_down_detected)
-    begin
-    for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      pipe_driver_bfm_h.PhyStatus[i]=1;
-    end
-  
-    @(posedge pclk);
-    for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      pipe_driver_bfm_h.PhyStatus[i]=0;
-    end
-    end
-  end
-end
-
 endclass: pipe_driver
 
 
