@@ -161,9 +161,9 @@ interface pipe_monitor_bfm
     end    
 endtask
 
-//RESET DETECTION
+/******************************* RESET# Scenario detection *******************************/
   int temp[2:0];
-forever begin   //initial or forever?
+forever begin   
 
   wait(reset==1);
   @(posedge PCLK);
@@ -189,8 +189,8 @@ forever begin   //initial or forever?
   `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Reset scenario)", UVM_LOW);
 end
 
-//RECEIVER DETECTION
-forever begin   //initial or forever?
+/******************************* Receiver detection Scenario *******************************/
+forever begin  
   wait(TxDetectRx==1);
   @(posedge CLK);
 
@@ -450,6 +450,18 @@ begin
   begin
       for (int i = 0; i < NUM_OF_LANES; i++) begin
         @ (PowerDown[i] == 'b00);
+      end
+      
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (PhyStatus[i] == 1);
+      end
+      @(posedge CLK);
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (PhyStatus[i] == 0);
+      end
+
+      for (int i = 0; i < NUM_OF_LANES; i++) begin
+        @ (TxElecIdle[i] == 0)	;
       end
       proxy.pipe_polling_state_start();
   end

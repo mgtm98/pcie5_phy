@@ -1,3 +1,5 @@
+`include "settings.svh"
+
 interface pipe_driver_bfm
   #(
     param pipe_num_of_lanes,
@@ -70,11 +72,9 @@ logic [4:0]  PclkRate;     //TODO: This signal is removed
 //------------------------------------------
 gen_t current_gen;
 
-initial 
-begin
-  forever
+forever
   begin
-    @(pipe_agent_config_h.power_down_detected)
+    @(power_down == 'b00)
     begin
     for (int i = 0; i < NUM_OF_LANES ; i++) begin
       PhyStatus[i]=1;
@@ -84,15 +84,19 @@ begin
     for (int i = 0; i < NUM_OF_LANES ; i++) begin
       PhyStatus[i]=0;
     end
-    end
+
+    `uvm_info("Waiting for deassertion Txelecidle signal"); 
+  	for (int i = 0; i < NUM_OF_LANES; i++) begin
+		@ (TxElecIdle[i] == 0)	;
+	  end
   end
 end
+
 
 //------------------------------------------
 // Methods
 //------------------------------------------
 
-  `include "link_up.svh"
 task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(Width==2'b01) // 16 bit pipe parallel interface
     begin
