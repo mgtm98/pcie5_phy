@@ -121,24 +121,25 @@ endtask
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");;
   int j = 0;
-  start_item (pipe_seq_item_h);
   fork
     begin
-    for (i = 0; i < 16; i++) begin
-    if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; & ts_sent.ts_type == TS2})
-    begin
-      `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
-    end
-    end
-    finish_item (pipe_seq_item_h);
-    end
-    begin
-    while(j<8) begin
-      wait(pipe_agent_config_h.detected_tses.triggered)
-      if(pipe_agent_config_h.ts_rec.ts_type == TS2) begin
-        j++;
+      while(j<8) begin
+        wait(pipe_agent_config_h.detected_tses.triggered)
+        if(pipe_agent_config_h.ts_rec.ts_type == TS2) begin
+          j++;
+        end
       end
     end
+
+    begin
+    start_item (pipe_seq_item_h);
+    for (i = 0; i < 16; i++) begin
+      if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; & ts_sent.ts_type == TS2})
+      begin
+        `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
+      end
+      end
+    finish_item (pipe_seq_item_h);
     end
   join
 endtask
