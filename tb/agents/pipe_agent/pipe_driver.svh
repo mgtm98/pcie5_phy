@@ -2,7 +2,7 @@ class pipe_driver extends uvm_driver #(pipe_seq_item);
 
 `uvm_component_utils(pipe_driver)
 
-virtual pipe_driver_bfm pipe_driver_bfm_h;
+virtual pipe_driver_bfm_param pipe_driver_bfm_h;
 pipe_agent_config pipe_agent_config_h;
   
 extern function new(string name = "pipe_driver", uvm_component parent = null);
