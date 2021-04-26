@@ -40,19 +40,19 @@ function void pcie_test::build_phase(uvm_phase phase);
   pipe_agent_config pipe_agent_config_h = pipe_agent_config::type_id::create("pipe_agent_config_h");
 
   //setting the lpif_agent conifgurations and needed handles
-  if (!uvm_config_db #(virtual lpif_monitor_bfm)::get(this, "", "lpif_monitor_bfm", lpif_agent_config_h.lpif_monitor_bfm_h))
-    `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface lpif_monitor_bfm_h from uvm_config_db. Have you set() it?")
-  if (!uvm_config_db #(virtual lpif_driver_bfm) ::get(this, "", "lpif_driver_bfm", lpif_agent_config_h.lpif_driver_bfm_h))
+  if (!uvm_config_db #(virtual lpif_driver_bfm_param) ::get(this, "", "lpif_driver_bfm", lpif_agent_config_h.lpif_driver_bfm_h))
     `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface lpif_driver_bfm_h from uvm_config_db. Have you set() it?")
-
+  if (!uvm_config_db #(virtual lpif_monitor_bfm_param)::get(this, "", "lpif_monitor_bfm", lpif_agent_config_h.lpif_monitor_bfm_h))
+    `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface lpif_monitor_bfm_h from uvm_config_db. Have you set() it?")
+  
   pcie_env_config_h.lpif_agent_config_h = lpif_agent_config_h;
 
   //setting the pipe_agent conifgurations and needed handles
-  if (!uvm_config_db #(virtual pipe_monitor_bfm)::get(this, "", "pipe_monitor_bfm", pipe_agent_config_h.pipe_monitor_bfm_h))
-    `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface pipe_monitor_bfm_h from uvm_config_db. Have you set() it?")
-  if (!uvm_config_db #(virtual pipe_driver_bfm) ::get(this, "", "pipe_driver_bfm", pipe_agent_config_h.pipe_driver_bfm_h))
+  if (!uvm_config_db #(virtual pipe_driver_bfm_param) ::get(this, "", "pipe_driver_bfm", pipe_agent_config_h.pipe_driver_bfm_h))
     `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface pipe_driver_bfm_h from uvm_config_db. Have you set() it?")
-
+  if (!uvm_config_db #(virtual pipe_monitor_bfm_param)::get(this, "", "pipe_monitor_bfm", pipe_agent_config_h.pipe_monitor_bfm_h))
+    `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface pipe_monitor_bfm_h from uvm_config_db. Have you set() it?")
+  
   pcie_env_config_h.pipe_agent_config_h = pipe_agent_config_h;
 
   // Add the LPIF & PIPE agent configuration objects so the sequences can access them
