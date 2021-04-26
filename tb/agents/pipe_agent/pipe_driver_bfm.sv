@@ -91,11 +91,44 @@ forever
 	  end
   end
 end
+/******************************* RESET# (Phystatus de-assertion) *******************************/
+forever begin 
+  wait(reset==0);
+  @(posedge PCLK);
 
+  foreach(PhyStatus) begin
+    PhyStatus[i]=0;
+  end
+end
+/******************************* Detect (Asserting needed signals) *******************************/
+forever begin 
+  wait(TxDetectRx==1);
+  @(posedge PCLK);
+
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=1;
+  end
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b011;
+  end 
+
+  @(posedge PCLK);
+
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=0;
+  end
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b000;  //??
+  end    
+end
+
+endinterface
 
 //------------------------------------------
 // Methods
 //------------------------------------------
+
+/*
 
 task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(Width==2'b01) // 16 bit pipe parallel interface
@@ -188,37 +221,6 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
     end    
 endtask
 
-forever begin 
-  wait(reset==0);
-  @(posedge clk);
-
-  foreach(PhyStatus) begin
-    PhyStatus[i]=0;
-  end
-end
-
-forever begin 
-  wait(TxDetectRx==1);
-  @(posedge Clk);
-
-  foreach(PhyStatus[i]) begin
-    PhyStatus[i]=1;
-  end
-
-  foreach(RxStatus[i]) begin 
-    RxStatus[i]=='b011;
-  end 
-
-  @(posedge Clk);
-
-  foreach(PhyStatus[i]) begin
-    PhyStatus[i]=0;
-  end
-
-  foreach(RxStatus[i]) begin 
-    RxStatus[i]=='b000;  //??
-  end    
-end
 
 task send_ts(ts_t config, int start_lane = 0, int end_lane = NUM_OF_LANES);
 
@@ -727,4 +729,5 @@ endtask : polling_state
 
     // -------------------- Config.Idle --------------------
   endtask
-endinterface
+*/
+

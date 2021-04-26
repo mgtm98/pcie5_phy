@@ -70,6 +70,8 @@ interface pipe_monitor_bfm
     proxy.detect_link_up;
   end
 
+  /******************************* Receive TS*******************************/
+
   task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface
     begin
@@ -171,7 +173,7 @@ forever begin
   assert (TxDetectRx==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRx isn't setted by default value during reset");
   assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during reset");
   //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during reset");
-  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P1 during reset");
+  assert (PowerDown=='b01) else `uvm_error ("PowerDown isn't in P1 during reset");
 
   //check that pclk is operational
   temp=PclkRate;   //shared or per lane?
@@ -192,7 +194,8 @@ end
 /******************************* Receiver detection Scenario *******************************/
 forever begin  
   wait(TxDetectRx==1);
-  @(posedge CLK);
+  @(posedge PCLK);
+  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P2 during Detect");
 
   fork
     foreach(PhyStatus[i]) begin
@@ -203,7 +206,7 @@ forever begin
       wait(RxStatus[i]=='b011);
     end    
   join
-  @(posedge CLK);
+  @(posedge PCLK);
 
   fork
     foreach(PhyStatus[i]) begin
@@ -214,13 +217,15 @@ forever begin
       wait(RxStatus[i]=='b000);  //??
     end    
   join
-  @(posedge CLK);
+  @(posedge PCLK);
 
   wait(TxDetectRx==1);
-  @(posedge CLK);
+  @(posedge PCLK);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
 end
+
+/******************************* Receive TSes *******************************/
 
 task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
   if(width==2'b01) // 16 bit pipe parallel interface
