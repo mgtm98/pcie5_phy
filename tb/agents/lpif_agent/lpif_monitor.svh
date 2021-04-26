@@ -33,7 +33,7 @@
 class lpif_monitor extends uvm_monitor;
  
   `uvm_component_utils(lpif_monitor);               // UVM Factory Registration Macro
-  virtual lpif_monitor_bfm lpif_monitor_bfm_h;      // BFM handle
+  virtual lpif_monitor_bfm_param lpif_monitor_bfm_h;      // BFM handle
   lpif_agent_config lpif_agent_config_h;            // Config object handle
   uvm_analysis_port #(lpif_seq_item) ap_sent;       // RX Analysis Port
   uvm_analysis_port #(lpif_seq_item) ap_received;   // TX Analysis Port
