@@ -1,9 +1,10 @@
 `include "settings.svh"
 
-interface lpif_if();
-
-  localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1; 
-  localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1;
+interface lpif_if #(
+  param lpif_bus_width,
+  localparam bus_data_width_param = lpif_bus_width - 1; 
+  localparam bus_kontrol_param = (lpif_bus_width/8) - 1;
+)();
 
   logic                               lclk;
 
