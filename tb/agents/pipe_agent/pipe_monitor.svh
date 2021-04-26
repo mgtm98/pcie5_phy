@@ -3,7 +3,7 @@ class pipe_monitor extends uvm_monitor;
   `uvm_component_utils(pipe_monitor)
     
   // Virtual Interface
-  virtual pipe_monitor_bfm pipe_monitor_bfm_h;
+  virtual pipe_monitor_bfm_param pipe_monitor_bfm_h;
     
   //------------------------------------------
   // Data Members
