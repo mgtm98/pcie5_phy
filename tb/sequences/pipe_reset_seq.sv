@@ -14,10 +14,10 @@ endfunction
   
 task pipe_link_up_seq::body;
   super.body;
-  wait(pipe_agent_config_h.reset_detected.triggered);
+  wait(pipe_agent_config_h.reset_detected_e.triggered);
   `uvm_info("Reset detected");
  
-  -> pipe_agent_config_h.reset_finished;
+  -> pipe_agent_config_h.reset_finished_e;
 endtask: body
 
 endclass

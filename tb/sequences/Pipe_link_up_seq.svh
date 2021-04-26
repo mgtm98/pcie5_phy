@@ -42,7 +42,7 @@ endfunction
 task pipe_link_up_seq::body;
   super.body;
   this.randomize();
-  
+
   ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = this.lane_number;
   ts_sent.link_number      = this.link_number;
@@ -66,13 +66,11 @@ task pipe_link_up_seq::body;
   detect_state;
   polling_state;
   config_state;
-  -> pipe_agent_config_h.link_up_finished;
+  -> pipe_agent_config_h.link_up_finished_e;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
-  //wait(pipe_agent_config_h.reset_detected.triggered);
-  //`uvm_info("Reset detected");
-  wait(pipe_agent_config_h.receiver_detected.triggered);
+  wait(pipe_agent_config_h.receiver_detected_e.triggered);
   `uvm_info("Receiver detected");
 endtask
 
