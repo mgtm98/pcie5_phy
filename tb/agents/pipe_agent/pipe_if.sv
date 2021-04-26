@@ -7,58 +7,56 @@ interface pipe_if
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(
-    input bit   clk,
-    input bit   reset,
-    input logic phy_reset
-  );
+    input bit   Clk,
+    input bit   Reset,
+    input logic PhyReset
 
   /*************************** RX Specific Signals *************************************/
-  logic [bus_data_width_param:0]      rx_data;    
-  logic [pipe_num_of_lanes-1:0]       rx_data_valid;
-  logic [bus_data_kontrol_param:0]    rx_data_k;
-  logic [pipe_num_of_lanes-1:0]       rx_start_block;
-  logic [2*pipe_num_of_lanes-1:0]     rx_synch_header;
-  logic [pipe_num_of_lanes-1:0]       rx_valid;
-  logic [3*pipe_num_of_lanes-1:0]     rx_status;
-  logic                               rx_elec_idle;
+  logic [bus_data_width_param:0]      RxData;    
+  logic [pipe_num_of_lanes-1:0]       RxDataValid;
+  logic [bus_data_kontrol_param:0]    RxDataK;
+  logic [pipe_num_of_lanes-1:0]       RxStartBlock;
+  logic [2*pipe_num_of_lanes-1:0]     RxSynchHeader;
+  logic [pipe_num_of_lanes-1:0]       RxValid;
+  logic [3*pipe_num_of_lanes-1:0]     RxStatus;
+  logic                               RxElecIdle;
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
-  logic [bus_data_width_param:0]      tx_data;    
-  logic [pipe_num_of_lanes-1:0]       tx_data_valid;
-  logic [bus_data_kontrol_param:0]    tx_data_k;
-  logic [pipe_num_of_lanes-1:0]       tx_start_block;
-  logic [2*pipe_num_of_lanes-1:0]     tx_synch_header;
-  logic [pipe_num_of_lanes-1:0]       tx_elec_idle;
-  logic [pipe_num_of_lanes-1:0]       tx_detect_rx__loopback;
-  /*************************************************************************************/
+  logic [bus_data_width_param:0]      TxData;    
+  logic [pipe_num_of_lanes-1:0]       TxDataValid;
+  logic [bus_data_kontrol_param:0]    TxDataK;
+  logic [pipe_num_of_lanes-1:0]       TxStartBlock;
+  logic [2*pipe_num_of_lanes-1:0]     TxSynchHeader;
+  logic [pipe_num_of_lanes-1:0]       TxElecIdle;
+  logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback;
 
   /*********************** Comands and Status Signals **********************************/
-  logic [3:0]                         power_down;
-  logic [3:0]                         rate;
-  logic                               phy_status;
-  logic [1:0]                         width;
-  logic                               pclk_change_ack;
-  logic                               pclk_change_ok;
+  logic [3:0]                         PowerDown;
+  logic [3:0]                         Rate;
+  logic                               PhyStatus;
+  logic [1:0]                         Width;
+  logic                               PclkChangeAck;
+  logic                               PclkChangeOk;
   /*************************************************************************************/
 
   /******************************* Message Bus Interface *******************************/
-  logic [7:0]                         m2p_message_bus;
-  logic [7:0]                         p2m_message_bus;
+  logic [7:0]                         M2P_MessageBus;
+  logic [7:0]                         P2M_MessageBus;
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  logic [18*pipe_num_of_lanes-1:0]   local_tx_preset_coeffcients;
-  logic [18*pipe_num_of_lanes-1:0]   tx_deemph;
-  logic [6*pipe_num_of_lanes-1:0]    local_fs;
-  logic [6*pipe_num_of_lanes-1:0]    local_lf;
-  logic [pipe_num_of_lanes-1:0]      get_local_preset_coeffcients;
-  logic [pipe_num_of_lanes-1:0]      local_tx_coeffcients_valid;
-  logic [6*pipe_num_of_lanes-1:0]    fs;    // TODO: Review specs for these values
-  logic [6*pipe_num_of_lanes-1:0]    lf;    // TODO: Review specs for these values
-  logic [pipe_num_of_lanes-1:0]      rx_eq_eval;
-  logic [4*pipe_num_of_lanes-1:0]    local_preset_index;
-  logic [pipe_num_of_lanes-1:0]      invalid_request;
-  logic [6*pipe_num_of_lanes-1:0]    link_evaluation_feedback_direction_change;
+  logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients;
+  logic [18*pipe_num_of_lanes-1:0]   TxDeemph;
+  logic [6*pipe_num_of_lanes-1:0]    LocalFS;
+  logic [6*pipe_num_of_lanes-1:0]    LocalLF;
+  logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients;
+  logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid;
+  logic [6*pipe_num_of_lanes-1:0]    FS;    // TODO: Review specs for these values
+  logic [6*pipe_num_of_lanes-1:0]    LF;    // TODO: Review specs for these values
+  logic [pipe_num_of_lanes-1:0]      RxEqEval;
+  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex;
+  logic [pipe_num_of_lanes-1:0]      InvalidRequest;
+  logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange;
   /*************************************************************************************/
 endinterface: pipe_if

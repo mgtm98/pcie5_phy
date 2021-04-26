@@ -5,58 +5,57 @@ interface pipe_monitor_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  input bit   clk,
-  input bit   reset,
-  input logic phy_reset,
+  input bit   Clk,
+  input bit   Reset,
+  input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
-  input logic [bus_data_width_param:0]      rx_data,    
-  input logic [pipe_num_of_lanes-1:0]       rx_data_valid,
-  input logic [bus_data_kontrol_param:0]    rx_data_k,
-  input logic [pipe_num_of_lanes-1:0]       rx_start_block,
-  input logic [2*pipe_num_of_lanes-1:0]     rx_synch_header,
-  input logic [pipe_num_of_lanes-1:0]       rx_valid,
-  input logic [3*pipe_num_of_lanes-1:0]     rx_status,
-  input logic                               rx_elec_idle,
+  input logic [bus_data_width_param:0]      RxData,    
+  input logic [pipe_num_of_lanes-1:0]       RxDataValid,
+  input logic [bus_data_kontrol_param:0]    RxDataK,
+  input logic [pipe_num_of_lanes-1:0]       RxStartBlock,
+  input logic [2*pipe_num_of_lanes-1:0]     RxSynchHeader,
+  input logic [pipe_num_of_lanes-1:0]       RxValid,
+  input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
+  input logic                               RxElecIdle,
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
-  input logic [bus_data_width_param:0]      tx_data,    
-  input logic [pipe_num_of_lanes-1:0]       tx_data_valid,
-  input logic [bus_data_kontrol_param:0]    tx_data_k,
-  input logic [pipe_num_of_lanes-1:0]       tx_start_block,
-  input logic [2*pipe_num_of_lanes-1:0]     tx_synch_header,
-  input logic [pipe_num_of_lanes-1:0]       tx_elec_idle,
-  input logic [pipe_num_of_lanes-1:0]       tx_detect_rx__loopback,
-  /*************************************************************************************/
+  input logic [bus_data_width_param:0]      TxData,    
+  input logic [pipe_num_of_lanes-1:0]       TxDataValid,
+  input logic [bus_data_kontrol_param:0]    TxDataK,
+  input logic [pipe_num_of_lanes-1:0]       TxStartBlock,
+  input logic [2*pipe_num_of_lanes-1:0]     TxSynchHeader,
+  input logic [pipe_num_of_lanes-1:0]       TxElecIdle,
+  input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
-  input logic [3:0]                         power_down,
-  input logic [3:0]                         rate,
-  input logic                               phy_status,
-  input logic [1:0]                         width,
-  input logic                               pclk_change_ack,
-  input logic                               pclk_change_ok,
+  input logic [3:0]                         PowerDown;
+  input logic [3:0]                         Rate;
+  input logic                               PhyStatus;
+  input logic [1:0]                         Width;
+  input logic                               PclkChangeAck;
+  input logic                               PclkChangeOk;
   /*************************************************************************************/
   
   /******************************* Message Bus Interface *******************************/
-  input logic [7:0]                         m2p_message_bus,
-  input logic [7:0]                         p2m_message_bus,
+  input logic [7:0]                         M2P_MessageBus;
+  input logic [7:0]                         P2M_MessageBus;
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  input logic [18*pipe_num_of_lanes-1:0]   local_tx_preset_coeffcients,
-  input logic [18*pipe_num_of_lanes-1:0]   tx_deemph,
-  input logic [6*pipe_num_of_lanes-1:0]    local_fs,
-  input logic [6*pipe_num_of_lanes-1:0]    local_lf,
-  input logic [pipe_num_of_lanes-1:0]      get_local_preset_coeffcients,
-  input logic [pipe_num_of_lanes-1:0]      local_tx_coeffcients_valid,
-  input logic [6*pipe_num_of_lanes-1:0]    fs,    // TODO: Review specs for these values
-  input logic [6*pipe_num_of_lanes-1:0]    lf,    // TODO: Review specs for these values
-  input logic [pipe_num_of_lanes-1:0]      rx_eq_eval,
-  input logic [4*pipe_num_of_lanes-1:0]    local_preset_index,
-  input logic [pipe_num_of_lanes-1:0]      invalid_request,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]    link_evaluation_feedback_direction_change
+  input logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients,
+  input  logic [18*pipe_num_of_lanes-1:0]   TxDeemph,
+  input logic [6*pipe_num_of_lanes-1:0]    LocalFS,
+  input logic [6*pipe_num_of_lanes-1:0]    LocalLF,
+  input  logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients,
+  input logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid,
+  input  logic [6*pipe_num_of_lanes-1:0]    FS,    // TODO: Review specs for these values
+  input  logic [6*pipe_num_of_lanes-1:0]    LF,    // TODO: Review specs for these values
+  input  logic [pipe_num_of_lanes-1:0]      RxEqEval,
+  input  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
+  input  logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
+  input logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 );
 
@@ -167,7 +166,7 @@ endtask
 forever begin   //initial or forever?
 
   wait(reset==1);
-  @(posedge pclk);
+  @(posedge PCLK);
   //check on default values
   assert (TxDetectRx==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRx isn't setted by default value during reset");
   assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during reset");
@@ -175,17 +174,17 @@ forever begin   //initial or forever?
   assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P1 during reset");
 
   //check that pclk is operational
-  temp=pclk_rate;   //shared or per lane?
-  @(posedge pclk);
-  assert (temp==pclk_rate) else `uvm_error ("PCLK is not stable");
+  temp=PclkRate;   //shared or per lane?
+  @(posedge PCLK);
+  assert (temp==PclkRate) else `uvm_error ("PCLK is not stable");
 
   wait(reset==0);
-  @(posedge pclk);
+  @(posedge PCLK);
 
   foreach(PhyStatus[i]) begin 
     wait(PhyStatus[i]==0);
   end
-  @(posedge pclk);
+  @(posedge PCLK);
   proxy.notify_reset_detected();
   `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Reset scenario)", UVM_LOW);
 end
@@ -193,7 +192,7 @@ end
 //RECEIVER DETECTION
 forever begin   //initial or forever?
   wait(TxDetectRx==1);
-  @(posedge clk);
+  @(posedge CLK);
 
   fork
     foreach(PhyStatus[i]) begin
@@ -204,7 +203,7 @@ forever begin   //initial or forever?
       wait(RxStatus[i]=='b011);
     end    
   join
-  @(posedge clk);
+  @(posedge CLK);
 
   fork
     foreach(PhyStatus[i]) begin
@@ -215,15 +214,14 @@ forever begin   //initial or forever?
       wait(RxStatus[i]=='b000);  //??
     end    
   join
-  @(posedge clk);
+  @(posedge CLK);
 
   wait(TxDetectRx==1);
-  @(posedge clk);
+  @(posedge CLK);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
 end
 
-<<<<<<< HEAD
 task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
   if(width==2'b01) // 16 bit pipe parallel interface
   begin
@@ -445,17 +443,15 @@ task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int en
   end    
 endtask
   
-=======
 //waiting on power down to be P0
 initial 
 begin
   forever
   begin
       for (int i = 0; i < NUM_OF_LANES; i++) begin
-        @ (powerdown[i] == 'b00);
+        @ (PowerDown[i] == 'b00);
       end
       proxy.pipe_polling_state_start();
   end
 end  
->>>>>>> b7141c807e4ec15dee81af9e8ddfa0d120e939f3
 endinterface

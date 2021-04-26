@@ -5,58 +5,57 @@ interface pipe_driver_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  input bit   clk,
-  input bit   reset,
-  input logic phy_reset,
+  input bit   Clk,
+  input bit   Reset,
+  input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
-  output logic [bus_data_width_param:0]      rx_data,    
-  output logic [pipe_num_of_lanes-1:0]       rx_data_valid,
-  output logic [bus_data_kontrol_param:0]    rx_data_k,
-  output logic [pipe_num_of_lanes-1:0]       rx_start_block,
-  output logic [2*pipe_num_of_lanes-1:0]     rx_synch_header,
-  output logic [pipe_num_of_lanes-1:0]       rx_valid,
-  output logic [3*pipe_num_of_lanes-1:0]     rx_status,
-  output logic                               rx_elec_idle,
+  output logic [bus_data_width_param:0]      RxData,    
+  output logic [pipe_num_of_lanes-1:0]       RxDataValid,
+  output logic [bus_data_kontrol_param:0]    RxDataK,
+  output logic [pipe_num_of_lanes-1:0]       RxStartBlock,
+  output logic [2*pipe_num_of_lanes-1:0]     RxSynchHeader,
+  output logic [pipe_num_of_lanes-1:0]       RxValid,
+  output logic [3*pipe_num_of_lanes-1:0]     RxStatus,
+  output logic                               RxElecIdle,
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
-  input logic [bus_data_width_param:0]      tx_data,    
-  input logic [pipe_num_of_lanes-1:0]       tx_data_valid,
-  input logic [bus_data_kontrol_param:0]    tx_data_k,
-  input logic [pipe_num_of_lanes-1:0]       tx_start_block,
-  input logic [2*pipe_num_of_lanes-1:0]     tx_synch_header,
-  input logic [pipe_num_of_lanes-1:0]       tx_elec_idle,
-  input logic [pipe_num_of_lanes-1:0]       tx_detect_rx__loopback,
-  /*************************************************************************************/
+  input logic [bus_data_width_param:0]      TxData,    
+  input logic [pipe_num_of_lanes-1:0]       TxDataValid,
+  input logic [bus_data_kontrol_param:0]    TxDataK,
+  input logic [pipe_num_of_lanes-1:0]       TxStartBlock,
+  input logic [2*pipe_num_of_lanes-1:0]     TxSynchHeader,
+  input logic [pipe_num_of_lanes-1:0]       TxElecIdle,
+  input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
-  input  logic [3:0]                         power_down,
-  input  logic [3:0]                         rate,
-  output logic                               phy_status,
-  input  logic [1:0]                         width,
-  input  logic                               pclk_change_ack,
-  output logic                               pclk_change_ok,
+  input  logic [3:0]                         PowerDown,
+  input  logic [3:0]                         Rate,
+  output logic                               PhyStatus,
+  input  logic [1:0]                         Width,
+  input  logic                               PclkChangeAck,
+  output logic                               PclkChangeOk,
   /*************************************************************************************/
   
   /******************************* Message Bus Interface *******************************/
-  output logic [7:0]                         m2p_message_bus,
-  input  logic [7:0]                         p2m_message_bus,
+  output logic [7:0]                         M2P_MessageBus,
+  input  logic [7:0]                         P2M_MessageBus,
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  output logic [18*pipe_num_of_lanes-1:0]   local_tx_preset_coeffcients,
-  input  logic [18*pipe_num_of_lanes-1:0]   tx_deemph,
-  output logic [6*pipe_num_of_lanes-1:0]    local_fs,
-  output logic [6*pipe_num_of_lanes-1:0]    local_lf,
-  input  logic [pipe_num_of_lanes-1:0]      get_local_preset_coeffcients,
-  output logic [pipe_num_of_lanes-1:0]      local_tx_coeffcients_valid,
-  input  logic [6*pipe_num_of_lanes-1:0]    fs,    // TODO: Review specs for these values
-  input  logic [6*pipe_num_of_lanes-1:0]    lf,    // TODO: Review specs for these values
-  input  logic [pipe_num_of_lanes-1:0]      rx_eq_eval,
-  input  logic [4*pipe_num_of_lanes-1:0]    local_preset_index,
-  input  logic [pipe_num_of_lanes-1:0]      invalid_request,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]    link_evaluation_feedback_direction_change
+  output logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients,
+  input  logic [18*pipe_num_of_lanes-1:0]   TxDeemph,
+  output logic [6*pipe_num_of_lanes-1:0]    LocalFS,
+  output logic [6*pipe_num_of_lanes-1:0]    LocalLF,
+  input  logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients,
+  output logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid,
+  input  logic [6*pipe_num_of_lanes-1:0]    FS,    // TODO: Review specs for these values
+  input  logic [6*pipe_num_of_lanes-1:0]    LF,    // TODO: Review specs for these values
+  input  logic [pipe_num_of_lanes-1:0]      RxEqEval,
+  input  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
+  input  logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
+  output logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 );
 
@@ -64,7 +63,7 @@ interface pipe_driver_bfm
 import uvm_pkg::*;
 import pipe_agent_pkg::*;
 
-logic [4:0]  pclk_rate;     //TODO: This signal is removed 
+logic [4:0]  PclkRate;     //TODO: This signal is removed 
   
 //------------------------------------------
 // Data Members
@@ -78,12 +77,12 @@ begin
     @(pipe_agent_config_h.power_down_detected)
     begin
     for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      phy_status[i]=1;
+      PhyStatus[i]=1;
     end
   
-    @(posedge pclk);
+    @(posedge PCLK);
     for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      phy_status[i]=0;
+      PhyStatus[i]=0;
     end
     end
   end
@@ -92,6 +91,99 @@ end
 //------------------------------------------
 // Methods
 //------------------------------------------
+
+  `include "link_up.svh"
+task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
+    if(Width==2'b01) // 16 bit pipe parallel interface
+    begin
+        wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+        ts.link_number=TxData[start_lane][15:8]; // link number
+        for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
+        begin
+            @(posedge PCLK);
+            case(sympol_count)
+                2:begin 
+                    for(int i=start_lane;i<=end_lane;i++) //lanes numbers
+                    begin
+                        ts.lane_number[i]=TxData[i][7:0];
+                    end
+                    ts.n_fts=TxData[start_lane][15:8]; // number of fast training sequnces
+                  end
+    
+                4:begin // speeds supported
+                        if(TxData[start_lane][5]==1'b1) ts.max_suported=GEN5;
+                        else if(TxData[start_lane][4]==1'b1) ts.max_suported=GEN4;
+                        else if(TxData[start_lane][3]==1'b1) ts.max_suported=GEN3;
+                        else if(TxData[start_lane][2]==1'b1) ts.max_suported=GEN2;
+                        else ts.max_suported=GEN1;	
+                    end
+    
+                10:begin // ts1 or ts2 determine
+                        if(TxData[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
+                        else if(TxData[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
+                    end
+            endcase
+        end
+    end
+    else if(Width==2'b10) // 32 pipe parallel interface  
+    begin
+        wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+        ts.link_number=TxData[start_lane][15:8]; //link number
+        for(int i=start_lane;i<=end_lane;i++) // lane numbers
+        begin 
+            ts.lane_number[i]=TxData[i][23:16];
+        end
+        ts.n_fts=TxData[start_lane][31:24]; // number of fast training sequnces
+        for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
+        begin
+            @(posedge PCLK);
+            case(sympol_count)
+                4:begin // supported speeds
+                        if(TxData[start_lane][5]==1'b1) ts.max_suported=GEN5;
+                        else if(TxData[start_lane][4]==1'b1) ts.max_suported=GEN4;
+                        else if(TxData[start_lane][3]==1'b1) ts.max_suported=GEN3;
+                        else if(TxData[start_lane][2]==1'b1) ts.max_suported=GEN2;
+                        else ts.max_suported=GEN1;	
+                    end
+    
+                 8:begin // ts1 or ts2 determine
+                        if(TxData[start_lane][23:16]==8'b010_01010) ts.ts_type=TS1;
+                        else if(TxData[start_lane][23:16]==8'b010_00101) ts.ts_type=TS2;
+                    end
+            endcase
+        end
+    end
+    else //8 bit pipe paraleel interface 
+    begin
+        wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+        for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
+        begin
+            @(posedge PCLK);
+            case(sympol_count)
+                1:ts.link_number=TxData[start_lane][7:0]; //link number
+                2:begin //lanes numbers
+                        for(int i=start_lane;i<=end_lane;i++)
+                        begin
+                            ts.lane_number[i]=TxData[i][7:0];
+                        end
+                    end
+                3:ts.n_fts=TxData[start_lane][7:0]; // number of fast training sequnces
+                4:begin  //supported sppeds
+                        if(TxData[start_lane][5]==1'b1) ts.max_suported=GEN5;
+                        else if(TxData[start_lane][4]==1'b1) ts.max_suported=GEN4;
+                        else if(TxData[start_lane][3]==1'b1) ts.max_suported=GEN3;
+                        else if(TxData[start_lane][2]==1'b1) ts.max_suported=GEN2;
+                        else ts.max_suported=GEN1;	
+                    end
+                10:begin // ts1 or ts2 determine
+                        if(TxData[start_lane][7:0]==8'b010_01010) ts.ts_type=TS1;
+                        else if(TxData[start_lane][7:0]==8'b010_00101) ts.ts_type=TS2;
+                    end
+            endcase
+        end
+    end    
+endtask
+
 forever begin 
   wait(reset==0);
   @(posedge clk);
@@ -103,7 +195,7 @@ end
 
 forever begin 
   wait(TxDetectRx==1);
-  @(posedge clk);
+  @(posedge Clk);
 
   foreach(PhyStatus[i]) begin
     PhyStatus[i]=1;
@@ -113,7 +205,7 @@ forever begin
     RxStatus[i]=='b011;
   end 
 
-  @(posedge clk);
+  @(posedge Clk);
 
   foreach(PhyStatus[i]) begin
     PhyStatus[i]=0;
@@ -390,21 +482,21 @@ task polling_state;
 	//check array description
 	`uvm_info("Waiting for powerdown change on lane");
 	for (int i = 0; i < NUM_OF_LANES; i++) begin
-		@ (powerdown[i] == 'b00);
+		@ (PowerDown[i] == 'b00);
  	end
 	// assert all lanes at the same time
 	for (int i = 0; i < NUM_OF_LANES ; i++) begin
-		phy_status[i]=1;
+		PhyStatus[i]=1;
 	end
 
-	@(posedge pclk);
+	@(posedge PCLK);
 	for (int i = 0; i < NUM_OF_LANES ; i++) begin
-		phy_status[i]=0;
+		PhyStatus[i]=0;
 	end
 
 	`uvm_info("Waiting for deassertion Txelecidle signal"); 
 	for (int i = 0; i < NUM_OF_LANES; i++) begin
-		@ (tx_elec_idle[i] == 0)	;
+		@ (TxElecIdle[i] == 0)	;
 	end
 
 	for (i = 0; i < 1024; i++) begin
@@ -463,7 +555,7 @@ task polling_state;
 	    end
 		begin
 			for (int i = 0; i < NUM_OF_LANES; i++) begin //num of predetermined lanes?
-				@ (tx_elec_idle[i] == 0);	
+				@ (TxElecIdle[i] == 0);	
 			end
 		end
 	join_any
