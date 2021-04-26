@@ -168,6 +168,7 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
     end    
 endtask
 
+/******************************* Communicate completion of RESET# *******************************/
 forever begin 
   wait(reset==0);
   @(posedge clk);
@@ -176,7 +177,7 @@ forever begin
     PhyStatus[i]=0;
   end
 end
-
+/******************************* Communicate receiver detection *******************************/
 forever begin 
   wait(TxDetectRx==1);
   @(posedge Clk);

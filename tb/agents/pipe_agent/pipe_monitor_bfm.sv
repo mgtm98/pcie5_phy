@@ -86,9 +86,9 @@ initial begin //Detect linkup
 end
 */
 
-//RESET DETECTION
+/******************************* RESET# Scenario detection *******************************/
   int temp[2:0];
-forever begin   //initial or forever?
+forever begin   
 
   wait(reset==1);
   @(posedge PCLK);
@@ -114,8 +114,8 @@ forever begin   //initial or forever?
   `uvm_info ("Monitor BFM Detected (Reset scenario)");
 end
 
-//RECEIVER DETECTION
-forever begin   //initial or forever?
+/******************************* Receiver detection Scenario *******************************/
+forever begin  
   wait(TxDetectRx==1);
   @(posedge CLK);
 

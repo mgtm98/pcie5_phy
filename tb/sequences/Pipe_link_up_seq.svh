@@ -42,8 +42,8 @@ task pipe_link_up_seq::body;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
-  wait(pipe_agent_config_h.reset_detected.triggered);
-  `uvm_info("Reset detected");
+  //wait(pipe_agent_config_h.reset_detected.triggered);
+  //`uvm_info("Reset detected");
   wait(pipe_agent_config_h.receiver_detected.triggered);
   `uvm_info("Receiver detected");
 endtask
