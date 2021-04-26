@@ -72,6 +72,7 @@ logic [4:0]  PclkRate;     //TODO: This signal is removed
 //------------------------------------------
 gen_t current_gen;
 
+//starting polling state
 forever
   begin
     @(power_down == 'b00)
