@@ -16,7 +16,7 @@
     function void notify_``func_name``_sent(``lpif_data_field_type`` ``lpif_data_field``);\
       lpif_seq_item lpif_seq_item_h  = lpif_seq_item::type_id::create("lpif_seq_item_h");\
       lpif_seq_item_h.lpif_operation = ``lpif_op``;\
-      lpif_seq_item_h.``lpif_data_field`` = new ``lpif_data_field``;\
+      lpif_seq_item_h.``lpif_data_field`` = ``lpif_data_field``;\
       ap_sent.write(lpif_seq_item_h);\
     endfunction
 
@@ -24,7 +24,7 @@
     function void notify_``func_name``_received(``lpif_data_field_type`` ``lpif_data_field``);\
       lpif_seq_item lpif_seq_item_h  = lpif_seq_item::type_id::create("lpif_seq_item_h");\
       lpif_seq_item_h.lpif_operation = ``lpif_op``;\
-      lpif_seq_item_h.``lpif_data_field`` = new ``lpif_data_field``;\
+      lpif_seq_item_h.``lpif_data_field`` = ``lpif_data_field``;\
       ap_received.write(lpif_seq_item_h);\
     endfunction
 
@@ -33,6 +33,9 @@
 class lpif_monitor extends uvm_monitor;
  
   `uvm_component_utils(lpif_monitor);               // UVM Factory Registration Macro
+  `uvm_analysis_imp_decl(_sent)                     // define sent analysis port
+  `uvm_analysis_imp_decl(_received)                 // define received analysis port
+  
   virtual lpif_monitor_bfm lpif_monitor_bfm_h;      // BFM handle
   lpif_agent_config lpif_agent_config_h;            // Config object handle
   uvm_analysis_port #(lpif_seq_item) ap_sent;       // RX Analysis Port
@@ -43,11 +46,11 @@ class lpif_monitor extends uvm_monitor;
   //------------------------------------------
   `NOTIFY_LPIF_OP_SENT(link_up, LINK_UP)
   `NOTIFY_LPIF_OP_SENT(reset, RESET)
-  `NOTIFY_LPIF_OP_SENT(retrain, ENTER_RECOVERY)
+  // `NOTIFY_LPIF_OP_SENT(retrain, ENTER_RECOVERY)
 
   `NOTIFY_LPIF_OP_RECIEVED(link_up, LINK_UP)
   `NOTIFY_LPIF_OP_RECIEVED(reset, RESET)
-  `NOTIFY_LPIF_OP_RECIEVED(retrain, ENTER_RECOVERY)
+  // `NOTIFY_LPIF_OP_RECIEVED(retrain, ENTER_RECOVERY)
 
   `NOTIFY_LPIF_OP_SENT_EXTENDED(dllp, DLLP_TRANSFER, dllp_t, dllp)
   `NOTIFY_LPIF_OP_SENT_EXTENDED(tlp, TLP_TRANSFER, tlp_t, tlp)
