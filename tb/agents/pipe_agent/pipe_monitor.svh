@@ -43,6 +43,7 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_receiver_detected(); //??
   extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
+  extern function void notify_idle_data_detected(int start_lane, int end_lane);
 
 endclass: pipe_monitor
    
@@ -237,3 +238,9 @@ function void pipe_monitor::pipe_polling_state_start();
   `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.start_polling;
  endfunction
+
+
+function void pipe_monitor::notify_idle_data_detected();
+  `uvm_info (get_type_name (), $sformatf ("notify_idle_data_detected is called"), UVM_MEDIUM)
+  -> pipe_agent_config_h.idle_data_detected_e;
+endfunction

@@ -15,6 +15,8 @@ class pipe_seq_item extends uvm_sequence_item;
   rand pclk_rate_t pclk_rate;
   rand ts_s ts_sent;
   rand ts_s tses_sent [NUM_OF_LANES];
+  rand int start_lane;
+  rand int end_lane;
   
   constraint c1 {
     tlp.size() > TLP_MIN_SIZE;
