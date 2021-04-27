@@ -2,31 +2,13 @@ class pipe_driver extends uvm_driver #(pipe_seq_item);
 
 `uvm_component_utils(pipe_driver)
 
-virtual pipe_driver_bfm pipe_driver_bfm_h;
+virtual pipe_driver_bfm_param pipe_driver_bfm_h;
 pipe_agent_config pipe_agent_config_h;
   
 extern function new(string name = "pipe_driver", uvm_component parent = null);
 extern function void build_phase(uvm_phase phase);
 extern function void connect_phase(uvm_phase phase);
 extern task run_phase(uvm_phase phase);
-
-initial 
-begin
-  forever
-  begin
-    @(pipe_agent_config_h.power_down_detected)
-    begin
-    for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      pipe_driver_bfm_h.PhyStatus[i]=1;
-    end
-  
-    @(posedge pclk);
-    for (int i = 0; i < NUM_OF_LANES ; i++) begin
-      pipe_driver_bfm_h.PhyStatus[i]=0;
-    end
-    end
-  end
-end
 
 endclass: pipe_driver
 
@@ -54,7 +36,15 @@ task pipe_driver::run_phase(uvm_phase phase);
   forever
   begin
     seq_item_port.get_next_item(pipe_seq_item_h);
-    // pipe_driver_bfm_h.drive(pipe_seq_item_h);
+    case(pipe_seq_item_h.pipe_operation)
+      TLP_TRANSFER: pipe_driver_bfm_h.send_tlp(pipe_seq_item_h.tlp);
+      DLLP_TRANSFER: pipe_driver_bfm_h.send_dllp(pipe_seq_item_h.dllp);
+      PCLK_RATE_CHANGE: pipe_driver_bfm_h.change_pclk_rate(pipe_seq_item_h.pclk_rate);
+      WIDTH_CHANGE: pipe_driver_bfm_h.change_width(pipe_seq_item_h.pipe_width);
+      SEND_TS: pipe_driver_bfm_h.send_ts(pipe_seq_item_h.ts_sent);
+      SEND_TSES: pipe_driver_bfm_h.send_tses(pipe_seq_item_h.tses_sent);
+      SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data(pipe_seq_item_h.start_lane, pipe_seq_item_h.end_lane);
+    endcase
     seq_item_port.item_done();
   end
   `uvm_info(get_name(), "Exit pipe_driver run_phase", UVM_MEDIUM)

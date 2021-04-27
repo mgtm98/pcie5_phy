@@ -8,6 +8,11 @@ class lpif_seq_item extends uvm_sequence_item;
   rand dllp_t dllp;
 
   //  Group: Constraints
+  constraint c1 {
+    tlp.size() > TLP_MIN_SIZE;
+    tlp.size() < TLP_MAX_SIZE;
+  };
+
   constraint c1 {tlp.size()>28; tlp.size()<1024;}  //??
 
   extern function new(string name = "lpif_seq_item");
@@ -50,18 +55,18 @@ function bit lpif_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
     return 0;
   end
 
-  if (tlp != rhs_.tlp) begin
+  if (tlp.size() != rhs_.tlp.size()) begin
     return 0;
   end
 
   for (int i = 0; i < tlp.size(); i++) begin
-    if (tlp[i] != tlp[i] ) begin
+    if (tlp[i] != rhs_.tlp[i] ) begin
       return 0;
     end
   end
 
-  for (int i = 0; i < 6; i++) begin
-    if (dllp[i] != dllp[i] ) begin
+  for (int i = 0; i < $size(dllp); i++) begin
+    if (dllp[i] != rhs_.dllp[i] ) begin
       return 0;
     end
   end

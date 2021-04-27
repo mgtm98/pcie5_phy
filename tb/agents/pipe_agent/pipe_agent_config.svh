@@ -7,18 +7,20 @@ class pipe_agent_config extends uvm_object;
   virtual pipe_driver_bfm pipe_driver_bfm_h;
   virtual pipe_monitor_bfm pipe_monitor_bfm_h;
     
-
   uvm_active_passive_enum active = UVM_ACTIVE;
   bit has_coverage_monitor = 1;
   
-  ts_t tses_received [NUM_OF_LANES];
+  ts_s tses_received [NUM_OF_LANES];
 
-  //events
-  event detected_tses;
-  event reset_detected;
-  event receiver_detected;
-  //event for starting polling state in linkup
-  event power_down_detected;
+  // Events
+  event detected_tses_e;
+  event reset_detected_e;
+  event receiver_detected_e;
+  event link_up_finished_e;
+  event recovery_finished_e;
+  event start_polling_e;
+  event reset_finished_e;
+  event idle_data_detected_e;
   
   extern function new(string name = "pipe_agent_config");
   

@@ -31,8 +31,8 @@ function void pipe_agent::build_phase(uvm_phase phase);
     `uvm_fatal(this.get_name(), "Can't get PIPE Agent configuration object");
   end
 
-  this.ap_sent = new("ap_sent",this);
-  this.ap_received = new("ap_received",this);
+  this.ap_sent = new("ap_sent", this);
+  this.ap_received = new("ap_received", this);
   
   // creating standard objects in every agent (Monitor, Analysis Port)
   this.pipe_monitor_h = pipe_monitor::type_id::create("pipe_monitor_h", this);

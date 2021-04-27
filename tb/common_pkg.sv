@@ -1,21 +1,34 @@
+`include "settings.svh"
+
 package common_pkg;
 
-  // DLLP type (array of 6 bytes) TODO: Check dllp size from pcie spec and write it
+  // TLP and DLLP definitions
   typedef bit [7:0] dllp_t [0:5];
-
-  // DLLP type (queue of bytes) TODO: Check tlp size from pcie spec and write it
   typedef bit [7:0] tlp_t [];
 
-  typedef enum{
-    ACTIVE_state,
-    L0s_state,
-    RETRAIN_state,
-    DISABLE_state,
-    RESET_state
-  } state_t;
+  // Typedef of parameterized LPIF interfaces
+  typedef lpif_if #(
+    .lpif_bus_width(`LPIF_BUS_WIDTH)
+  ) lpif_if_param;
+  typedef lpif_driver_bfm #(
+    .lpif_bus_width(`LPIF_BUS_WIDTH)
+  ) lpif_driver_bfm_param;
+  typedef lpif_monitor_bfm #(
+    .lpif_bus_width(`LPIF_BUS_WIDTH)
+  ) lpif_monitor_bfm_param;
 
-  typedef enum{
-    GEN1, GEN2, GEN3, GEN4, GEN5
-  } speed_mode_t;
+  // Typedef of parameterized PIPE interfaces
+  typedef pipe_if #(
+    .pipe_num_of_lanes(`NUM_OF_LANES),
+    .pipe_max_width(`PIPE_MAX_WIDTH)
+  ) pipe_if_param;
+  typedef pipe_driver_bfm #(
+    .pipe_num_of_lanes(`NUM_OF_LANES),
+    .pipe_max_width(`PIPE_MAX_WIDTH)
+  ) pipe_driver_bfm_param;
+  typedef pipe_monitor_bfm #(
+    .pipe_num_of_lanes(`NUM_OF_LANES),
+    .pipe_max_width(`PIPE_MAX_WIDTH)
+  ) pipe_monitor_bfm_param;
 
 endpackage: common_pkg

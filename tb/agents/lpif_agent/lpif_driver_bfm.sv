@@ -1,11 +1,10 @@
 `include "settings.svh"
 
-interface lpif_driver_bfm
-  #(
-    localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1,
-    localparam bus_kontrol_param = (`LPIF_BUS_WIDTH/8) - 1
-  )
-  (
+interface lpif_driver_bfm #(
+  param lpif_bus_width,
+  localparam bus_data_width_param = lpif_bus_width - 1; 
+  localparam bus_kontrol_param = (lpif_bus_width/8) - 1;
+)(
     input logic lclk,
     input logic                                pl_trdy,
     input logic [bus_data_width_param:0]       pl_data,
@@ -57,13 +56,13 @@ interface lpif_driver_bfm
     //to be implemented
   endtask
 
-  // task reset ();
-  //   //to be implemented
-  // endtask
-
-  task change_speed(speed_mode_t speed);
+  task reset ();
     //to be implemented
   endtask
+
+  // task change_speed(speed_mode_t speed);
+  //   //to be implemented
+  // endtask
 
   task retrain();
     //to be implemented

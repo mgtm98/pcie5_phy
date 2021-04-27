@@ -1,15 +1,15 @@
 `ifndef __LPIF_TYPES_SVH
 `define __LPIF_TYPES_SVH
 
-typedef enum{
+typedef enum {
   LINK_UP, 
   RESET, 
   TLP_TRANSFER, 
   DLLP_TRANSFER, 
   ENTER_RETRAIN, 
-  ENTER_L0S, 
-  EXIT_L0S, 
-  SPEED_MODE_CHANGE
+  // ENTER_L0S, 
+  // EXIT_L0S, 
+  // SPEED_MODE_CHANGE
 } lpif_operation_t;
 
 typedef enum bit [3:0]{
