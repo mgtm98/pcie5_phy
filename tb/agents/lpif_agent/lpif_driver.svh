@@ -27,10 +27,11 @@ class lpif_driver extends uvm_driver #(lpif_seq_item);
     lpif_seq_item lpif_seq_item_h;
     super.run_phase(phase);
     `uvm_info(get_name(), "Enter lpif_driver run_phase", UVM_MEDIUM)
-    forever
-    begin
+    forever begin
       seq_item_port.get_next_item(lpif_seq_item_h);
-      lpif_driver_bfm_h.lpif_driver_bfm_dummy();
+      if(lpif_seq_item_h.lpif_operation == LINK_UP) begin
+        lpif_driver_bfm_h.link_up();
+      end
       seq_item_port.item_done();
     end
     `uvm_info(get_name(), "Exit lpif_driver run_phase", UVM_MEDIUM)
