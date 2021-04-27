@@ -65,10 +65,20 @@ interface pipe_monitor_bfm
   import pipe_agent_pkg::*;
 
   pipe_monitor proxy;
+  bit [15:0] lfsr[`NUM_OF_LANES];
+
+  function reset_lfsr ();
+    foreach(lfsr[i])
+    begin
+      lfsr[i] = 4'hFFFF;
+    end
+  endfunction
 
   forever begin
     proxy.detect_link_up;
   end
+
+  /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(width==2'b01) // 16 bit pipe parallel interface
@@ -171,7 +181,7 @@ forever begin
   assert (TxDetectRx==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRx isn't setted by default value during reset");
   assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during reset");
   //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during reset");
-  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P1 during reset");
+  assert (PowerDown=='b01) else `uvm_error ("PowerDown isn't in P1 during reset");
 
   //check that pclk is operational
   temp=PclkRate;   //shared or per lane?
@@ -192,7 +202,8 @@ end
 /******************************* Receiver detection Scenario *******************************/
 forever begin  
   wait(TxDetectRx==1);
-  @(posedge CLK);
+  @(posedge PCLK);
+  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P2 during Detect");
 
   fork
     foreach(PhyStatus[i]) begin
@@ -203,7 +214,7 @@ forever begin
       wait(RxStatus[i]=='b011);
     end    
   join
-  @(posedge CLK);
+  @(posedge PCLK);
 
   fork
     foreach(PhyStatus[i]) begin
@@ -214,13 +225,15 @@ forever begin
       wait(RxStatus[i]=='b000);  //??
     end    
   join
-  @(posedge CLK);
+  @(posedge PCLK);
 
   wait(TxDetectRx==1);
-  @(posedge CLK);
+  @(posedge PCLK);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
 end
+
+/******************************* Receive TSes *******************************/
 
 task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
   if(width==2'b01) // 16 bit pipe parallel interface
@@ -442,6 +455,46 @@ task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int en
       end
   end    
 endtask
+
+  // task receive_data ();
+  //   @(posedge pclk);
+  //   TxValid = 1'b1;
+  //   RxData [7:0] = 8'b0000_0000;
+  //   RxDataK = 1'b0;    // at2kd
+  // if data l gat == 0 masln ha2ol de idle data 
+  // endtask
+
+  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
+    bit [15:0] lfsr_new;
+    bit [7:0] descrambled_data;
+
+    // LFSR value after 8 serial clocks
+    for (i=0; i<8; i++)
+    begin
+      lfsr_new[ 0] = lfsr [lane_num] [15];
+      lfsr_new[ 1] = lfsr [lane_num] [ 0];
+      lfsr_new[ 2] = lfsr [lane_num] [ 1];
+      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
+      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
+      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
+      lfsr_new[ 6] = lfsr [lane_num] [ 5];
+      lfsr_new[ 7] = lfsr [lane_num] [ 6];
+      lfsr_new[ 8] = lfsr [lane_num] [ 7];
+      lfsr_new[ 9] = lfsr [lane_num] [ 8];
+      lfsr_new[10] = lfsr [lane_num] [ 9];
+      lfsr_new[11] = lfsr [lane_num] [10];
+      lfsr_new[12] = lfsr [lane_num] [11];
+      lfsr_new[13] = lfsr [lane_num] [12];
+      lfsr_new[14] = lfsr [lane_num] [13];
+      lfsr_new[15] = lfsr [lane_num] [14];       
+  
+      // Generation of Decrambled Data
+      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+      
+      lfsr [lane_num] = lfsr_new;
+    end
+    return descrambled_data;
+  endfunction
   
 //waiting on power down to be P0
 initial 
@@ -466,4 +519,15 @@ begin
       proxy.pipe_polling_state_start();
   end
 end  
+
+  // Receive Idle Data
+  initial
+  begin
+    forever
+    begin
+      receive_idle_data();
+      proxy.notify_idle_data_detected();
+    end
+  end
 endinterface
+

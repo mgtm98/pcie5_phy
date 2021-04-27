@@ -71,7 +71,17 @@ logic [4:0]  PclkRate;     //TODO: This signal is removed
 // Data Members
 //------------------------------------------
 gen_t current_gen;
+bit [15:0] lfsr[`NUM_OF_LANES];
 
+function reset_lfsr ();
+  foreach(lfsr[i])
+  begin
+    lfsr[i] = 4'hFFFF;
+  end
+endfunction
+
+
+//starting polling state
 forever
   begin
     @(power_down == 'b00)
@@ -91,11 +101,44 @@ forever
 	  end
   end
 end
+/******************************* RESET# (Phystatus de-assertion) *******************************/
+forever begin 
+  wait(reset==0);
+  @(posedge PCLK);
 
+  foreach(PhyStatus) begin
+    PhyStatus[i]=0;
+  end
+end
+/******************************* Detect (Asserting needed signals) *******************************/
+forever begin 
+  wait(TxDetectRx==1);
+  @(posedge PCLK);
+
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=1;
+  end
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b011;
+  end 
+
+  @(posedge PCLK);
+
+  foreach(PhyStatus[i]) begin
+    PhyStatus[i]=0;
+  end
+  foreach(RxStatus[i]) begin 
+    RxStatus[i]=='b000;  //??
+  end    
+end
+
+endinterface
 
 //------------------------------------------
 // Methods
 //------------------------------------------
+
+/*
 
 task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input int end_lane = NUM_OF_LANES );
     if(Width==2'b01) // 16 bit pipe parallel interface
@@ -188,37 +231,6 @@ task automatic receive_ts (output TS_config ts ,input int start_lane = 0,input i
     end    
 endtask
 
-forever begin 
-  wait(reset==0);
-  @(posedge clk);
-
-  foreach(PhyStatus) begin
-    PhyStatus[i]=0;
-  end
-end
-
-forever begin 
-  wait(TxDetectRx==1);
-  @(posedge Clk);
-
-  foreach(PhyStatus[i]) begin
-    PhyStatus[i]=1;
-  end
-
-  foreach(RxStatus[i]) begin 
-    RxStatus[i]=='b011;
-  end 
-
-  @(posedge Clk);
-
-  foreach(PhyStatus[i]) begin
-    PhyStatus[i]=0;
-  end
-
-  foreach(RxStatus[i]) begin 
-    RxStatus[i]=='b000;  //??
-  end    
-end
 
 task send_ts(ts_t config, int start_lane = 0, int end_lane = NUM_OF_LANES);
 
@@ -480,6 +492,50 @@ task send_ts(ts_t config, int start_lane = 0, int end_lane = NUM_OF_LANES);
   end
 endtask
 
+task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
+  //  fork
+  //   variable no. of process
+  //   scrambler (0000, )
+  //  join
+  //  hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
+  //  scrambling w n-send 3l signals
+  //   @(posedge pclk);
+  //   RxValid = 1'b1;
+  //   RxData [7:0] = 8'b0000_0000;
+  //   RxDataK = 1'b0;    // at2kd
+endtask
+
+function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+  bit [15:0] lfsr_new;
+
+  // LFSR value after 8 serial clocks
+  for (i=0; i<8; i++)
+  begin
+    lfsr_new[ 0] = lfsr [lane_num] [15];
+    lfsr_new[ 1] = lfsr [lane_num] [ 0];
+    lfsr_new[ 2] = lfsr [lane_num] [ 1];
+    lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
+    lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
+    lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
+    lfsr_new[ 6] = lfsr [lane_num] [ 5];
+    lfsr_new[ 7] = lfsr [lane_num] [ 6];
+    lfsr_new[ 8] = lfsr [lane_num] [ 7];
+    lfsr_new[ 9] = lfsr [lane_num] [ 8];
+    lfsr_new[10] = lfsr [lane_num] [ 9];
+    lfsr_new[11] = lfsr [lane_num] [10];
+    lfsr_new[12] = lfsr [lane_num] [11];
+    lfsr_new[13] = lfsr [lane_num] [12];
+    lfsr_new[14] = lfsr [lane_num] [13];
+    lfsr_new[15] = lfsr [lane_num] [14];       
+
+    // Generation of Scrambled Data
+    scrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+    
+    lfsr [lane_num] = lfsr_new;
+  end
+  return scrambled_data;
+endfunction
+
 task polling_state;
 
 	ts_t config_h;
@@ -727,4 +783,5 @@ endtask : polling_state
 
     // -------------------- Config.Idle --------------------
   endtask
-endinterface
+*/
+

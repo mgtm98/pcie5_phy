@@ -37,7 +37,8 @@ typedef enum {
   PCLK_RATE_CHANGE,
   WIDTH_CHANGE,
   SEND_TS,
-  SEND_TSES
+  SEND_TSES,
+  SEND_IDLE_DATA
 } pipe_operation_t;
 
 typedef bit [4:0] enum{
