@@ -5,6 +5,7 @@ class pipe_link_up_seq extends pipe_base_seq;
   ts_s ts_sent;
   ts_s tses_sent [`NUM_OF_LANES];
   ts_s tses_received [`NUM_OF_LANES];
+  int idle_data_received [`NUM_OF_LANES];
 
   rand gen_t           max_gen_suported;
   rand bit   [7:0]     link_number;
@@ -176,7 +177,7 @@ task pipe_link_up_seq::config_state;
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
   config_lanenum_wait_state_upstream;
-  config_lanenum_accept_state_upstream;
+  // config_lanenum_accept_state_upstream;
   config_complete_state_upstream;
   config_idle_state_upstream;
   // Downstream
@@ -332,26 +333,128 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
             two_consecutive_ts2s_detected = 1;
           end
         end
-        // Move to the next sub-state if any lane detected 2 consecutive ts2s
-        if(two_consecutive_ts2s_detected)
+      end
+    end
+  join
+endtask
+
+// task pipe_link_up_seq::config_lanenum_accept_state_upstream;
+// endtask
+
+task pipe_link_up_seq::config_complete_state_upstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
+  int num_of_ts2_received [`NUM_OF_LANES];  
+
+  // Initialize the num_of_ts2_received array with zeros
+  foreach(num_of_ts2_received[i])
+  begin
+    num_of_ts2_received[i] = 0;
+  end
+
+  foreach (tses_sent)
+    tses_sent.ts_type = TS2;
+  end
+  
+  pipe_seq_item_h.tses_sent = tses_sent;
+
+  // Transmit 16 TS2s until 8 consecutive TS2s are received
+  bit eight_consecutive_ts2s_detected = 0;
+  fork
+    begin
+      @(pipe_agent_config_h.detected_tses_e);
+
+      for (i = 0; i < 16; i++)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+
+      while (!eight_consecutive_ts2s_detected)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+
+    begin
+      while (!eight_consecutive_ts2s_detected)
+      begin
+        @(pipe_agent_config_h.detected_tses_e);
+        tses_received = pipe_agent_config_h.tses_received;
+        
+        foreach(tses_received[i])
         begin
-          break;
+          if(tses_received[i].ts_type == TS2)
+          begin
+            num_of_ts2_received[i] += 1;
+          end
+          else
+          begin
+            num_of_ts2_received[i] = 0;
+          end
+        end
+
+        // Check if any lane detected 8 consecutive ts2s
+        foreach(num_of_ts2_received[i])
+        begin
+          if(num_of_ts2_received[i] == 8)
+          begin
+            eight_consecutive_ts2s_detected = 1;
+          end
         end
       end
     end
   join
 endtask
 
-task pipe_link_up_seq::config_lanenum_accept_state_upstream;
-
-endtask
-
-task pipe_link_up_seq::config_complete_state_upstream;
-
-endtask
-
 task pipe_link_up_seq::config_idle_state_upstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
+  int num_of_idle_data_received [`NUM_OF_LANES];  
 
+  // Initialize the num_of_idle_data_received array with zeros
+  foreach(num_of_idle_data_received[i])
+  begin
+    num_of_idle_data_received[i] = 0;
+  end
+
+  // Transmit 16 idle data until 8 consecutive idle data are received
+  bit eight_consecutive_idle_data_detected = 0;
+  fork
+    begin
+      @(pipe_agent_config_h.idle_data_detected_e);
+
+      for (i = 0; i < 16; i++)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+
+    begin
+      while (!eight_consecutive_idle_data_detected)
+      begin
+        @(pipe_agent_config_h.idle_data_detected_e);
+        
+        foreach(idle_data_received[i])
+        begin
+          begin
+            num_of_idle_data_received[i] += 1;
+          end
+        end
+
+        // Check if any lane detected 8 consecutive idle data
+        foreach(num_of_idle_data_received[i])
+        begin
+          if(num_of_idle_data_received[i] == 8)
+          begin
+            eight_consecutive_idle_data_detected = 1;
+          end
+        end
+      end
+    end
+  join
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
@@ -366,14 +469,121 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
 
 endtask
 
-task pipe_link_up_seq::config_lanenum_accept_state_downstream;
-
-endtask
+// task pipe_link_up_seq::config_lanenum_accept_state_downstream;
+// endtask
 
 task pipe_link_up_seq::config_complete_state_downstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
+  int num_of_ts2_received [`NUM_OF_LANES];  
 
+  // Initialize the num_of_ts2_received array with zeros
+  foreach(num_of_ts2_received[i])
+  begin
+    num_of_ts2_received[i] = 0;
+  end
+
+  foreach (tses_sent)
+    tses_sent.ts_type = TS2;
+  end
+  
+  pipe_seq_item_h.tses_sent = tses_sent;
+
+  // Transmit 16 TS2s until 8 consecutive TS2s are received
+  bit eight_consecutive_ts2s_detected = 0;
+  fork
+    begin
+      @(pipe_agent_config_h.detected_tses_e);
+
+      for (i = 0; i < 16; i++)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+
+      while (!eight_consecutive_ts2s_detected)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+
+    begin
+      while (!eight_consecutive_ts2s_detected)
+      begin
+        @(pipe_agent_config_h.detected_tses_e);
+        tses_received = pipe_agent_config_h.tses_received;
+        
+        foreach(tses_received[i])
+        begin
+          if(tses_received[i].ts_type == TS2)
+          begin
+            num_of_ts2_received[i] += 1;
+          end
+          else
+          begin
+            num_of_ts2_received[i] = 0;
+          end
+        end
+
+        // Check if any lane detected 8 consecutive ts2s
+        foreach(num_of_ts2_received[i])
+        begin
+          if(num_of_ts2_received[i] == 8)
+          begin
+            eight_consecutive_ts2s_detected = 1;
+          end
+        end
+      end
+    end
+  join
 endtask
 
 task pipe_link_up_seq::config_idle_state_downstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
+  int num_of_idle_data_received [`NUM_OF_LANES];  
 
+  // Initialize the num_of_idle_data_received array with zeros
+  foreach(num_of_idle_data_received[i])
+  begin
+    num_of_idle_data_received[i] = 0;
+  end
+
+  // Transmit 16 idle data until 8 consecutive idle data are received
+  bit eight_consecutive_idle_data_detected = 0;
+  fork
+    begin
+      @(pipe_agent_config_h.idle_data_detected_e);
+
+      for (i = 0; i < 16; i++)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+
+    begin
+      while (!eight_consecutive_idle_data_detected)
+      begin
+        @(pipe_agent_config_h.idle_data_detected_e);
+        
+        foreach(idle_data_received[i])
+        begin
+          begin
+            num_of_idle_data_received[i] += 1;
+          end
+        end
+
+        // Check if any lane detected 8 consecutive idle data
+        foreach(num_of_idle_data_received[i])
+        begin
+          if(num_of_idle_data_received[i] == 8)
+          begin
+            eight_consecutive_idle_data_detected = 1;
+          end
+        end
+      end
+    end
+  join
 endtask
