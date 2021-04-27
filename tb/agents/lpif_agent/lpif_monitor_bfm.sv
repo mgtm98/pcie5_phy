@@ -1,5 +1,4 @@
 `include "settings.svh"
-`include "lpif_types.svh"
 
 interface lpif_monitor_bfm#(
   localparam bus_data_width_param = `LPIF_BUS_WIDTH - 1,
@@ -39,10 +38,15 @@ interface lpif_monitor_bfm#(
   import lpif_agent_pkg::*;
 
   lpif_monitor proxy;
+  logic [3:0]  pl_state_sts_previous;
 
+  // Detect Link up 
   initial begin
     forever begin
-      
+      @(pl_state_sts)begin
+        if(pl_state_sts_previous == LINK_RESET && pl_state_sts == ACTIVE) proxy.notify_link_up_received();
+        pl_state_sts_previous = pl_state_sts;
+      end
     end
   end
     
