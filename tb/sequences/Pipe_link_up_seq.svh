@@ -5,6 +5,11 @@ class pipe_link_up_seq extends pipe_base_seq;
   ts_s ts_sent;
   ts_s tses_sent [NUM_OF_LANES];
 
+  rand gen_t           max_gen_suported;
+  rand bit   [7:0]     link_number;
+  rand bit   [7:0]     link_number;
+  rand bit   [7:0]     n_fts;
+
   // Methods
   extern local task detect_state;
   extern local task polling_state;
@@ -36,16 +41,36 @@ endfunction
   
 task pipe_link_up_seq::body;
   super.body;
+  this.randomize();
+
+  ts_sent.n_fts            = this.n_fts;
+  ts_sent.lane_number      = this.lane_number;
+  ts_sent.link_number      = this.link_number;
+  ts_sent.use_n_fts        = false;
+  ts_sent.use_link_number  = false;
+  ts_sent.use_lane_number  = false;
+  ts_sent.max_gen_suported = this.max_gen_suported;
+  ts_sent.ts_type          = TS1;
+
+  for (int i = 0; i < NUM_OF_LANES; i++) begin
+    tses_sent[i].n_fts            = this.n_fts;
+    tses_sent[i].lane_number      = this.lane_number;
+    tses_sent[i].link_number      = this.link_number;
+    tses_sent[i].use_n_fts        = false;
+    tses_sent[i].use_link_number  = false;
+    tses_sent[i].use_lane_number  = false;
+    tses_sent[i].max_gen_suported = this.max_gen_suported;
+    tses_sent[i].ts_type          = TS1;
+  end
+
   detect_state;
   polling_state;
   config_state;
-  -> pipe_agent_config_h.link_up_finished;
+  -> pipe_agent_config_h.link_up_finished_e;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
-  //wait(pipe_agent_config_h.reset_detected.triggered);
-  //`uvm_info("Reset detected");
-  wait(pipe_agent_config_h.receiver_detected.triggered);
+  wait(pipe_agent_config_h.receiver_detected_e.triggered);
   `uvm_info("Receiver detected");
 endtask
 

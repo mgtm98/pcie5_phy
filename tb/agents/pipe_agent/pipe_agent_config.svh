@@ -18,9 +18,8 @@ class pipe_agent_config extends uvm_object;
   event receiver_detected_e;
   event link_up_finished_e;
   event recovery_finished_e;
-  event power_down_detected_e;
   event start_polling_e;
-  event idle_data_detected_e;
+  event reset_finished_e;
   
   extern function new(string name = "pipe_agent_config");
   

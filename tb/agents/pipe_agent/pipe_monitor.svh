@@ -203,11 +203,11 @@ function void pipe_monitor::notify_reset_detected();
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
 
-  -> pipe_agent_config_h.reset_detected;
+  -> pipe_agent_config_h.reset_detected_e;
 endfunction
 
 function void pipe_monitor::notify_receiver_detected();
-  -> pipe_agent_config_h.receiver_detected;
+  -> pipe_agent_config_h.receiver_detected_e;
 endfunction
 
 function void pipe_monitor::notify_pclk_rate_change_sent(pclk_rate_t  pclk_rate);
