@@ -9,7 +9,6 @@ class pipe_link_up_seq extends pipe_base_seq;
 
   rand gen_t           max_gen_suported;
   rand bit   [7:0]     link_number;
-  rand bit   [7:0]     link_number;
   rand bit   [7:0]     n_fts;
 
   // Methods
@@ -46,7 +45,7 @@ task pipe_link_up_seq::body;
   this.randomize();
 
   ts_sent.n_fts            = this.n_fts;
-  ts_sent.lane_number      = this.lane_number;
+  ts_sent.lane_number      = 0;
   ts_sent.link_number      = this.link_number;
   ts_sent.use_n_fts        = false;
   ts_sent.use_link_number  = false;
@@ -54,9 +53,9 @@ task pipe_link_up_seq::body;
   ts_sent.max_gen_suported = this.max_gen_suported;
   ts_sent.ts_type          = TS1;
 
-  for (int i = 0; i < NUM_OF_LANES; i++) begin
+  for (int i = 0; i < `NUM_OF_LANES; i++) begin
     tses_sent[i].n_fts            = this.n_fts;
-    tses_sent[i].lane_number      = this.lane_number;
+    tses_sent[i].lane_number      = i;
     tses_sent[i].link_number      = this.link_number;
     tses_sent[i].use_n_fts        = false;
     tses_sent[i].use_link_number  = false;
@@ -177,63 +176,64 @@ task pipe_link_up_seq::config_state;
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
   config_lanenum_wait_state_upstream;
-  // config_lanenum_accept_state_upstream;
   config_complete_state_upstream;
   config_idle_state_upstream;
   // Downstream
   // config_linkwidth_start_state_downstream;
   // config_linkwidth_accept_state_downstream;
   // config_lanenum_wait_state_downstream;
-  // config_lanenum_accept_state_downstream;
   // config_complete_state_downstream;
   // config_idle_state_downstream;
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_upstream;
-  int unsigned num_of_ts1s_with_non_pad_link_number [NUM_OF_LANES];
-  // Initialize the detected num of ts1s with non pad link number to zero
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
+  pipe_seq_item_h.tses_sent = tses_sent;
+  int unsigned num_of_ts1s_with_non_pad_link_number [`NUM_OF_LANES];
+  // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts1s_with_non_pad_link_number[i])
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
   end
-  // Detect ts1s until 2 consecutive ts1s have a non-pad link number
-  while(1)
-  begin
-    @(pipe_agent_config_h.detected_tses_e);
-    tses_received = pipe_agent_config_h.tses_received;
-    // Make sure the received tses are ts1s
-    foreach(tses_received[i])
+  // Transmit TS1s until 2 consecutive TS2s are received
+  bit two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
+  fork
     begin
-      // Make sure the tses received are ts1s
-      assert (tses_received[i].ts_type == TS1) 
-      else   `uvm_error(get_name(), "Expected TS1s but detected TS2s")
-      // Non PAD link number
-      if(received_ts[i].use_link_number)
+      while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
-        num_of_ts1s_with_non_pad_link_number[i] += 1
-      end
-      // PAD link number
-      else
-      begin
-        num_of_ts1s_with_non_pad_link_number[i] = 0;
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
       end
     end
-    // Check if any lane detected 2 consecutive ts1s with non PAD link number
-    int unsigned two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
-    foreach(num_of_ts1s_with_non_pad_link_number[i])
+
     begin
-      if(num_of_ts1s_with_non_pad_link_number[i] == 2)
+      while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
-        two_consecutive_ts1s_with_non_pad_link_number_detected = 1;
-        break;
+        @(pipe_agent_config_h.detected_tses_e);
+        tses_received = pipe_agent_config_h.tses_received;
+        foreach(tses_received[i])
+        begin
+          if(tses_received[i].ts_type == TS1 && tses_received[i].use_link_number)
+          begin
+            num_of_ts1s_with_non_pad_link_number[i] += 1;
+          end
+          else
+          begin
+            num_of_ts1s_with_non_pad_link_number[i] = 0;
+          end
+        end
+        // Check if any lane detected 2 consecutive ts2s
+        foreach(num_of_ts1s_with_non_pad_link_number[i])
+        begin
+          if(num_of_ts1s_with_non_pad_link_number[i] == 2)
+          begin
+            two_consecutive_ts1s_with_non_pad_link_number_detected = 1;
+          end
+        end
       end
     end
-    // Move to the next sub-state if any lane detected 2 consecutive ts1s with non PAD link number
-    if(two_consecutive_ts1s_with_non_pad_link_number_detected)
-    begin
-      break;
-    end
-  end
+  join
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
@@ -337,9 +337,6 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
     end
   join
 endtask
-
-// task pipe_link_up_seq::config_lanenum_accept_state_upstream;
-// endtask
 
 task pipe_link_up_seq::config_complete_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
@@ -458,19 +455,117 @@ task pipe_link_up_seq::config_idle_state_upstream;
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
+  foreach(tses_sent[i])
+  begin
+    tses_sent[i].link_number = link_number;
+    tses_sent[i].use_link_number = 1;
+  end
+  pipe_seq_item_h.tses_sent = tses_sent;
+  int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];  
+  // Initialize the num_of_detected_ts1s_with_same_link_number array with zeros
+  foreach(num_of_detected_ts1s_with_same_link_number[i])
+  begin
+    num_of_detected_ts1s_with_same_link_number[i] = 0;
+  end
+  // Send ts1s with the generated link number until two ts1s are received with the same link number
+  two_ts1s_with_same_link_number_detected = 0;
+  fork
+    begin
+      while (!two_ts1s_with_same_link_number_detected)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+    begin
+      while (!two_ts1s_with_same_link_number_detected)
+      begin
+        @(pipe_agent_config_h.detected_tses_e);
+        tses_received = pipe_agent_config_h.tses_received;
+        
+        foreach(tses_received[i])
+        begin
+          if(tses_received[i].link_number == link_number && tses_received.use_link_number)
+          begin
+            num_of_detected_ts1s_with_same_link_number[i] += 1;
+          end
+          else
+          begin
+            num_of_detected_ts1s_with_same_link_number[i] = 0;
+          end
+        end
 
+        // Check if any lane detected 2 cosecutive ts1s with the same link number
+        foreach(num_of_detected_ts1s_with_same_link_number[i])
+        begin
+          if(num_of_detected_ts1s_with_same_link_number[i] == 2)
+          begin
+            two_ts1s_with_same_link_number_detected = 1;
+          end
+        end
+      end
+    end
+  join
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
-
+  // Update the lane numbers to start with zero and increase sequentially
+  foreach(tses_sent[i])
+  begin
+    tses_sent[i].lane_number = i;
+    tses_sent[i].use_lane_number = 1;
+  end
 endtask
 
 task pipe_link_up_seq::config_lanenum_wait_state_downstream;
+  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
+  pipe_seq_item_h.tses_sent = tses_sent;
+  int unsigned num_of_detected_ts1s_with_same_lane_numbers = 0;
+  // Send ts1s with the generated lane numbers until two ts1s are received with the same link numbers
+  bit two_ts1s_with_same_lane_numbers_detected = 0;
+  fork
+    begin
+      while (!two_ts1s_with_same_lane_numbers_detected)
+      begin
+        start_item(pipe_seq_item_h);
+        finish_item(pipe_seq_item_h);
+      end
+    end
+    begin
+      while (!two_ts1s_with_same_lane_numbers_detected)
+      begin
+        @(pipe_agent_config_h.detected_tses_e);
+        tses_received = pipe_agent_config_h.tses_received;
+        
+        bit all_lane_numbers_are_correct = 1;
+        foreach(tses_received[i])
+        begin
+          if(tses_received[i].lane_number != tses_sent[i].lane_number || !tses_received[i].use_lane_number)
+          begin
+            all_lane_numbers_are_correct = 0;
+          end
+        end
+        if (all_lane_numbers_are_correct)
+        begin
+          num_of_detected_ts1s_with_same_lane_numbers += 1;
+        end
+        else
+        begin
+          num_of_detected_ts1s_with_same_lane_numbers = 0;
+        end
 
+        // Check if all lane detected 2 cosecutive ts1s with the same lane numbers
+        if(num_of_detected_ts1s_with_same_lane_numbers == 2)
+        begin
+          two_ts1s_with_same_lane_numbers_detected = 1;
+        end
+      end
+    end
+  join
 endtask
-
-// task pipe_link_up_seq::config_lanenum_accept_state_downstream;
-// endtask
 
 task pipe_link_up_seq::config_complete_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
