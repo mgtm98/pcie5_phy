@@ -10,9 +10,11 @@ package common_pkg;
   typedef lpif_if #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
   ) lpif_if_param;
+
   typedef lpif_driver_bfm #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
   ) lpif_driver_bfm_param;
+  
   typedef lpif_monitor_bfm #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
   ) lpif_monitor_bfm_param;
