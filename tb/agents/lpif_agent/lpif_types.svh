@@ -12,10 +12,16 @@ typedef enum {
   // SPEED_MODE_CHANGE
 } lpif_operation_t;
 
-typedef bit [3:0] enum {
+typedef enum bit [3:0]{
 	ACTIVE = 4'b0001,
 	LINK_RESET = 4'b1001,
 	RETRAIN = 4'b1011
 } lpif_state_t;
+
+typedef struct{
+  lpif_operation_t lpif_operation;
+  tlp_t tlp;
+  dllp_t dllp;
+}lpif_seq_item_s;
 
 `endif

@@ -38,7 +38,7 @@ interface lpif_driver_bfm #(
   import uvm_pkg::*;
   import common_pkg::*;
 
-  task link_up;
+  task link_up ();
   	lp_state_req <= LINK_RESET;
     wait(pl_state_sts == LINK_RESET);
   	@(posedge lclk);
@@ -46,7 +46,6 @@ interface lpif_driver_bfm #(
     wait(pl_state_sts == ACTIVE);
   	@(posedge lclk);
   endtask
-
 
   task send_tlp(tlp_t tlp);
     //to be implemented

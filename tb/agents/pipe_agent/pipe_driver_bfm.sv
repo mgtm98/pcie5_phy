@@ -537,7 +537,6 @@ function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
 endfunction
 
 task polling_state;
-
 	ts_t config_h;
 	//check array description
 	`uvm_info("Waiting for powerdown change on lane");
@@ -632,7 +631,6 @@ task polling_state;
 			send_ts(config_h);
 		end
 	join
-
 endtask : polling_state
 
 */

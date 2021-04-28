@@ -4,7 +4,9 @@
 class lpif_coverage_monitor extends uvm_component;
 
   `uvm_component_utils(lpif_coverage_monitor)
-
+  `uvm_analysis_imp_decl(_sent)                     // define sent analysis port
+  `uvm_analysis_imp_decl(_received)                 // define received analysis port
+  
   lpif_seq_item lpif_seq_item_h;
 
   uvm_analysis_imp_sent #(lpif_seq_item, lpif_coverage_monitor) analysis_export_sent;
