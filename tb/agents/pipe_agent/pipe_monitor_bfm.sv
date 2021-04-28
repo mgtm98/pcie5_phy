@@ -216,6 +216,7 @@ forever begin
   join
   @(posedge PCLK);
 
+  // TODO: Modify
   fork
     foreach(PhyStatus[i]) begin
       wait(PhyStatus[i]==0);
@@ -227,6 +228,7 @@ forever begin
   join
   @(posedge PCLK);
 
+  // TODO: Change to zero??
   wait(TxDetectRx==1);
   @(posedge PCLK);
   proxy.notify_receiver_detected();
