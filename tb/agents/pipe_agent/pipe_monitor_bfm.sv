@@ -65,7 +65,7 @@ interface pipe_monitor_bfm
   import pipe_agent_pkg::*;
 
   pipe_monitor proxy;
-  bit [15:0] lfsr[`NUM_OF_LANES];
+  bit [15:0] lfsr[pipe_num_of_lanes];
 
   function reset_lfsr ();
     foreach(lfsr[i])
@@ -80,7 +80,7 @@ interface pipe_monitor_bfm
 
   /******************************* Receive TS*******************************/
 
-  task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
+  task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes);
     if(width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
@@ -366,6 +366,12 @@ task automatic receive_tses (output ts_s ts [], input int start_lane = 0, input 
   end    
 endtask
 
+forever begin
+  ts_s tses [pipe_num_of_lanes];
+  receive_tses(tses);
+  proxy.notify_tses_received(tses);
+end
+
   // task receive_data ();
   //   @(posedge pclk);
   //   TxValid = 1'b1;
@@ -411,19 +417,19 @@ initial
 begin
   forever
   begin
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PowerDown[i] == 'b00);
       end
       
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PhyStatus[i] == 1);
       end
       @(posedge CLK);
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PhyStatus[i] == 0);
       end
 
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (TxElecIdle[i] == 0)	;
       end
       proxy.pipe_polling_state_start();

@@ -76,7 +76,7 @@ function void pipe_monitor::detect_link_up();
 endfunction
 
 
-function void notify_tses_received(ts_s tses [NUM_OF_LANES]);
+function void notify_tses_received(ts_s tses [`NUM_OF_LANES]);
   pipe_agent_config_h.tses_received = tses;
   -> pipe_agent_config_h.detected_tses;
 endfunction
