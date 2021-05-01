@@ -4,8 +4,8 @@ class lpif_agent_config extends uvm_object;
   `uvm_object_utils(lpif_agent_config)
   
   // BFM Virtual Interfaces
-  virtual lpif_driver_bfm lpif_driver_bfm_h;
-  virtual lpif_monitor_bfm lpif_monitor_bfm_h;
+  virtual lpif_driver_bfm_param lpif_driver_bfm_h;
+  virtual lpif_monitor_bfm_param lpif_monitor_bfm_h;
     
   //------------------------------------------
   // Data Members
