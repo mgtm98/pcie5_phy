@@ -8,7 +8,7 @@ COMMON_FILES			 		+= $(call COMPILE,common_pkg.sv)
 ##################################################################################################
 
 COMMON_BUILD: 
-	@vlog +incdir+${COMMON_INCLUDE_DIR} ${COMMON_FILES}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${COMMON_INCLUDE_DIR} ${COMMON_FILES}  -suppress 2275 -suppress 2286
 	@echo Common package BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 
