@@ -2,14 +2,15 @@
 
 interface pipe_if
   #(
-    param pipe_num_of_lanes,
-    param pipe_max_width,
+    parameter pipe_num_of_lanes,
+    parameter pipe_max_width,
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(
     input bit   Clk,
     input bit   Reset,
     input logic PhyReset
+  );
 
   /*************************** RX Specific Signals *************************************/
   logic [bus_data_width_param:0]      RxData;    
