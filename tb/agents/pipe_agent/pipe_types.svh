@@ -6,13 +6,7 @@ typedef enum{
   TS2
 } ts_type_t;
 
-typedef enum{
-  GEN1,
-  GEN2,
-  GEN3,
-  GEN4,
-  GEN5
-} gen_t;
+
 
 typedef struct {
   bit [7:0]             n_fts,
@@ -41,7 +35,7 @@ typedef enum {
   SEND_IDLE_DATA
 } pipe_operation_t;
 
-typedef bit [4:0] enum{
+typedef enum bit[4:0]{
   PCLK_62     = 0,
   PCLK_125    = 1,
   PCLK_250    = 2,
@@ -51,7 +45,7 @@ typedef bit [4:0] enum{
   PCLK_4000   = 6
 } pclk_rate_t;
 
-typedef bit [1:0] enum {
+typedef enum bit[1:0] {
   PIPE_WIDTH_8_BIT  = 0,
   PIPE_WIDTH_16_BIT = 1,
   PIPE_WIDTH_32_BIT = 2,
