@@ -1,9 +1,9 @@
 `include "settings.svh"
 
 interface lpif_driver_bfm #(
-  param lpif_bus_width,
-  localparam bus_data_width_param = lpif_bus_width - 1; 
-  localparam bus_kontrol_param = (lpif_bus_width/8) - 1;
+  parameter lpif_bus_width,
+  localparam bus_data_width_param = lpif_bus_width - 1,
+  localparam bus_kontrol_param = (lpif_bus_width/8) - 1
 )(
     input logic lclk,
     input logic                                pl_trdy,
