@@ -1,3 +1,6 @@
+`define TLP_CONSTRAINT_MIN_WIDTH  20
+`define TLP_CONSTRAINT_MAX_WIDTH  20
+
 /******************************** Class Header ********************************************/
 class lpif_seq_item extends uvm_sequence_item;
   `uvm_object_utils(lpif_seq_item)
@@ -9,11 +12,9 @@ class lpif_seq_item extends uvm_sequence_item;
 
   //  Group: Constraints
   constraint c1 {
-    tlp.size() > TLP_MIN_SIZE;
-    tlp.size() < TLP_MAX_SIZE;
+    tlp.size() > `TLP_CONSTRAINT_MIN_WIDTH;
+    tlp.size() < `TLP_CONSTRAINT_MAX_WIDTH;
   };
-
-  constraint c1 {tlp.size()>28; tlp.size()<1024;}  //??
 
   extern function new(string name = "lpif_seq_item");
   extern function void do_copy(uvm_object rhs);
