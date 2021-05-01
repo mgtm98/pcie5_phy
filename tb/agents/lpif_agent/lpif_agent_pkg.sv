@@ -1,5 +1,3 @@
-`include "common_pkg.sv"
-
 package lpif_agent_pkg;
 
   import uvm_pkg::*;
