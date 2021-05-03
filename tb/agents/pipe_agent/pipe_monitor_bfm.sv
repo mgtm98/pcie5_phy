@@ -179,7 +179,7 @@ forever begin
 
   wait(reset==0);
   @(posedge PCLK);
-
+  
   foreach(PhyStatus[i]) begin 
     wait(PhyStatus[i]==0);
   end
@@ -192,33 +192,21 @@ end
 forever begin  
   wait(TxDetectRx==1);
   @(posedge PCLK);
-  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P2 during Detect");
+  assert (PowerDown=='b01) else `uvm_error ("PowerDown isn't in P1 during Detect");
 
-  fork
-    foreach(PhyStatus[i]) begin
-      wait(PhyStatus[i]==1);
-    end
+  foreach(PhyStatus[i]) begin
+    wait(PhyStatus[i]==1);
+    assert (RxStatus[i]=='b011) else `uvm_error ("RxStatus is not ='b011");
+  end
 
-    foreach(RxStatus[i]) begin 
-      wait(RxStatus[i]=='b011);
-    end    
-  join
   @(posedge PCLK);
 
-  // TODO: Modify
-  fork
-    foreach(PhyStatus[i]) begin
-      wait(PhyStatus[i]==0);
-    end
+  foreach(PhyStatus[i]) begin
+    wait(PhyStatus[i]==0);
+    assert (RxStatus[i]=='b000) else `uvm_error ("RxStatus is not ='b000");
+  end
 
-    foreach(RxStatus[i]) begin 
-      wait(RxStatus[i]=='b000);  //??
-    end    
-  join
-  @(posedge PCLK);
-
-  // TODO: Change to zero??
-  wait(TxDetectRx==1);
+  wait(TxDetectRx==0);
   @(posedge PCLK);
   proxy.notify_receiver_detected();
   `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
