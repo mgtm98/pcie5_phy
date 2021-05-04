@@ -2,7 +2,7 @@ class lpif_driver extends uvm_driver #(lpif_seq_item);
 
   `uvm_component_utils(lpif_driver)
   
-  virtual lpif_driver_bfm_param lpif_driver_bfm_h;
+  lpif_driver_bfm_param lpif_driver_bfm_h;
   lpif_agent_config lpif_agent_config_h;
 
   function new(string name = "lpif_driver", uvm_component parent = null);

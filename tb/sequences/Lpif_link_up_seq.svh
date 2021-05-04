@@ -17,7 +17,7 @@ task lpif_link_up_seq::body;
   lpif_seq_item lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h");
   super.body;
   start_item(lpif_seq_item_h);
-  if (!lpif_seq_item_h.randomize() with {lpif_operation == LINK_UP;})
+  if (!lpif_seq_item_h.randomize() with {lpif_operation == lpif_agent_pkg::LINK_UP;})
   begin
     `uvm_error(get_name(), "Can't randomize sequence item")
   end

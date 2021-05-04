@@ -1,11 +1,11 @@
-`define TLP_CONSTRAINT_MIN_WIDTH  20
-`define TLP_CONSTRAINT_MAX_WIDTH  20
-
 /******************************** Class Header ********************************************/
 class pipe_seq_item extends uvm_sequence_item;
 
   // UVM Factory Registration Macro
   `uvm_object_utils(pipe_seq_item)
+
+  static const longint unsigned TLP_CONSTRAINT_MIN_WIDTH = 20;
+  static const longint unsigned TLP_CONSTRAINT_MAX_WIDTH = 20;
 
   // sequence item data variables
   rand pipe_operation_t pipe_operation; 
@@ -13,12 +13,13 @@ class pipe_seq_item extends uvm_sequence_item;
   rand dllp_t dllp;
   rand pipe_width_t pipe_width;
   rand pclk_rate_t pclk_rate;
+  rand gen_t gen;
   rand ts_s ts_sent;
   rand ts_s tses_sent [`NUM_OF_LANES];
   
   constraint c1 {
-    tlp.size() > `TLP_CONSTRAINT_MIN_WIDTH;
-    tlp.size() < `TLP_CONSTRAINT_MAX_WIDTH;
+    tlp.size() > pipe_seq_item::TLP_CONSTRAINT_MIN_WIDTH;
+    tlp.size() < pipe_seq_item::TLP_CONSTRAINT_MAX_WIDTH;
   };
 
   extern function new(string name = "pipe_seq_item");
@@ -26,8 +27,8 @@ class pipe_seq_item extends uvm_sequence_item;
   extern function bit do_compare(uvm_object rhs, uvm_comparer comparer);
   extern function string convert2string();
   extern function void do_print(uvm_printer printer);
-  extern function pipe_seq_item_c to_struct();
-  extern function void from_struct(pipe_seq_item_c src);
+  extern function pipe_seq_item_s to_struct();
+  extern function void from_struct(pipe_seq_item_s src);
 
 endclass:pipe_seq_item
 /*******************************************************************************************/
@@ -68,18 +69,16 @@ function bit pipe_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
           (this.pipe_width == rhs_.pipe_width) &&
           (this.pclk_rate == rhs_.pclk_rate) &&
           (this.ts_sent == rhs_.ts_sent) &&
-          (this.tses_sent == rhs_.tses_sent))
+          (this.tses_sent == rhs_.tses_sent));
 endfunction:do_compare
 
 function string pipe_seq_item::convert2string();
-  return $sformatf("PIPE Sequence Item: \n\toperation:%s, width:%s, rate:%s, \n\ttlp[size=%0d]:%p
-                 \n\tdllp[size=%0d]:%p\n",
+  return $sformatf("PIPE Sequence Item:\n\toperation:%s, width:%s, rate:%s,\n\ttlp[size=%0d]\n\tdllp[size=%0d]:%p\n",
                 this.pipe_operation.name(),
                 this.pipe_width.name(),
                 this.pclk_rate.name(),
                 this.tlp.size(),
-                this.tlp,
-                this.dllp.size(),
+                $size(this.dllp),
                 this.dllp);
 endfunction: convert2string
 
@@ -87,8 +86,8 @@ function void pipe_seq_item::do_print(uvm_printer printer);
   printer.m_string = this.convert2string();
 endfunction: do_print
 
-function pipe_seq_item_c pipe_seq_item::to_struct();
-  pipe_seq_item_c s_h;
+function pipe_seq_item_s pipe_seq_item::to_struct();
+  pipe_seq_item_s s_h;
   s_h.pipe_operation  = this.pipe_operation;
   s_h.tlp             = this.tlp;
   s_h.dllp            = this.dllp;
@@ -97,7 +96,7 @@ function pipe_seq_item_c pipe_seq_item::to_struct();
   return s_h;
 endfunction: to_struct
 
-function void pipe_seq_item::from_struct(pipe_seq_item_c src);
+function void pipe_seq_item::from_struct(pipe_seq_item_s src);
   this.pipe_operation = src.pipe_operation;
   this.tlp            = src.tlp;
   this.dllp           = src.dllp;

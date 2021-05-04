@@ -6,17 +6,23 @@ typedef enum{
   TS2
 } ts_type_t;
 
-
+typedef enum{
+  GEN1,
+  GEN2,
+  GEN3,
+  GEN4,
+  GEN5
+} gen_t;
 
 typedef struct {
-  bit [7:0]             n_fts,
-  bit                   use_n_fts,
-  bit [7:0]             link_number,
-  bit                   use_link_number,
-  bit [7:0]             lane_number,
-  bit                   use_lane_number,
-  gen_t                 max_gen_suported,
-  ts_type_t             ts_type
+  bit [7:0]             n_fts;
+  bit                   use_n_fts;
+  bit [7:0]             link_number;
+  bit                   use_link_number;
+  bit [7:0]             lane_number;
+  bit                   use_lane_number;
+  gen_t                 max_gen_supported;
+  ts_type_t             ts_type;
 } ts_s;
 
 typedef enum {
@@ -48,7 +54,7 @@ typedef enum bit[4:0]{
 typedef enum bit[1:0] {
   PIPE_WIDTH_8_BIT  = 0,
   PIPE_WIDTH_16_BIT = 1,
-  PIPE_WIDTH_32_BIT = 2,
+  PIPE_WIDTH_32_BIT = 2
 } pipe_width_t;
 
 typedef struct {
@@ -58,5 +64,21 @@ typedef struct {
   pipe_width_t pipe_width;
   pclk_rate_t pclk_rate;
 } pipe_seq_item_s;
+
+// Typedef of parameterized PIPE interfaces
+typedef virtual pipe_if #(
+  .pipe_num_of_lanes(`NUM_OF_LANES),
+  .pipe_max_width(`PIPE_MAX_WIDTH)
+) pipe_if_param;
+
+typedef virtual pipe_driver_bfm #(
+  .pipe_num_of_lanes(`NUM_OF_LANES),
+  .pipe_max_width(`PIPE_MAX_WIDTH)
+) pipe_driver_bfm_param;
+
+typedef virtual pipe_monitor_bfm #(
+  .pipe_num_of_lanes(`NUM_OF_LANES),
+  .pipe_max_width(`PIPE_MAX_WIDTH)
+) pipe_monitor_bfm_param;
 
 `endif

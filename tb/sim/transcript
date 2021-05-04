@@ -1,0 +1,9 @@
+# vsim -c -do "run -all" hvl_top hdl_top "+UVM_TESTNAME=pcie_test" "+VSEQ=pcie_vseq" -suppress 8887 
+# Start time: 17:57:54 on May 03,2021
+# ** Note: (vsim-3812) Design is being optimized...
+# 
+# ** Error: ../top/hdl_top.sv(121): Module 'pipe_monitor_bfm' is not defined.
+# Optimization failed
+# Error loading design
+# End time: 17:57:56 on May 03,2021, Elapsed time: 0:00:02
+# Errors: 1, Warnings: 0

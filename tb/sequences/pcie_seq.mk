@@ -1,5 +1,5 @@
 SEQ_ROOT_PATH			?= .																# root of the files to be compiled
-SEQ_INCLUDE_DIR  	:= $(strip $(SEQ_ROOT_PATH))/../..	# include directory for the `include 
+SEQ_INCLUDE_DIR  	:= $(strip $(SEQ_ROOT_PATH))/..			# include directory for the `include 
 SEQ_FILES					:=  																# files to be compiled
 COMPILE 					= $(strip $(SEQ_ROOT_PATH))/$(1) 		# used to append the root_path to the file_name
 

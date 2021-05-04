@@ -36,7 +36,7 @@ class lpif_monitor extends uvm_monitor;
   `uvm_analysis_imp_decl(_sent)                     // define sent analysis port
   `uvm_analysis_imp_decl(_received)                 // define received analysis port
   
-  virtual lpif_monitor_bfm_param lpif_monitor_bfm_h;      // BFM handle
+  lpif_monitor_bfm_param lpif_monitor_bfm_h;        // BFM handle
   lpif_agent_config lpif_agent_config_h;            // Config object handle
   uvm_analysis_port #(lpif_seq_item) ap_sent;       // RX Analysis Port
   uvm_analysis_port #(lpif_seq_item) ap_received;   // TX Analysis Port

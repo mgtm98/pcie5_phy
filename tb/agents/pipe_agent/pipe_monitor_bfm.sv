@@ -1,7 +1,7 @@
 interface pipe_monitor_bfm 
   #(
-    param pipe_num_of_lanes,
-    param pipe_max_width,
+    parameter pipe_num_of_lanes,
+    parameter pipe_max_width,
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
@@ -30,17 +30,17 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
-  input logic [3:0]                         PowerDown;
-  input logic [3:0]                         Rate;
-  input logic                               PhyStatus;
-  input logic [1:0]                         Width;
-  input logic                               PclkChangeAck;
-  input logic                               PclkChangeOk;
+  input logic [3:0]                         PowerDown,
+  input logic [3:0]                         Rate,
+  input logic [pipe_num_of_lanes-1:0]       PhyStatus,
+  input logic [1:0]                         Width,
+  input logic                               PclkChangeAck,
+  input logic                               PclkChangeOk,
   /*************************************************************************************/
   
   /******************************* Message Bus Interface *******************************/
-  input logic [7:0]                         M2P_MessageBus;
-  input logic [7:0]                         P2M_MessageBus;
+  input logic [7:0]                         M2P_MessageBus,
+  input logic [7:0]                         P2M_MessageBus,
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
@@ -63,311 +63,320 @@ interface pipe_monitor_bfm
 
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
+  
+  bit   PCLK;     //TODO: This signal is removed 
+  logic [4:0]  PclkRate;     //TODO: This signal is removed 
 
   pipe_monitor proxy;
-  bit [15:0] lfsr[`NUM_OF_LANES];
+  bit [15:0] lfsr[pipe_num_of_lanes];
 
   function reset_lfsr ();
     foreach(lfsr[i])
     begin
-      lfsr[i] = 4'hFFFF;
+      lfsr[i] = 16'hFFFF;
     end
   endfunction
 
-  forever begin
-    proxy.detect_link_up;
+  initial begin
+    forever begin
+      proxy.detect_link_up;
+    end
   end
 
   /******************************* Receive TS*******************************/
 
-  task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
-    if(width==2'b01) // 16 bit pipe parallel interface
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        ts.link_number=tx_data[start_lane][15:8]; // link number
-        for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                2:begin 
-                        ts.lane_number=tx_data[start_lane][7:0]; // lane number
-                        ts.n_fts=tx_data[start_lane][15:8]; // number of fast training sequnces
-                  end
+  // task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
+  //   if(Width==2'b01) // 16 bit pipe parallel interface
+  //   begin
+  //       wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+  //       ts.link_number=TxData[start_lane][15:8]; // link number
+  //       for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
+  //       begin
+  //           @(posedge PCLK);
+  //           case(sympol_count)
+  //               2:begin 
+  //                       ts.lane_number=TxData[start_lane][7:0]; // lane number
+  //                       ts.n_fts=TxData[start_lane][15:8]; // number of fast training sequnces
+  //                 end
     
-                4:begin // speeds supported
-                        if(tx_data[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
-                        else ts.max_gen_suported=GEN1;	
-                    end
+  //               4:begin // speeds supported
+  //                       if(TxData[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
+  //                       else if(TxData[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
+  //                       else if(TxData[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
+  //                       else if(TxData[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
+  //                       else ts.max_gen_suported=GEN1;	
+  //                   end
     
-                10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
-                    end
-            endcase
-        end
-    end
-    else if(width==2'b10) // 32 pipe parallel interface  
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        ts.link_number=tx_data[start_lane][15:8]; //link number
-        ts.lane_number=tx_data[start_lane][7:0]; // lane number
-        ts.n_fts=tx_data[start_lane][31:24]; // number of fast training sequnces
-        for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                4:begin // supported speeds
-                        if(tx_data[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
-                        else ts.max_gen_suported=GEN1;	
-                    end
+  //               10:begin // ts1 or ts2 determine
+  //                       if(TxData[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
+  //                       else if(TxData[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
+  //                   end
+  //           endcase
+  //       end
+  //   end
+  //   else if(Width==2'b10) // 32 pipe parallel interface  
+  //   begin
+  //       wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+  //       ts.link_number=TxData[start_lane][15:8]; //link number
+  //       ts.lane_number=TxData[start_lane][7:0]; // lane number
+  //       ts.n_fts=TxData[start_lane][31:24]; // number of fast training sequnces
+  //       for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
+  //       begin
+  //           @(posedge PCLK);
+  //           case(sympol_count)
+  //               4:begin // supported speeds
+  //                       if(TxData[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
+  //                       else if(TxData[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
+  //                       else if(TxData[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
+  //                       else if(TxData[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
+  //                       else ts.max_gen_suported=GEN1;	
+  //                   end
     
-                 8:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][23:16]==8'b010_01010) ts.ts_sype=TS1;
-                        else if(tx_data[start_lane][23:16]==8'b010_00101) ts.ts_sype=TS2;
-                    end
-            endcase
-        end
-    end
-    else //8 bit pipe paraleel interface 
-    begin
-        wait(tx_data[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
-        for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
-        begin
-            @(posedge pclk);
-            case(sympol_count)
-                1:ts.link_number=tx_data[start_lane][7:0]; //link number
-                2:ts.lane_number=tx_data[start_lane][7:0]; // lane number
-                3:ts.n_fts=tx_data[start_lane][7:0]; // number of fast training sequnces
-                4:begin  //supported sppeds
-                        if(tx_data[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
-                        else if(tx_data[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
-                        else if(tx_data[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
-                        else if(tx_data[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
-                        else ts.max_gen_suported=GEN1;	
-                    end
-                10:begin // ts1 or ts2 determine
-                        if(tx_data[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
-                        else if(tx_data[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
-                    end
-            endcase
-        end
-    end    
-  endtask
+  //                8:begin // ts1 or ts2 determine
+  //                       if(TxData[start_lane][23:16]==8'b010_01010) ts.ts_sype=TS1;
+  //                       else if(TxData[start_lane][23:16]==8'b010_00101) ts.ts_sype=TS2;
+  //                   end
+  //           endcase
+  //       end
+  //   end
+  //   else //8 bit pipe paraleel interface 
+  //   begin
+  //       wait(TxData[start_lane][7:0]==8'b101_11100); //wait to see a COM charecter
+  //       for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
+  //       begin
+  //           @(posedge PCLK);
+  //           case(sympol_count)
+  //               1:ts.link_number=TxData[start_lane][7:0]; //link number
+  //               2:ts.lane_number=TxData[start_lane][7:0]; // lane number
+  //               3:ts.n_fts=TxData[start_lane][7:0]; // number of fast training sequnces
+  //               4:begin  //supported sppeds
+  //                       if(TxData[start_lane][5]==1'b1) ts.max_gen_suported=GEN5;
+  //                       else if(TxData[start_lane][4]==1'b1) ts.max_gen_suported=GEN4;
+  //                       else if(TxData[start_lane][3]==1'b1) ts.max_gen_suported=GEN3;
+  //                       else if(TxData[start_lane][2]==1'b1) ts.max_gen_suported=GEN2;
+  //                       else ts.max_gen_suported=GEN1;	
+  //                   end
+  //               10:begin // ts1 or ts2 determine
+  //                       if(TxData[start_lane][7:0]==8'b010_01010) ts.ts_sype=TS1;
+  //                       else if(TxData[start_lane][7:0]==8'b010_00101) ts.ts_sype=TS2;
+  //                   end
+  //           endcase
+  //       end
+  //   end    
+  // endtask
 
 /******************************* RESET# Scenario detection *******************************/
   int temp[2:0];
-forever begin   
-
-  wait(reset==1);
-  @(posedge PCLK);
-  //check on default values
-  assert (TxDetectRx==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRx isn't setted by default value during reset");
-  assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during reset");
-  //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during reset");
-  assert (PowerDown=='b01) else `uvm_error ("PowerDown isn't in P1 during reset");
-
-  //check that pclk is operational
-  temp=PclkRate;   //shared or per lane?
-  @(posedge PCLK);
-  assert (temp==PclkRate) else `uvm_error ("PCLK is not stable");
-
-  wait(reset==0);
-  @(posedge PCLK);
-
-  foreach(PhyStatus[i]) begin 
-    wait(PhyStatus[i]==0);
+  initial begin
+    forever begin   
+      wait(Reset==1);
+      @(posedge PCLK);
+      //check on default values
+      assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset")
+      assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset")
+      //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during Reset");
+      assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset")
+    
+      //check that PCLK is operational
+      // TODO: Uncomment the next line when they add the PCLK_Rate in the design specs and know the width
+      // temp=PclkRate;   //shared or per lane?
+      @(posedge PCLK);
+      assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
+    
+      wait(Reset==0);
+      @(posedge PCLK);
+    
+      foreach(PhyStatus[i]) begin 
+        wait(PhyStatus[i]==0);
+      end
+      @(posedge PCLK);
+      proxy.notify_reset_detected();
+      `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Reset scenario)", UVM_LOW);
+    end
   end
-  @(posedge PCLK);
-  proxy.notify_reset_detected();
-  `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Reset scenario)", UVM_LOW);
-end
 
 /******************************* Receiver detection Scenario *******************************/
-forever begin  
-  wait(TxDetectRx==1);
-  @(posedge PCLK);
-  assert (PowerDown=='b10) else `uvm_error ("PowerDown isn't in P2 during Detect");
-
-  fork
-    foreach(PhyStatus[i]) begin
-      wait(PhyStatus[i]==1);
+  initial begin
+    forever begin  
+      wait(TxDetectRxLoopback==1);
+      @(posedge PCLK);
+      assert (PowerDown=='b10) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P2 during Detect");
+    
+      fork
+        foreach(PhyStatus[i]) begin
+          wait(PhyStatus[i]==1);
+        end
+    
+        foreach(RxStatus[i]) begin 
+          wait(RxStatus[i]=='b011);
+        end    
+      join
+      @(posedge PCLK);
+    
+      // TODO: Modify
+      fork
+        foreach(PhyStatus[i]) begin
+          wait(PhyStatus[i]==0);
+        end
+    
+        foreach(RxStatus[i]) begin 
+          wait(RxStatus[i]=='b000);  //??
+        end    
+      join
+      @(posedge PCLK);
+    
+      // TODO: Change to zero??
+      wait(TxDetectRxLoopback==1);
+      @(posedge PCLK);
+      proxy.notify_receiver_detected();
+      `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Receiver detection scenario)", UVM_MEDIUM);
     end
-
-    foreach(RxStatus[i]) begin 
-      wait(RxStatus[i]=='b011);
-    end    
-  join
-  @(posedge PCLK);
-
-  // TODO: Modify
-  fork
-    foreach(PhyStatus[i]) begin
-      wait(PhyStatus[i]==0);
-    end
-
-    foreach(RxStatus[i]) begin 
-      wait(RxStatus[i]=='b000);  //??
-    end    
-  join
-  @(posedge PCLK);
-
-  // TODO: Change to zero??
-  wait(TxDetectRx==1);
-  @(posedge PCLK);
-  proxy.notify_receiver_detected();
-  `uvm_info ("Monitor BFM Detected (Receiver detection scenario)");
-end
+  end
 
 /******************************* Receive TSes *******************************/
 
-task automatic receive_tses (output ts_s ts [], input int start_lane = 0, input int end_lane = pipe_num_of_lanes);
-  if(width==2'b01) // 16 bit pipe parallel interface
-  begin
-      for (int i=start_lane;i<=end_lane;i++)
-      begin
-          wait(tx_data[i][7:0]==8'b101_11100); //wait to see a COM charecter
-      end
-      for (int i=start_lane;i<=end_lane;i++)
-      begin
-          ts[i].link_number=tx_data[i][15:8]; // link number
-      end
-      for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
-      begin
-          @(posedge pclk);
-          case(sympol_count)
-              2:begin 
-                      for(int i=start_lane;i<=end_lane;i++) //lanes numbers
-                      begin
-                          ts[i].lane_number=tx_data[i][7:0];
-                      end
-                      for (int i=start_lane;i<=end_lane;i++)
-                      begin
-                      ts[i].n_fts=tx_data[i][15:8]; // number of fast training sequnces
-                      end
-                  end
+// task automatic receive_tses (output ts_s ts [], input int start_lane = 0, input int end_lane = pipe_num_of_lanes);
+//   if(Width==2'b01) // 16 bit pipe parallel interface
+//   begin
+//       for (int i=start_lane;i<=end_lane;i++)
+//       begin
+//           wait(TxData[i][7:0]==8'b101_11100); //wait to see a COM charecter
+//       end
+//       for (int i=start_lane;i<=end_lane;i++)
+//       begin
+//           ts[i].link_number=TxData[i][15:8]; // link number
+//       end
+//       for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
+//       begin
+//           @(posedge PCLK);
+//           case(sympol_count)
+//               2:begin 
+//                       for(int i=start_lane;i<=end_lane;i++) //lanes numbers
+//                       begin
+//                           ts[i].lane_number=TxData[i][7:0];
+//                       end
+//                       for (int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                       ts[i].n_fts=TxData[i][15:8]; // number of fast training sequnces
+//                       end
+//                   end
   
-              4:begin  //supported sppeds
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
-                          else if(tx_data[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
-                          else if(tx_data[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
-                          else if(tx_data[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
-                          else ts[i].max_gen_suported=GEN1;	
-                      end
-                  end
+//               4:begin  //supported sppeds
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
+//                           else if(TxData[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
+//                           else if(TxData[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
+//                           else if(TxData[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
+//                           else ts[i].max_gen_suported=GEN1;	
+//                       end
+//                   end
   
-              10:begin // ts1 or ts2 determine
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
-                          else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
-                      end
-                  end
-          endcase
-      end
-  end
-  else if(width==2'b10) // 32 pipe parallel interface  
-  begin
-      for (int i=start_lane;i<=end_lane;i++)
-      begin
-          wait(tx_data[i][7:0]==8'b101_11100); //wait to see a COM charecter
-      end
-      for (int i=start_lane;i<=end_lane;i++)
-      begin
-          ts[i].link_number=tx_data[i][15:8]; // link number
-      end
-      for(int i=start_lane;i<=end_lane;i++) // lane numbers
-      begin 
-          ts[i].lane_number=tx_data[i][23:16];
-      end
-      for(int i=start_lane;i<=end_lane;i++)
-      begin
-          ts[i].n_fts=tx_data[i][31:24]; // number of fast training sequnces
-      end
-      for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
-      begin
-          @(posedge pclk);
-          case(sympol_count)
-              4:begin  //supported sppeds
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
-                          else if(tx_data[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
-                          else if(tx_data[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
-                          else if(tx_data[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
-                          else ts[i].max_gen_suported=GEN1;	
-                      end
-                  end
+//               10:begin // ts1 or ts2 determine
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
+//                           else if(TxData[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
+//                       end
+//                   end
+//           endcase
+//       end
+//   end
+//   else if(Width==2'b10) // 32 pipe parallel interface  
+//   begin
+//       for (int i=start_lane;i<=end_lane;i++)
+//       begin
+//           wait(TxData[i][7:0]==8'b101_11100); //wait to see a COM charecter
+//       end
+//       for (int i=start_lane;i<=end_lane;i++)
+//       begin
+//           ts[i].link_number=TxData[i][15:8]; // link number
+//       end
+//       for(int i=start_lane;i<=end_lane;i++) // lane numbers
+//       begin 
+//           ts[i].lane_number=TxData[i][23:16];
+//       end
+//       for(int i=start_lane;i<=end_lane;i++)
+//       begin
+//           ts[i].n_fts=TxData[i][31:24]; // number of fast training sequnces
+//       end
+//       for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
+//       begin
+//           @(posedge PCLK);
+//           case(sympol_count)
+//               4:begin  //supported sppeds
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
+//                           else if(TxData[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
+//                           else if(TxData[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
+//                           else if(TxData[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
+//                           else ts[i].max_gen_suported=GEN1;	
+//                       end
+//                   end
   
-               8:begin // ts1 or ts2 determine
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][23:16]==8'b010_01010) ts[i].ts_sype=TS1;
-                          else if(tx_data[i][23:16]==8'b010_00101) ts[i].ts_sype=TS2;
-                      end
-                  end
-          endcase
-      end
-  end
-  else //8 bit pipe paraleel interface 
-  begin
-      for (int i=start_lane;i<=end_lane;i++)
-      begin
-          wait(tx_data[i][7:0]==8'b101_11100); //wait to see a COM charecter
-      end
-      for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
-      begin
-          @(posedge pclk);
-          case(sympol_count)
-              1:begin //link number
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          ts[i].link_number=tx_data[i][7:0]; 
-                      end
-                  end
-              2:begin //lanes numbers
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          ts[i].lane_number=tx_data[i][7:0];
-                      end
-                  end
-              3:begin // number of fast training sequnces
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          ts[i].n_fts=tx_data[i][7:0]; 
-                      end
-                  end
-              4:begin  //supported sppeds
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
-                          else if(tx_data[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
-                          else if(tx_data[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
-                          else if(tx_data[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
-                          else ts[i].max_gen_suported=GEN1;	
-                      end
-                  end
-              10:begin // ts1 or ts2 determine
-                      for(int i=start_lane;i<=end_lane;i++)
-                      begin
-                          if(tx_data[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
-                          else if(tx_data[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
-                      end
-                  end
-          endcase
-      end
-  end    
-endtask
+//                8:begin // ts1 or ts2 determine
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][23:16]==8'b010_01010) ts[i].ts_sype=TS1;
+//                           else if(TxData[i][23:16]==8'b010_00101) ts[i].ts_sype=TS2;
+//                       end
+//                   end
+//           endcase
+//       end
+//   end
+//   else //8 bit pipe paraleel interface 
+//   begin
+//       for (int i=start_lane;i<=end_lane;i++)
+//       begin
+//           wait(TxData[i][7:0]==8'b101_11100); //wait to see a COM charecter
+//       end
+//       for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
+//       begin
+//           @(posedge PCLK);
+//           case(sympol_count)
+//               1:begin //link number
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           ts[i].link_number=TxData[i][7:0]; 
+//                       end
+//                   end
+//               2:begin //lanes numbers
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           ts[i].lane_number=TxData[i][7:0];
+//                       end
+//                   end
+//               3:begin // number of fast training sequnces
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           ts[i].n_fts=TxData[i][7:0]; 
+//                       end
+//                   end
+//               4:begin  //supported sppeds
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][5]==1'b1) ts[i].max_gen_suported=GEN5;
+//                           else if(TxData[i][4]==1'b1) ts[i].max_gen_suported=GEN4;
+//                           else if(TxData[i][3]==1'b1) ts[i].max_gen_suported=GEN3;
+//                           else if(TxData[i][2]==1'b1) ts[i].max_gen_suported=GEN2;
+//                           else ts[i].max_gen_suported=GEN1;	
+//                       end
+//                   end
+//               10:begin // ts1 or ts2 determine
+//                       for(int i=start_lane;i<=end_lane;i++)
+//                       begin
+//                           if(TxData[i][7:0]==8'b010_01010) ts[i].ts_sype=TS1;
+//                           else if(TxData[i][7:0]==8'b010_00101) ts[i].ts_sype=TS2;
+//                       end
+//                   end
+//           endcase
+//       end
+//   end    
+// endtask
 
   // task receive_data ();
-  //   @(posedge pclk);
+  //   @(posedge PCLK);
   //   TxValid = 1'b1;
   //   RxData [7:0] = 8'b0000_0000;
   //   RxDataK = 1'b0;    // at2kd
@@ -379,7 +388,7 @@ endtask
     bit [7:0] descrambled_data;
 
     // LFSR value after 8 serial clocks
-    for (i=0; i<8; i++)
+    for (int i=0; i<8; i++)
     begin
       lfsr_new[ 0] = lfsr [lane_num] [15];
       lfsr_new[ 1] = lfsr [lane_num] [ 0];
@@ -411,19 +420,20 @@ initial
 begin
   forever
   begin
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PowerDown[i] == 'b00);
       end
       
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PhyStatus[i] == 1);
       end
-      @(posedge CLK);
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      // TODO: CLK or PCLK
+      @(posedge PCLK);
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (PhyStatus[i] == 0);
       end
 
-      for (int i = 0; i < NUM_OF_LANES; i++) begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
         @ (TxElecIdle[i] == 0)	;
       end
       proxy.pipe_polling_state_start();

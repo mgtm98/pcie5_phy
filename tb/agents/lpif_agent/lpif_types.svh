@@ -25,8 +25,16 @@ typedef struct{
 }lpif_seq_item_s;
 
 // Typedef of parameterized LPIF interfaces
-typedef virtual lpif_if #(.lpif_bus_width(`LPIF_BUS_WIDTH)) lpif_if_param;
-typedef virtual lpif_driver_bfm #(.lpif_bus_width(`LPIF_BUS_WIDTH)) lpif_driver_bfm_param;
-typedef virtual lpif_monitor_bfm #(.lpif_bus_width(`LPIF_BUS_WIDTH)) lpif_monitor_bfm_param;
+typedef virtual lpif_if #(
+  .lpif_bus_width(`LPIF_BUS_WIDTH)
+) lpif_if_param;
+
+typedef virtual lpif_driver_bfm #(
+  .lpif_bus_width(`LPIF_BUS_WIDTH)
+) lpif_driver_bfm_param;
+
+typedef virtual lpif_monitor_bfm #(
+  .lpif_bus_width(`LPIF_BUS_WIDTH)
+) lpif_monitor_bfm_param;
 
 `endif

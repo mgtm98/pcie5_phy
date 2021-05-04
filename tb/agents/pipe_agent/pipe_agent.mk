@@ -8,7 +8,7 @@ COMPILE 				= $(strip $(PIPE_ROOT_PATH))/$(1) 	# used to append the root_path to
 PIPE_FILES_PACKAGE						+= $(call COMPILE,pipe_agent_pkg.sv)
 PIPE_FILES_INTERFACE					+= $(call COMPILE,pipe_if.sv)
 PIPE_FILES_INTERFACE					+= $(call COMPILE,pipe_driver_bfm.sv)
-# PIPE_FILES_INTERFACE					+= $(call COMPILE,pipe_monitor_bfm.sv)
+PIPE_FILES_INTERFACE					+= $(call COMPILE,pipe_monitor_bfm.sv)
 #################################################################################################
 
 PIPE_BUILD_PACKAGE: 
