@@ -7,9 +7,9 @@ interface pipe_if
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(
-    input bit   Clk,
-    input bit   Reset,
-    input logic PhyReset
+    // input bit   CLK,
+    input bit   Reset
+    // input logic PhyReset
   );
 
   /*************************** RX Specific Signals *************************************/
@@ -17,7 +17,7 @@ interface pipe_if
   logic [pipe_num_of_lanes-1:0]       RxDataValid;
   logic [bus_data_kontrol_param:0]    RxDataK;
   logic [pipe_num_of_lanes-1:0]       RxStartBlock;
-  logic [2*pipe_num_of_lanes-1:0]     RxSynchHeader;
+  logic [2*pipe_num_of_lanes-1:0]     RxSyncHeader;
   logic [pipe_num_of_lanes-1:0]       RxValid;
   logic [3*pipe_num_of_lanes-1:0]     RxStatus;
   logic                               RxElecIdle;
@@ -28,14 +28,14 @@ interface pipe_if
   logic [pipe_num_of_lanes-1:0]       TxDataValid;
   logic [bus_data_kontrol_param:0]    TxDataK;
   logic [pipe_num_of_lanes-1:0]       TxStartBlock;
-  logic [2*pipe_num_of_lanes-1:0]     TxSynchHeader;
+  logic [2*pipe_num_of_lanes-1:0]     TxSyncHeader;
   logic [pipe_num_of_lanes-1:0]       TxElecIdle;
   logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback;
 
   /*********************** Comands and Status Signals **********************************/
   logic [3:0]                         PowerDown;
   logic [3:0]                         Rate;
-  logic                               PhyStatus;
+  logic [pipe_num_of_lanes-1:0]       PhyStatus;
   logic [1:0]                         Width;
   logic                               PclkChangeAck;
   logic                               PclkChangeOk;
@@ -60,4 +60,7 @@ interface pipe_if
   logic [pipe_num_of_lanes-1:0]      InvalidRequest;
   logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange;
   /*************************************************************************************/
+
+  logic                               PCLK;     //TODO: This signal is removed 
+  logic [4:0]                         PclkRate;     //TODO: This signal is removed 
 endinterface: pipe_if

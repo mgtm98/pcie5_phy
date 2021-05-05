@@ -20,7 +20,10 @@ module hdl_top;
   pipe_if #(
   .pipe_num_of_lanes(`NUM_OF_LANES),
   .pipe_max_width(`PIPE_MAX_WIDTH)
-) PIPE(clk);  // PIPE Interface
+) PIPE(
+  // clk,
+  reset
+);  // PIPE Interface
 
   //
   // Instantiate the BFM interfaces:
@@ -91,19 +94,20 @@ lpif_driver_bfm #(
     .pipe_num_of_lanes(`NUM_OF_LANES),
     .pipe_max_width(`PIPE_MAX_WIDTH)
   ) PIPE_drv_bfm(
-    .CLK                   (PIPE.CLK), 
+    // .CLK                   (PIPE.CLK), 
     .RxData                (PIPE.RxData),
+    .RxDataValid           (PIPE.RxDataValid),
     .RxDataK               (PIPE.RxDataK),
     .RxValid               (PIPE.RxValid),
     .PhyStatus             (PIPE.PhyStatus),
-    .RxElecldle            (PIPE.RxElecldle),
+    .RxElecIdle            (PIPE.RxElecIdle),
     .RxStatus              (PIPE.RxStatus),
     .RxStartBlock          (PIPE.RxStartBlock),
     .RxSyncHeader          (PIPE.RxSyncHeader),
     .TxData                (PIPE.TxData),
     .TxDataK               (PIPE.TxDataK),
     .TxDataValid           (PIPE.TxDataValid),
-    .TxDetectRx            (PIPE.TxDetectRx),
+    .TxDetectRxLoopback    (PIPE.TxDetectRxLoopback),
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
@@ -112,26 +116,43 @@ lpif_driver_bfm #(
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
-    .PowerDown             (PIPE.PowerDown)
+    .PowerDown             (PIPE.PowerDown),
+    .PclkChangeAck (PIPE.PclkChangeAck),
+    .PclkChangeOk (PIPE.PclkChangeOk),
+    .M2P_MessageBus (PIPE.M2P_MessageBus),
+    .P2M_MessageBus (PIPE.P2M_MessageBus),
+    .LocalTxPresetCoeffcients (PIPE.LocalTxPresetCoeffcients),
+    .TxDeemph (PIPE.TxDeemph),
+    .LocalFS (PIPE.LocalFS),
+    .LocalLF (PIPE.LocalLF),
+    .GetLocalPresetCoeffcients (PIPE.GetLocalPresetCoeffcients),
+    .LocalTxCoeffcientsValid (PIPE.LocalTxCoeffcientsValid),
+    .FS (PIPE.FS),
+    .LF (PIPE.LF),
+    .RxEqEval (PIPE.RxEqEval),
+    .LocalPresetIndex (PIPE.LocalPresetIndex),
+    .InvalidRequest (PIPE.InvalidRequest),
+    .LinkEvaluationFeedbackDirectionChange (PIPE.LinkEvaluationFeedbackDirectionChange)
   );
 
   pipe_monitor_bfm #(
     .pipe_num_of_lanes(`NUM_OF_LANES),
     .pipe_max_width(`PIPE_MAX_WIDTH)
   ) PIPE_mon_bfm(
-    .CLK                   (PIPE.CLK), 
+    // .CLK                   (PIPE.CLK), 
     .RxData                (PIPE.RxData),
+    .RxDataValid           (PIPE.RxDataValid),
     .RxDataK               (PIPE.RxDataK),
     .RxValid               (PIPE.RxValid),
     .PhyStatus             (PIPE.PhyStatus),
-    .RxElecldle            (PIPE.RxElecldle),
+    .RxElecIdle            (PIPE.RxElecIdle),
     .RxStatus              (PIPE.RxStatus),
     .RxStartBlock          (PIPE.RxStartBlock),
     .RxSyncHeader          (PIPE.RxSyncHeader),
     .TxData                (PIPE.TxData),
     .TxDataK               (PIPE.TxDataK),
     .TxDataValid           (PIPE.TxDataValid),
-    .TxDetectRx            (PIPE.TxDetectRx),
+    .TxDetectRxLoopback    (PIPE.TxDetectRxLoopback),
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
@@ -140,7 +161,23 @@ lpif_driver_bfm #(
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
-    .PowerDown             (PIPE.PowerDown)
+    .PowerDown             (PIPE.PowerDown),
+    .PclkChangeAck (PIPE.PclkChangeAck),
+    .PclkChangeOk (PIPE.PclkChangeOk),
+    .M2P_MessageBus (PIPE.M2P_MessageBus),
+    .P2M_MessageBus (PIPE.P2M_MessageBus),
+    .LocalTxPresetCoeffcients (PIPE.LocalTxPresetCoeffcients),
+    .TxDeemph (PIPE.TxDeemph),
+    .LocalFS (PIPE.LocalFS),
+    .LocalLF (PIPE.LocalLF),
+    .GetLocalPresetCoeffcients (PIPE.GetLocalPresetCoeffcients),
+    .LocalTxCoeffcientsValid (PIPE.LocalTxCoeffcientsValid),
+    .FS (PIPE.FS),
+    .LF (PIPE.LF),
+    .RxEqEval (PIPE.RxEqEval),
+    .LocalPresetIndex (PIPE.LocalPresetIndex),
+    .InvalidRequest (PIPE.InvalidRequest),
+    .LinkEvaluationFeedbackDirectionChange (PIPE.LinkEvaluationFeedbackDirectionChange)
   );
 
     

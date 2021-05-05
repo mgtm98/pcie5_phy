@@ -16,7 +16,7 @@ include ../test/pcie_test.mk
 include ../top/top.mk
 
 TEST								?= pcie_test
-SEQ									?= pcie_vseq
+SEQ									?= reset_vseq,link_up_vseq
 
 build_pipe: 				COMMON_BUILD PIPE_BUILD_PACKAGE PIPE_BUILD_INTERFACES
 build_lpif: 				COMMON_BUILD LPIF_BUILD_PACKAGE LPIF_BUILD_INTERFACES

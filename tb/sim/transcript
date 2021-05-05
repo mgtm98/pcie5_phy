@@ -1,9 +1,93 @@
-# vsim -c -do "run -all" hvl_top hdl_top "+UVM_TESTNAME=pcie_test" "+VSEQ=pcie_vseq" -suppress 8887 
-# Start time: 17:57:54 on May 03,2021
+# vsim -c -do "run -all" hvl_top hdl_top "+UVM_TESTNAME=pcie_test" "+VSEQ=reset_vseq,link_up_vseq" -suppress 8887 
+# Start time: 17:48:28 on May 05,2021
 # ** Note: (vsim-3812) Design is being optimized...
 # 
-# ** Error: ../top/hdl_top.sv(121): Module 'pipe_monitor_bfm' is not defined.
-# Optimization failed
-# Error loading design
-# End time: 17:57:56 on May 03,2021, Elapsed time: 0:00:02
-# Errors: 1, Warnings: 0
+# ** Warning: ..\test\pcie_test.svh(75): (vopt-2240) Treating stand-alone use of function 'get_arg_value' as an implicit VOID cast.
+# 
+# //  Questa Sim
+# //  Version 10.4e win32 Apr  9 2016
+# //
+# //  Copyright 1991-2016 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
+# //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# //  THIS DOCUMENT CONTAINS TRADE SECRETS AND COMMERCIAL OR FINANCIAL
+# //  INFORMATION THAT ARE PRIVILEGED, CONFIDENTIAL, AND EXEMPT FROM
+# //  DISCLOSURE UNDER THE FREEDOM OF INFORMATION ACT, 5 U.S.C. SECTION 552.
+# //  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE UNDER
+# //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
+# //
+# Loading sv_std.std
+# Loading work.common_pkg(fast)
+# Loading mtiUvm.uvm_pkg
+# Loading work.pipe_agent_pkg(fast)
+# Loading work.lpif_agent_pkg(fast)
+# Loading work.pcie_seq_pkg(fast)
+# Loading work.pcie_env_pkg(fast)
+# Loading work.pcie_test_pkg(fast)
+# Loading work.hvl_top(fast)
+# Loading work.hdl_top(fast)
+# Loading work.lpif_driver_bfm(fast__1)
+# Loading work.lpif_monitor_bfm(fast__1)
+# Loading work.pipe_driver_bfm(fast__1)
+# Loading work.pipe_monitor_bfm(fast__1)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.lpif_driver_bfm(fast)
+# Loading work.lpif_monitor_bfm(fast)
+# Loading work.pipe_driver_bfm(fast)
+# Loading work.pipe_monitor_bfm(fast)
+# Loading C:/questasim_10.4e/uvm-1.1d\win32\uvm_dpi.dll
+# run -all
+# ----------------------------------------------------------------
+# UVM-1.1d
+# (C) 2007-2013 Mentor Graphics Corporation
+# (C) 2007-2013 Cadence Design Systems, Inc.
+# (C) 2006-2013 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_MUST_HAVE_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(217) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)
+# UVM_INFO @ 0: reporter [RNTST] Running test pcie_test...
+# UVM_INFO ..\agents\lpif_agent\lpif_agent.svh(33) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h [lpif_agent] building lpif agent
+# UVM_INFO ..\agents\lpif_agent\lpif_coverage_monitor.svh(25) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_coverage_monitor_h [lpif_coverage_monitor_h] Enter lpif_coverage_monitor build_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_driver.svh(14) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_driver_h [lpif_driver_h] Enter lpif_driver build_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_driver.svh(15) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_driver_h [lpif_driver_h] Exit lpif_driver build_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_monitor.svh(76) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_monitor_h [lpif_monitor] building lpif monitor
+# UVM_INFO ..\agents\lpif_agent\lpif_monitor.svh(79) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_monitor_h [lpif_monitor] lpif monitor built
+# UVM_INFO ..\agents\pipe_agent\pipe_agent.svh(27) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h [pipe_agent_h] Building pipe agent
+# UVM_INFO ..\agents\pipe_agent\pipe_coverage_monitor.svh(36) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_coverage_monitor_h [pipe_coverage_monitor_h] Enter pipe_coverage_monitor build_phase
+# UVM_INFO ..\agents\pipe_agent\pipe_coverage_monitor.svh(39) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_coverage_monitor_h [pipe_coverage_monitor_h] Exit pipe_coverage_monitor build_phase
+# UVM_INFO ..\agents\pipe_agent\pipe_driver.svh(22) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_driver [pipe_driver] Enter pipe_driver build_phase
+# UVM_INFO ..\agents\pipe_agent\pipe_driver.svh(23) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_driver [pipe_driver] Exit pipe_driver build_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_driver.svh(21) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_driver_h [lpif_driver_h] Enter lpif_driver connect_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_driver.svh(23) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_driver_h [lpif_driver_h] Exit lpif_driver connect_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_monitor.svh(84) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_monitor_h [lpif_monitor] connecting lpif monitor
+# UVM_INFO ..\agents\lpif_agent\lpif_monitor.svh(89) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_monitor_h [lpif_monitor] lpif monitor connected
+# UVM_INFO ..\agents\pipe_agent\pipe_driver.svh(28) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_driver [pipe_driver] Enter pipe_driver connect_phase
+# UVM_INFO ..\agents\pipe_agent\pipe_driver.svh(30) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_driver [pipe_driver] Exit pipe_driver connect_phase
+# UVM_INFO ..\agents\pipe_agent\pipe_agent.svh(58) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h [pipe_agent_h] Pipe agent connect phase
+# UVM_INFO ..\agents\pipe_agent\pipe_driver.svh(35) @ 0: uvm_test_top.pcie_env_h.pipe_agent_h.pipe_driver [pipe_driver] Enter pipe_driver run_phase
+# UVM_INFO ..\agents\lpif_agent\lpif_driver.svh(29) @ 0: uvm_test_top.pcie_env_h.lpif_agent_h.lpif_driver_h [lpif_driver_h] Enter lpif_driver run_phase
+# UVM_INFO ..\sequences\reset_vseq.svh(19) @ 0: reporter@@vseq [reset_vseq] starting lpif_reset_seq and pipe_reset_seq in parallel
+# Break key hit
+# Break at an unknown location
+# Break key hit
+# 
+# <EOF>
+# End time: 17:49:32 on May 05,2021, Elapsed time: 0:01:04
+# Errors: 0, Warnings: 1

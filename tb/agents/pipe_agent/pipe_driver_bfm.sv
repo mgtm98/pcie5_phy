@@ -7,16 +7,16 @@ interface pipe_driver_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  input bit   Clk,
+  // input bit   CLK,
   input bit   Reset,
-  input logic PhyReset,
+  // input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
   output logic [bus_data_width_param:0]      RxData,    
   output logic [pipe_num_of_lanes-1:0]       RxDataValid,
   output logic [bus_data_kontrol_param:0]    RxDataK,
   output logic [pipe_num_of_lanes-1:0]       RxStartBlock,
-  output logic [2*pipe_num_of_lanes-1:0]     RxSynchHeader,
+  output logic [2*pipe_num_of_lanes-1:0]     RxSyncHeader,
   output logic [pipe_num_of_lanes-1:0]       RxValid,
   output logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   output logic                               RxElecIdle,
@@ -27,7 +27,7 @@ interface pipe_driver_bfm
   input logic [pipe_num_of_lanes-1:0]       TxDataValid,
   input logic [bus_data_kontrol_param:0]    TxDataK,
   input logic [pipe_num_of_lanes-1:0]       TxStartBlock,
-  input logic [2*pipe_num_of_lanes-1:0]     TxSynchHeader,
+  input logic [2*pipe_num_of_lanes-1:0]     TxSyncHeader,
   input logic [pipe_num_of_lanes-1:0]       TxElecIdle,
   input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
@@ -57,16 +57,18 @@ interface pipe_driver_bfm
   input  logic [pipe_num_of_lanes-1:0]      RxEqEval,
   input  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
   input  logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange
+  output logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
+
+  input logic                               PCLK,     //TODO: This signal is removed 
+  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 import pipe_agent_pkg::*;
   
-bit   PCLK;     //TODO: This signal is removed 
-logic [4:0]  PclkRate;     //TODO: This signal is removed 
+
   
 //------------------------------------------
 // Data Members
@@ -74,7 +76,7 @@ logic [4:0]  PclkRate;     //TODO: This signal is removed
 gen_t current_gen;
 bit [15:0] lfsr [`NUM_OF_LANES];
 
-function reset_lfsr ();
+function void reset_lfsr ();
   foreach(lfsr[i])
   begin
     lfsr[i] = 16'hFFFF;
@@ -144,7 +146,7 @@ end
 //------------------------------------------
 // Methods
 //------------------------------------------
-task send_ts(ts_s ts, int start_lane = 0, int end_lane = `NUM_OF_LANES);
+task send_ts(ts_s ts, int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
   for(int i = start_lane; i < end_lane; i++) begin
     RxDataValid[i] <= 1;
@@ -403,6 +405,10 @@ task send_ts(ts_s ts, int start_lane = 0, int end_lane = `NUM_OF_LANES);
     end
 
   end
+endtask
+
+task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
+
 endtask
 
 // task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);

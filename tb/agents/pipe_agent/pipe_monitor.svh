@@ -63,6 +63,7 @@ function void pipe_monitor::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
   pipe_monitor_bfm_h.proxy = this;
+  -> pipe_monitor_bfm_h.build_connect_finished_e;
 endfunction: connect_phase
 
 task pipe_monitor::detect_link_up();
