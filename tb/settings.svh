@@ -3,6 +3,7 @@
 
   /********************** Verbosity Level Settings *************************************/
   `define COMPONENT_STRUCTURE_VERBOSITY UVM_MEDIUM
+  `define UVM_REPORT_DISABLE_FILE_LINE  1
   /*************************************************************************************/
   
   /**************************** PIPE Agent Settings ************************************/
