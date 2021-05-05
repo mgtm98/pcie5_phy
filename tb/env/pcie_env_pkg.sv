@@ -4,6 +4,7 @@ package pcie_env_pkg;
 
   // Standard UVM import & include:
   import uvm_pkg::*;
+  `include "settings.svh"
   `include "uvm_macros.svh"
 
   // Any further package imports:
