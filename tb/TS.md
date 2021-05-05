@@ -238,9 +238,4 @@
 // The PHY uses this signal to indicate its RxStandby state. 0 — Active 1 — Standby
 // RxStandbyStatus reflects the state of the high speed receiver. 
 // The high speed receiver is always off in PHY states that do not provide PCLK. 
-<<<<<<< HEAD:tb/TS.svh
-// RxStandbyStatus is undefined when the power state is P1 or P2. 
-
-=======
-// RxStandbyStatus is undefined when the power state is P1 or P2. 4
->>>>>>> b7141c807e4ec15dee81af9e8ddfa0d120e939f3:tb/TS.md
+// RxStandbyStatus is undefined when the power state is P1 or P2
