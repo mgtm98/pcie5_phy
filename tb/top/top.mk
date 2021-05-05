@@ -9,7 +9,7 @@ TOP_FILES			 		+= $(call COMPILE,hvl_top.sv)
 ##################################################################################################
 
 TOP_BUILD: 
-	@vlog +incdir+${TOP_INCLUDE_DIR} ${TOP_FILES}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${TOP_INCLUDE_DIR} ${TOP_FILES}  -suppress 2275
 	@echo Common package BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 

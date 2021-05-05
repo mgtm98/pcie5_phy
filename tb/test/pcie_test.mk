@@ -8,7 +8,7 @@ TEST_FILES			 		+= $(call COMPILE,pcie_test_pkg.sv)
 ##################################################################################################
 
 TEST_BUILD: 
-	@vlog +incdir+${TEST_INCLUDE_DIR} ${TEST_FILES}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${TEST_INCLUDE_DIR} ${TEST_FILES}  -suppress 2275
 	@echo Test package BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 

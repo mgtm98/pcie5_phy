@@ -8,7 +8,7 @@ SEQ_FILES			 		+= $(call COMPILE,pcie_seq_pkg.sv)
 ##################################################################################################
 
 SEQ_BUILD: 
-	@vlog +incdir+${UVM_HOME} +incdir+${SEQ_INCLUDE_DIR} ${SEQ_FILES}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${SEQ_INCLUDE_DIR} ${SEQ_FILES}  -suppress 2275
 	@echo Sequence package BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 

@@ -5,7 +5,6 @@ SEQ_ROOT_PATH       	= ../sequences
 TEST_ROOT_PATH      	= ../test
 COMMON_ROOT_PATH    	= ..
 TOP_ROOT_PATH       	= ../top
-UVM_HOME				= C:/questasim64_10.4e/uvm-1.1d/../verilog_src/uvm-1.1d/src 
 
 include ../common.mk
 include ../agents/pipe_agent/pipe_agent.mk

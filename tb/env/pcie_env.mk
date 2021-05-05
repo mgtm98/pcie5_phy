@@ -8,7 +8,7 @@ ENV_FILES			 		+= $(call COMPILE,pcie_env_pkg.sv)
 ##################################################################################################
 
 ENV_BUILD: 
-	@vlog +incdir+${UVM_HOME} +incdir+${ENV_INCLUDE_DIR} ${ENV_FILES}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${ENV_INCLUDE_DIR} ${ENV_FILES}  -suppress 2275
 	@echo ENV BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 

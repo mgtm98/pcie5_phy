@@ -12,12 +12,12 @@ LPIF_FILES_INTERFACE					+= $(call COMPILE,lpif_monitor_bfm.sv)
 #################################################################################################
 
 LPIF_BUILD_PACKAGE: 
-	@vlog +incdir+${UVM_HOME} +incdir+${LPIF_INCLUDE_DIR} ${LPIF_FILES_PACKAGE}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${LPIF_INCLUDE_DIR} ${LPIF_FILES_PACKAGE}  -suppress 2275
 	@echo LPIF Package BUILD Done
 	@echo ------------------------------------------------------------------------------------------
 
 LPIF_BUILD_INTERFACES:
-	@vlog +incdir+${UVM_HOME} +incdir+${LPIF_INCLUDE_DIR} ${LPIF_FILES_INTERFACE}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${LPIF_INCLUDE_DIR} ${LPIF_FILES_INTERFACE}  -suppress 2275
 	@echo LPIF Interfaces BUILD Done
 	@echo ------------------------------------------------------------------------------------------
 

@@ -12,12 +12,12 @@ PIPE_FILES_INTERFACE					+= $(call COMPILE,pipe_monitor_bfm.sv)
 #################################################################################################
 
 PIPE_BUILD_PACKAGE: 
-	@vlog +incdir+${UVM_HOME} +incdir+${PIPE_INCLUDE_DIR} ${PIPE_FILES_PACKAGE}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${PIPE_INCLUDE_DIR} ${PIPE_FILES_PACKAGE}  -suppress 2275
 	@echo PIPE Pacakge BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 
 PIPE_BUILD_INTERFACES: 
-	@vlog +incdir+${UVM_HOME} +incdir+${PIPE_INCLUDE_DIR} ${PIPE_FILES_INTERFACE}  -suppress 2275 -suppress 2286
+	@vlog +incdir+${UVM_HOME} +incdir+${PIPE_INCLUDE_DIR} ${PIPE_FILES_INTERFACE}  -suppress 2275
 	@echo PIPE Interfaces BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
 
