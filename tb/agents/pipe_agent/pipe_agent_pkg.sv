@@ -3,8 +3,8 @@ package pipe_agent_pkg;
   import uvm_pkg::*;
   import common_pkg::*;
   
-  `include "uvm_macros.svh"
   `include "settings.svh"
+  `include "uvm_macros.svh"
   `include "pipe_types.svh"
   `include "pipe_seq_item.svh"
   `include "pipe_agent_config.svh"
