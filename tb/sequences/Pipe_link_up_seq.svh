@@ -7,7 +7,7 @@ class pipe_link_up_seq extends pipe_base_seq;
   ts_s tses_received [`NUM_OF_LANES];
   int idle_data_received [`NUM_OF_LANES];
 
-  rand gen_t           max_gen_suported;
+  rand gen_t           max_gen_supported;
   rand bit   [7:0]     link_number;
   rand bit   [7:0]     n_fts;
   rand int             random_start_polling;
@@ -50,20 +50,20 @@ task pipe_link_up_seq::body;
   ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = 0;
   ts_sent.link_number      = this.link_number;
-  ts_sent.use_n_fts        = false;
-  ts_sent.use_link_number  = false;
-  ts_sent.use_lane_number  = false;
-  ts_sent.max_gen_suported = this.max_gen_suported;
+  ts_sent.use_n_fts        = 0;
+  ts_sent.use_link_number  = 0;
+  ts_sent.use_lane_number  = 0;
+  ts_sent.max_gen_supported = this.max_gen_supported;
   ts_sent.ts_type          = TS1;
 
   for (int i = 0; i < `NUM_OF_LANES; i++) begin
     tses_sent[i].n_fts            = this.n_fts;
     tses_sent[i].lane_number      = i;
     tses_sent[i].link_number      = this.link_number;
-    tses_sent[i].use_n_fts        = false;
-    tses_sent[i].use_link_number  = false;
-    tses_sent[i].use_lane_number  = false;
-    tses_sent[i].max_gen_suported = this.max_gen_suported;
+    tses_sent[i].use_n_fts        = 0;
+    tses_sent[i].use_link_number  = 0;
+    tses_sent[i].use_lane_number  = 0;
+    tses_sent[i].max_gen_supported = this.max_gen_supported;
     tses_sent[i].ts_type          = TS1;
   end
 
