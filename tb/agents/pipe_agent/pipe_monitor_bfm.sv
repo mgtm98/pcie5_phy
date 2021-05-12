@@ -242,6 +242,7 @@ interface pipe_monitor_bfm
         wait(PhyStatus[i]==0);
         assert (RxStatus[i]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
+      proxy.early_start_polling();
     
       wait(TxDetectRxLoopback==0);
       @(posedge PCLK);

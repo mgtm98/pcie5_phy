@@ -241,6 +241,10 @@ function void pipe_monitor::pipe_polling_state_start();
   -> pipe_agent_config_h.start_polling_e;
  endfunction
 
+ function void pipe_monitor::early_start_polling();
+  `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
+  -> pipe_agent_config_h.start_early_polling_e;
+ endfunction
 
 function void pipe_monitor::notify_idle_data_detected();
   `uvm_info (get_type_name (), $sformatf ("notify_idle_data_detected is called"), UVM_MEDIUM)
