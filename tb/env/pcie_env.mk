@@ -1,5 +1,5 @@
 ENV_ROOT_PATH			?= .																# root of the files to be compiled
-ENV_INCLUDE_DIR  	:= $(strip $(ENV_ROOT_PATH))/../..	# include directory for the `include 
+ENV_INCLUDE_DIR  	:= $(strip $(ENV_ROOT_PATH))/..	# include directory for the `include 
 ENV_FILES					:=  																# files to be compiled
 COMPILE 					= $(strip $(ENV_ROOT_PATH))/$(1) 		# used to append the root_path to the file_name
 
