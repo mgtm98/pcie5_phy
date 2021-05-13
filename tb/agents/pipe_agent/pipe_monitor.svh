@@ -46,6 +46,7 @@ class pipe_monitor extends uvm_monitor;
   extern function void pipe_polling_state_start();
   extern function void notify_idle_data_detected();
   extern function void early_start_polling();
+  
 endclass: pipe_monitor
    
 function pipe_monitor::new(string name = "pipe_monitor", uvm_component parent = null);
