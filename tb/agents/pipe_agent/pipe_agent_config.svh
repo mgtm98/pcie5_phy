@@ -22,7 +22,7 @@ class pipe_agent_config extends uvm_object;
   event start_early_polling_e;
   event reset_finished_e;
   event idle_data_detected_e;
-  
+  event detected_posedge_clk_e;
   extern function new(string name = "pipe_agent_config");
   
 endclass

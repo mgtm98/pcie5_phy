@@ -46,6 +46,7 @@ class pipe_monitor extends uvm_monitor;
   extern function void pipe_polling_state_start();
   extern function void notify_idle_data_detected();
   extern function void early_start_polling();
+  extern task  detect_posedge_clk();
   
 endclass: pipe_monitor
    
@@ -66,6 +67,10 @@ function void pipe_monitor::connect_phase(uvm_phase phase);
   pipe_monitor_bfm_h.proxy = this;
   -> pipe_monitor_bfm_h.build_connect_finished_e;
 endfunction: connect_phase
+
+task pipe_monitor::detect_posedge_clk();
+  -> pipe_agent_config_h.detected_posedge_clk_e;
+endtask
 
 task pipe_monitor::detect_link_up();
   pipe_seq_item pipe_seq_item_h;

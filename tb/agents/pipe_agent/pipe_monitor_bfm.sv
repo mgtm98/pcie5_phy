@@ -86,6 +86,13 @@ interface pipe_monitor_bfm
     end
   end
 
+  //clock wait
+initial begin
+  forever begin
+    @(posedge PCLK)
+    proxy.detect_posedge_clk;
+  end
+end
   /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );

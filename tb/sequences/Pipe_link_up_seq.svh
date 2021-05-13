@@ -102,7 +102,7 @@ task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
   wait(pipe_agent_config_h.start_polling.triggered);
   while (rec_8_ts1 < 8) begin
-    wait(pipe_agent_config_h.detected_tses.triggered)
+    wait(pipe_agent_config_h.detected_tses_e.triggered)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
         rec_8_ts1++;
       end
@@ -125,7 +125,7 @@ endtask
 
 task pipe_link_up_seq::polling_active_state;
   if (random_start_polling == 1) begin
-    repeat(delay_polling) @(posedge pclk);
+    repeat(delay_polling) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
   end
   fork
     begin
@@ -139,21 +139,21 @@ endtask
 
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
-  wait(pipe_agent_config_h.detected_tses.triggered)
+  wait(pipe_agent_config_h.detected_tses_e.triggered)
   while (pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
     start_item (pipe_seq_item_h);
-        if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; & ts_sent.ts_type == TS2})
+        if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
         begin
           `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
         end
     finish_item (pipe_seq_item_h);
-    wait(pipe_agent_config_h.detected_tses.triggered)
+    wait(pipe_agent_config_h.detected_tses_e.triggered);
   end
-  int rec_8_ts2 = 0;
   fork
     begin
+      int rec_8_ts2 = 0;
       while(rec_8_ts2 < 8) begin
-      wait(pipe_agent_config_h.detected_tses.triggered)
+      wait(pipe_agent_config_h.detected_tses_e.triggered)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS2) begin
         rec_8_ts2++;
       end
@@ -161,9 +161,9 @@ task pipe_link_up_seq::polling_configuration_state;
     end
   
     begin
-      for (i = 0; i < 16; i++) begin
+      for (int i = 0; i < 16; i++) begin
       start_item (pipe_seq_item_h);
-      if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; & ts_sent.ts_type == TS2})
+      if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
       begin
         `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
       end
