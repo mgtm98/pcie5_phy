@@ -19,6 +19,8 @@ class pipe_link_up_seq extends pipe_base_seq;
   extern local task polling_state;
   extern local task polling_active_state;
   extern local task polling_configuration_state;
+  extern local task receiving_8_ts1;
+  extern local task sending_1024_ts1;
   extern local task config_state;
   extern local task config_linkwidth_start_state_upstream;
   extern local task config_linkwidth_accept_state_upstream;
@@ -86,7 +88,7 @@ endtask: body
 
 task pipe_link_up_seq::detect_state;
   wait(pipe_agent_config_h.receiver_detected_e.triggered);
-  `uvm_info("Receiver detected");
+  `uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::polling_state;
@@ -97,7 +99,7 @@ endtask
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   //check it s okay to be in task receiving
-  `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM);
+  `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
   wait(pipe_agent_config_h.start_polling.triggered);
   while (rec_8_ts1 < 8) begin
     wait(pipe_agent_config_h.detected_tses.triggered)
@@ -123,7 +125,7 @@ endtask
 
 task pipe_link_up_seq::polling_active_state;
   if (random_start_polling == 1) begin
-    repeat(delay_polling) @(posedge pclk)
+    repeat(delay_polling) @(posedge pclk);
   end
   fork
     begin
