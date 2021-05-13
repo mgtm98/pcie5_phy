@@ -88,7 +88,7 @@ endtask: body
 
 task pipe_link_up_seq::detect_state;
   wait(pipe_agent_config_h.receiver_detected_e.triggered);
-  `uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
+  `uvm_info(get_type(), "Receiver detected", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::polling_state;
