@@ -176,36 +176,6 @@ end
   endtask
 
 /******************************* RESET# Scenario detection *******************************/
-  // int temp[2:0];
-  // initial begin
-  //   forever begin   
-  //     wait(Reset==1);
-  //     @(posedge PCLK);
-  //     //check on default values
-  //     assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset")
-  //     assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset")
-  //     //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during Reset");
-  //     assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset")
-    
-  //     //check that PCLK is operational
-  //     // TODO: Uncomment the next line when they add the PCLK_Rate in the design specs and know the width
-  //     // temp=PclkRate;   //shared or per lane?
-  //     @(posedge PCLK);
-  //     assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
-    
-  //     wait(Reset==0);
-  //     @(posedge PCLK);
-    
-  //     foreach(PhyStatus[i]) begin 
-  //       wait(PhyStatus[i]==0);
-  //     end
-  //     @(posedge PCLK);
-  //     proxy.notify_reset_detected();
-  //     `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Reset scenario)", UVM_LOW);
-  //   end
-  // end
-
-/******************************* RESET# Scenario detection *******************************/
   logic [4:0] temp;
   initial begin
     forever begin   
@@ -228,6 +198,10 @@ end
       foreach(PhyStatus[i]) begin 
         wait(PhyStatus[i]==0);
       end
+
+      @(posedge PCLK);
+      proxy.notify_reset_detected();
+     `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW);
     end
   end
 
@@ -254,7 +228,7 @@ end
       wait(TxDetectRxLoopback==0);
       @(posedge PCLK);
       proxy.notify_receiver_detected();
-      `uvm_info ("pipe_monitor_bfm", "Monitor BFM Detected (Receiver detection scenario)", UVM_MEDIUM)
+      `uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
     end
   end
 
