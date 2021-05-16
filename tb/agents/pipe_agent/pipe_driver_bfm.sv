@@ -74,14 +74,6 @@ import pipe_agent_pkg::*;
 // Data Members
 //------------------------------------------
 gen_t current_gen;
-bit [15:0] lfsr [`NUM_OF_LANES];
-
-function void reset_lfsr ();
-  foreach(lfsr[i])
-  begin
-    lfsr[i] = 16'hFFFF;
-  end
-endfunction
 
 
 //starting polling state
@@ -411,46 +403,92 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
 
 endtask
 
-// task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
-//    fork
-//     variable no. of process
-//     scrambler (0000, )
-//    join
-//    hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
-//    scrambling w n-send 3l signals
-//     @(posedge PCLK);
-//     RxValid = 1'b1;
-//     RxData [7:0] = 8'b0000_0000;
-//     RxDataK = 1'b0;    // at2kd
-// endtask
 
-// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+/******************************* Normal Data Operation *******************************/
+
+bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
+bit [22:0] lfsr_3_4_5 [pipe_num_of_lanes];
+byte data [$];
+bit k_data [$];
+
+function void reset_lfsr ();
+  foreach(lfsr_1_2[i])
+  begin
+    lfsr_1_2[i] = 16'hFFFF;
+  end
+  foreach(lfsr_3_4_5[i])
+  begin
+    lfsr_3_4_5[i] = 16'h0000;
+  end
+endfunction
+
+function void send_tlp (tlp_t tlp);
+	if (current_gen == GEN1 || current_gen == GEN2) begin
+	end
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)begin
+	end
+endfunction
+
+function void send_dllp (dllp_t dllp);
+	if (current_gen == GEN1 || current_gen == GEN2) begin
+	end
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
+	end
+endfunction
+
+function void send_idle_data ();
+endfunction
+
+task send_data (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+	if (current_gen == GEN1 || current_gen == GEN2)
+		send_data_gen_1_2 (start_lane, end_lane);
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
+	 	send_data_gen_3_4_5 (start_lane, end_lane);
+endtask
+
+task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+endtask
+
+task send_data_gen_3_4_5 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+endtask
+
+function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+	if (current_gen == GEN1 || current_gen == GEN2)
+		return scramble_gen_1_2 (in_data,  lane_num);
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
+		return scramble_gen_3_4_5 (in_data, lane_num);
+endfunction
+
+function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
+endfunction
+
+// function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
 //   bit [15:0] lfsr_new;
 
 //   // LFSR value after 8 serial clocks
 //   for (i=0; i<8; i++)
 //   begin
-//     lfsr_new[ 0] = lfsr [lane_num] [15];
-//     lfsr_new[ 1] = lfsr [lane_num] [ 0];
-//     lfsr_new[ 2] = lfsr [lane_num] [ 1];
-//     lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 6] = lfsr [lane_num] [ 5];
-//     lfsr_new[ 7] = lfsr [lane_num] [ 6];
-//     lfsr_new[ 8] = lfsr [lane_num] [ 7];
-//     lfsr_new[ 9] = lfsr [lane_num] [ 8];
-//     lfsr_new[10] = lfsr [lane_num] [ 9];
-//     lfsr_new[11] = lfsr [lane_num] [10];
-//     lfsr_new[12] = lfsr [lane_num] [11];
-//     lfsr_new[13] = lfsr [lane_num] [12];
-//     lfsr_new[14] = lfsr [lane_num] [13];
-//     lfsr_new[15] = lfsr [lane_num] [14];       
+//     lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
+//     lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
+//     lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
+//     lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
+//     lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
+//     lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
+//     lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
+//     lfsr_new[11] = lfsr_1_2 [lane_num] [10];
+//     lfsr_new[12] = lfsr_1_2 [lane_num] [11];
+//     lfsr_new[13] = lfsr_1_2 [lane_num] [12];
+//     lfsr_new[14] = lfsr_1_2 [lane_num] [13];
+//     lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
 
 //     // Generation of Scrambled Data
-//     scrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+//     scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
     
-//     lfsr [lane_num] = lfsr_new;
+//     lfsr_1_2 [lane_num] = lfsr_new;
 //   end
 //   return scrambled_data;
 // endfunction
