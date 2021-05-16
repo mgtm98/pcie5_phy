@@ -411,6 +411,24 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
 
 endtask
 
+initial begin
+  forever begin
+    @(PclkRate);
+    @(posedge PCLK);
+    PclkChangeOk <= 1;
+  end
+end
+
+  task change_speed();
+    // @(TxElecIdle && RxStandby);
+    // wait random amount of time
+    @(posedge PCLK);
+    PhyStatus <= 1;
+    @(posedge PCLK);
+    PhyStatus <= 0;
+    PclkChangeOk <= 0;
+  endtask : change_speed
+
 // task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
 //    fork
 //     variable no. of process

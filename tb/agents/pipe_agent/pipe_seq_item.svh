@@ -13,7 +13,7 @@ class pipe_seq_item extends uvm_sequence_item;
   rand dllp_t dllp;
   rand pipe_width_t pipe_width;
   rand pclk_rate_t pclk_rate;
-  rand gen_t gen;
+  rand gen_t gen;                                 // TODO: where is gen ysed in seq item
   rand ts_s ts_sent;
   rand ts_s tses_sent [`NUM_OF_LANES];
   

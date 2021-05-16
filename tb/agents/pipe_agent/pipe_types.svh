@@ -23,6 +23,8 @@ typedef struct {
   bit                   use_lane_number;
   gen_t                 max_gen_supported;
   ts_type_t             ts_type;
+  bit                   speed_change;                     // need to be added in the send/recv tasks
+  bit                   auto_speed_change;                // need to be added in the send/recv tasks
 } ts_s;
 
 typedef enum {
@@ -32,7 +34,7 @@ typedef enum {
   ENTER_RECOVERY, 
   // ENTER_L0S, 
   // EXIT_L0S, 
-  SPEED_CHANGE, 
+  SPEED_CHANGE,         // speed change is used to direct the driver to change the speed using pipe signals
   RESET, 
   PCLK_RATE_CHANGE,
   WIDTH_CHANGE,
