@@ -18,9 +18,9 @@ include ../top/top.mk
 TEST								?= pcie_test
 SEQ									?= reset_vseq,link_up_vseq
 
-build_pipe: 				COMMON_BUILD PIPE_BUILD_PACKAGE PIPE_BUILD_INTERFACES
-build_lpif: 				COMMON_BUILD LPIF_BUILD_PACKAGE LPIF_BUILD_INTERFACES
-build_agents: 			COMMON_BUILD build_pipe build_lpif
+build_pipe: 			COMMON_BUILD PIPE_BUILD_PACKAGE PIPE_BUILD_INTERFACES
+build_lpif: 			COMMON_BUILD LPIF_BUILD_PACKAGE LPIF_BUILD_INTERFACES
+build_agents: 			build_pipe build_lpif
 build_seq:    			build_agents SEQ_BUILD
 build_env:    			build_agents ENV_BUILD
 build_test:    			build_agents build_env build_seq TEST_BUILD

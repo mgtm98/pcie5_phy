@@ -44,6 +44,7 @@ task pipe_driver::run_phase(uvm_phase phase);
       SEND_TS: pipe_driver_bfm_h.send_ts(pipe_seq_item_h.ts_sent);
       SEND_TSES: pipe_driver_bfm_h.send_tses(pipe_seq_item_h.tses_sent);
       SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data();
+      SPEED_CHANGE: pipe_driver_bfm_h.change_speed();
     endcase
     seq_item_port.item_done();
   end

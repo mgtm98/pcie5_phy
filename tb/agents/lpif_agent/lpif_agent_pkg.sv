@@ -3,7 +3,6 @@ package lpif_agent_pkg;
   import uvm_pkg::*;
   import common_pkg::*;
 
-  // `define UVM_REPORT_DISABLE_FILE_LINE  1
   `include "settings.svh"
   `include "uvm_macros.svh"
   `include "lpif_types.svh"

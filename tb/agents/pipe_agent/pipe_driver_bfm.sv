@@ -404,6 +404,69 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
 endtask
 
 
+initial begin
+  forever begin
+    @(PclkRate);
+    @(posedge PCLK);
+    PclkChangeOk <= 1;
+  end
+end
+
+  task change_speed();
+    // @(TxElecIdle && RxStandby);
+    // wait random amount of time
+    @(posedge PCLK);
+    PhyStatus <= 1;
+    @(posedge PCLK);
+    PhyStatus <= 0;
+    PclkChangeOk <= 0;
+  endtask : change_speed
+
+// task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
+//    fork
+//     variable no. of process
+//     scrambler (0000, )
+//    join
+//    hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
+//    scrambling w n-send 3l signals
+//     @(posedge PCLK);
+//     RxValid = 1'b1;
+//     RxData [7:0] = 8'b0000_0000;
+//     RxDataK = 1'b0;    // at2kd
+// endtask
+
+// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+//   bit [15:0] lfsr_new;
+
+//   // LFSR value after 8 serial clocks
+//   for (i=0; i<8; i++)
+//   begin
+//     lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
+//     lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
+//     lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
+//     lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
+//     lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
+//     lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
+//     lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
+//     lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
+//     lfsr_new[11] = lfsr_1_2 [lane_num] [10];
+//     lfsr_new[12] = lfsr_1_2 [lane_num] [11];
+//     lfsr_new[13] = lfsr_1_2 [lane_num] [12];
+//     lfsr_new[14] = lfsr_1_2 [lane_num] [13];
+//     lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
+
+//     // Generation of Scrambled Data
+//     scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
+    
+//     lfsr_1_2 [lane_num] = lfsr_new;
+//   end
+//   return scrambled_data;
+// endfunction
+
+
 /******************************* Normal Data Operation *******************************/
 
 bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
@@ -463,36 +526,5 @@ function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane
 endfunction
 
 // function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-//   bit [15:0] lfsr_new;
-
-//   // LFSR value after 8 serial clocks
-//   for (i=0; i<8; i++)
-//   begin
-//     lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
-//     lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
-//     lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
-//     lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
-//     lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
-//     lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
-//     lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
-//     lfsr_new[11] = lfsr_1_2 [lane_num] [10];
-//     lfsr_new[12] = lfsr_1_2 [lane_num] [11];
-//     lfsr_new[13] = lfsr_1_2 [lane_num] [12];
-//     lfsr_new[14] = lfsr_1_2 [lane_num] [13];
-//     lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
-
-//     // Generation of Scrambled Data
-//     scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
-    
-//     lfsr_1_2 [lane_num] = lfsr_new;
-//   end
-//   return scrambled_data;
-// endfunction
-
-
 
 endinterface
