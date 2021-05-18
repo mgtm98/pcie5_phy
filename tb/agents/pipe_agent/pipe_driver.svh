@@ -37,14 +37,14 @@ task pipe_driver::run_phase(uvm_phase phase);
   begin
     seq_item_port.get_next_item(pipe_seq_item_h);
     case(pipe_seq_item_h.pipe_operation)
-      // TLP_TRANSFER: pipe_driver_bfm_h.send_tlp(pipe_seq_item_h.tlp);
-      // DLLP_TRANSFER: pipe_driver_bfm_h.send_dllp(pipe_seq_item_h.dllp);
+      TLP_TRANSFER: pipe_driver_bfm_h.send_tlp(pipe_seq_item_h.tlp);
+      DLLP_TRANSFER: pipe_driver_bfm_h.send_dllp(pipe_seq_item_h.dllp);
       // PCLK_RATE_CHANGE: pipe_driver_bfm_h.change_pclk_rate(pipe_seq_item_h.pclk_rate);
       // WIDTH_CHANGE: pipe_driver_bfm_h.change_width(pipe_seq_item_h.pipe_width);
       SEND_TS: pipe_driver_bfm_h.send_ts(pipe_seq_item_h.ts_sent);
       SEND_TSES: pipe_driver_bfm_h.send_tses(pipe_seq_item_h.tses_sent);
+      SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data();
       SPEED_CHANGE: pipe_driver_bfm_h.change_speed();
-      // SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data(pipe_seq_item_h.start_lane, pipe_seq_item_h.end_lane);
     endcase
     seq_item_port.item_done();
   end
