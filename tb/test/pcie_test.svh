@@ -23,6 +23,7 @@ class pcie_test extends uvm_test;
   // Standard UVM Methods:
   extern function new(string name = "pcie_test", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
+  extern function void end_of_elaboration_phase (uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
 endclass: pcie_test
@@ -63,13 +64,15 @@ function void pcie_test::build_phase(uvm_phase phase);
   pcie_env_h = pcie_env::type_id::create("pcie_env_h", this);
 endfunction: build_phase
 
+function void pcie_test::end_of_elaboration_phase(uvm_phase phase);
+  uvm_top.print_topology();
+endfunction : end_of_elaboration_phase
 
 task pcie_test::run_phase(uvm_phase phase);
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];
   base_vseq vseq;
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
-
   phase.raise_objection(this, "pcie_test");
   //get a string from the commandline arguments
   cmdline_proc.get_arg_value("+VSEQ=", arguments_value);
