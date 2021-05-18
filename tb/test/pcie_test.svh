@@ -69,10 +69,14 @@ function void pcie_test::end_of_elaboration_phase(uvm_phase phase);
 endfunction : end_of_elaboration_phase
 
 task pcie_test::run_phase(uvm_phase phase);
+  uvm_factory factory = uvm_coreservice_t::get().get_factory();
+
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];
-  base_vseq vseq;
+  base_vseq vseq= base_vseq::type_id::create("vseq");
+
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
+
   phase.raise_objection(this, "pcie_test");
   //get a string from the commandline arguments
   cmdline_proc.get_arg_value("+VSEQ=", arguments_value);
@@ -81,17 +85,21 @@ task pcie_test::run_phase(uvm_phase phase);
   
   foreach (used_vsequences[i]) 
   begin
+
+
+    factory.set_inst_override_by_name( vseq.get_type_name(), used_vsequences[i], { get_full_name(), ".vseq" } );
+
       //checking which vseq should be used
-    case(used_vsequences[i])
-      // "link_up_vseq":         vseq = link_up_vseq::type_id::create("vseq");
-      // "reset_vseq":           vseq = reset_vseq::type_id::create("vseq");
+    //case(used_vsequences[i])
+      //"link_up_vseq":         vseq = link_up_vseq::type_id::create("vseq");
+      //"reset_vseq":           vseq = reset_vseq::type_id::create("vseq");
       // "data_exchange_vseq":   vseq = data_exchange_vseq::type_id::create("vseq");
       // "enter_recovery_vseq":  vseq = enter_recovery_vseq::type_id::create("vseq");
       // "speed_change_vseq":    vseq = speed_change_vseq::type_id::create("vseq");
       // "enter_l0s_vseq":       vseq = enter_l0s_vseq::type_id::create("vseq");
       // "exit_l0s_vseq":        vseq = exit_l0s_vseq::type_id::create("vseq");
-      default:                `uvm_fatal(get_name(), "This virtual sequence doesn't exist")
-    endcase
+      //default:                `uvm_fatal(get_name(), "This virtual sequence doesn't exist")
+    //  endcase
 
     //assigning the secquencers handles
     vseq.lpif_sequencer_h = pcie_env_h.lpif_agent_h.lpif_sequencer_h;
