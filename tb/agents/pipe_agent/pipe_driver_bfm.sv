@@ -540,6 +540,9 @@ function void send_dllp (dllp_t dllp);
 endfunction
 
 function void send_idle_data ();
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    data.push_back(000000000);            K_data.push_back(D); //control but scrambled
+  end
 endfunction
 
 task send_data (int start_lane = 0, int end_lane = pipe_num_of_lanes);
