@@ -73,7 +73,9 @@ task pcie_test::run_phase(uvm_phase phase);
 
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];
-  base_vseq vseq= base_vseq::type_id::create("vseq");
+  base_vseq vseq;
+  uvm_object temp;
+
 
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
 
@@ -87,7 +89,8 @@ task pcie_test::run_phase(uvm_phase phase);
   begin
 
 
-    factory.set_inst_override_by_name( vseq.get_type_name(), used_vsequences[i], { get_full_name(), ".vseq" } );
+    temp = factory.create_object_by_name( used_vsequences[i], get_full_name(), used_vsequences[i]);
+    $cast(vseq,temp);
 
       //checking which vseq should be used
     //case(used_vsequences[i])
