@@ -1,5 +1,9 @@
 `include "settings.svh"
+`include "uvm_macros.svh"
 
+import uvm_pkg::*;
+import pipe_agent_pkg::*;
+import common_pkg::*;
 interface pipe_driver_bfm
   #(
     parameter pipe_num_of_lanes,
@@ -64,9 +68,7 @@ interface pipe_driver_bfm
   input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
-`include "uvm_macros.svh"
-import uvm_pkg::*;
-import pipe_agent_pkg::*;
+
   
 
   
@@ -510,6 +512,31 @@ task send_data (int start_lane = 0, int end_lane = pipe_num_of_lanes);
 endtask
 
 task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  static int lanenum;
+  byte data_scrambled [$];
+  for(int i = 0; i < data.size(); i++) begin
+    lanenum = $floor(i*(8.0/pipe_max_width));
+    lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
+    if(k_data [i] == 0) begin
+      data_scrambled[i] = scramble(data[i],lanenum);
+    end
+    else if (k_data [i] == 1) begin
+      data_scrambled[i] = data[i];
+    end
+  end
+  for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width_param+1)/8) begin
+    @ (posedge PCLK);    
+    for (int j = k; j < pipe_num_of_lanes + k; j = j + 1) begin
+      for (int i = j - k; i < (bus_data_width_param+1)/8; i = i + pipe_num_of_lanes) begin
+        RxData[(8*i) +: 8] = data_scrambled.pop_front();
+      end
+    end
+  end
+  if (!(lanenum == pipe_num_of_lanes)) begin
+    for (int j = lanenum + 1; j < (bus_data_width_param+1)/8; j = j ++) begin
+      RxData [(8*j) +: 8] = 8'h00;
+    end
+  end
 endtask
 
 task send_data_gen_3_4_5 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
@@ -525,6 +552,28 @@ endfunction
 function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 endfunction
 
-// function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-
+function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
+endfunction
 endinterface
+
+module tb;
+  initial begin
+    int bus_data_width_param = 31;
+    int pipe_num_of_lanes =2;
+    byte data_scrambled[$]={11111111, 00000000, 11110000, 10101010, 01010101, 00001111};
+    logic [31:0] RxData;
+            $display("%p", data_scrambled);
+    $display("%d", data_scrambled.size());
+    
+
+  for (int k = 0; k < data_scrambled.size() + (bus_data_width_param+1)/8; k = k + (bus_data_width_param+1)/8) begin
+#5;
+    for (int j = k; j < pipe_num_of_lanes + k; j = j + 1) begin
+      for (int i = j - k; i < (bus_data_width_param+1)/8 + k; i = i + pipe_num_of_lanes) begin
+        RxData[(8*i) +: 7 ] = data_scrambled.pop_front();
+      end
+    end
+    $display("%b", RxData);
+  end
+  end
+endmodule

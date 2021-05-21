@@ -11,9 +11,10 @@ class pipe_link_up_seq extends pipe_base_seq;
   rand bit   [7:0]     link_number;
   rand bit   [7:0]     n_fts;
   rand int             random_start_polling;
-  rand int             delay_polling;
+  rand int             delay_clocks;
 
   constraint random_start_polling_c {random_start_polling inside {0, 1, 2};}
+  constraint delay_clocks_c {delay_clocks inside {[1:5]};}
   // Methods
   extern local task detect_state;
   extern local task polling_state;
@@ -73,7 +74,7 @@ task pipe_link_up_seq::body;
     fork
       detect_state;
       begin
-        wait(pipe_agent_config_h.start_early_polling_e.triggered)
+        repeat(delay_clocks) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
         polling_state;
       end
     join
@@ -100,7 +101,7 @@ task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   //check it s okay to be in task receiving
   `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
-  wait(pipe_agent_config_h.start_polling.triggered);
+  wait(pipe_agent_config_h.DUT_start_polling_e.triggered);
   while (rec_8_ts1 < 8) begin
     wait(pipe_agent_config_h.detected_tses_e.triggered)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
@@ -125,7 +126,7 @@ endtask
 
 task pipe_link_up_seq::polling_active_state;
   if (random_start_polling == 1) begin
-    repeat(delay_polling) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
+    repeat(delay_clocks) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
   end
   fork
     begin
@@ -170,7 +171,7 @@ task pipe_link_up_seq::polling_configuration_state;
       finish_item (pipe_seq_item_h);
       end
     end
-    join
+  join
 endtask
 
 task pipe_link_up_seq::config_state;

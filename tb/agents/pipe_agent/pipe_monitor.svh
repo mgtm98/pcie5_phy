@@ -41,12 +41,13 @@ class pipe_monitor extends uvm_monitor;
   // extern function void notify_gen_change_received(gen_t gen);
   extern function void notify_reset_detected();
   extern function void notify_receiver_detected();
+  extern task  exit_electricle_idle();
   // extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   // extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
-  extern function void pipe_polling_state_start();
+  extern function void DUT_polling_state_start();
   extern function void notify_idle_data_detected();
-  extern function void early_start_polling();
   extern task  detect_posedge_clk();
+  extern task  power_down_change();
   
 endclass: pipe_monitor
    
@@ -83,6 +84,15 @@ task pipe_monitor::detect_link_up();
   ap_received.write(pipe_seq_item_h);
 endtask
 
+task pipe_monitor:: exit_electricle_idle();
+  -> pipe_agent_config_h.detected_exit_electricle_idle_e;
+  pipe_monitor_bfm_h.detected_exit_electricle_idle_e = pipe_agent_config_h.detected_exit_electricle_idle_e;
+endtask
+
+task pipe_monitor:: power_down_change();
+  -> pipe_agent_config_h.power_down_change_e;
+  pipe_monitor_bfm_h.detected_power_down_change_e = pipe_agent_config_h.power_down_change_e;
+endtask
 
 function void pipe_monitor::notify_tses_received(ts_s tses [`NUM_OF_LANES]);
   pipe_agent_config_h.tses_received = tses;
@@ -242,15 +252,11 @@ endfunction
 //   ap_received.write(pipe_seq_item_h);
 // endfunction
 
-function void pipe_monitor::pipe_polling_state_start();
-  `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
-  -> pipe_agent_config_h.start_polling_e;
+function void pipe_monitor::DUT_polling_state_start();
+  `uvm_info (get_type_name (), $sformatf ("DUT_polling_state_start is called"), UVM_MEDIUM)
+  -> pipe_agent_config_h.DUT_start_polling_e;
  endfunction
 
- function void pipe_monitor::early_start_polling();
-  `uvm_info (get_type_name (), $sformatf ("pipe_polling_state_start is called"), UVM_MEDIUM)
-  -> pipe_agent_config_h.start_early_polling_e;
- endfunction
 
 function void pipe_monitor::notify_idle_data_detected();
   `uvm_info (get_type_name (), $sformatf ("notify_idle_data_detected is called"), UVM_MEDIUM)
