@@ -28,7 +28,7 @@ task pipe_data_transmit_seq::body();
   // Wait for the sequencer to give grant
 	repeat(num_of_packets) begin
 	  start_item(pipe_seq_item_h);
-	  if (!pipe_seq_item_h.randomize() with {pipe_operation == TLP_TRANSFER || pipe_operation == DLLP_TRANSFER;})
+	  if (!pipe_seq_item_h.randomize() with {pipe_operation == pipe_agent_pkg::TLP_TRANSFER || pipe_operation == pipe_agent_pkg::DLLP_TRANSFER;})
 	  begin
 	    `uvm_fatal(get_name(), "Couldn't randomize the pipe_seq_item")
 	  end

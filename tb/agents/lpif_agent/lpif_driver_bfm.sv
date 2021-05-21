@@ -48,72 +48,75 @@ interface lpif_driver_bfm #(
   endtask
 
 /********************************** Normal Data Operation ***********************************/
-  bit [7:0] data [$];
-  bit tlp_start [$];
-  bit tlp_end [$];
-  bit dllp_start [$];
-  bit dllp_end [$];
+  bit [7:0] data_queue [$];
+  bit tlp_start_queue [$];
+  bit tlp_end_queue [$];
+  bit dllp_start_queue [$];
+  bit dllp_end_queue [$];
 
   function void send_tlp(tlp_t tlp);
     foreach(tlp[i]) begin
-      data.push_back(tlp[i]);
-      tlp_start.push_back(0);
-      tlp_end.push_back(0);
-      dllp_start.push_back(0);
-      dllp_end.push_back(0);
+      data_queue.push_back(tlp[i]);
+      tlp_start_queue.push_back(0);
+      tlp_end_queue.push_back(0);
+      dllp_start_queue.push_back(0);
+      dllp_end_queue.push_back(0);
     end
-    tlp_start.pop_front();
-    tlp_start.push_front(1);
-    tlp_end.pop_back();
-    tlp_end.push_back(1);
+    tlp_start_queue.pop_front();
+    tlp_start_queue.push_front(1);
+    tlp_end_queue.pop_back();
+    tlp_end_queue.push_back(1);
   endfunction
 
   function void send_dllp(dllp_t dllp);
     foreach(dllp[i]) begin
-      data.push_back(dllp[i]);
-      tlp_start.push_back(0);
-      tlp_end.push_back(0);
-      dllp_start.push_back(0);
-      dllp_end.push_back(0);
+      data_queue.push_back(dllp[i]);
+      tlp_start_queue.push_back(0);
+      tlp_end_queue.push_back(0);
+      dllp_start_queue.push_back(0);
+      dllp_end_queue.push_back(0);
     end
-    dllp_start.pop_front();
-    dllp_start.push_front(1);
-    dllp_end.pop_back();
-    dllp_end.push_back(1);
+    dllp_start_queue.pop_front();
+    dllp_start_queue.push_front(1);
+    dllp_end_queue.pop_back();
+    dllp_end_queue.push_back(1);
   endfunction
 
   task send_data();
+    longint unsigned i;
+    longint unsigned j;
+    longint unsigned num_of_loops;
     lp_irdy <= 1;
-    longint unsigned num_of_loops = data.size() / (lpif_bus_width / 8);
-    for(longint unsigned i = 0; i < num_of_loops; i++) begin
-      for(int j = 0; j < lpif_bus_width / 8; j++) begin
-        lp_data[(j*8)+:8] <= data.pop_front();
-        tlp_start[j] <= tlp_start.pop_front();
-        tlp_end[j] <= tlp_end.pop_front();
-        dllp_start[j] <= dllp_start.pop_front();
-        dllp_end[j] <= dllp_end.pop_front();
+    num_of_loops = data_queue.size() / (lpif_bus_width / 8);
+    for(i = 0; i < num_of_loops; i++) begin
+      for(j = 0; j < lpif_bus_width / 8; j++) begin
+        lp_data[(j*8)+:8] <= data_queue.pop_front();
+        lp_tlp_start[j] <= tlp_start_queue.pop_front();
+        lp_tlp_end[j] <= tlp_end_queue.pop_front();
+        lp_dllp_start[j] <= dllp_start_queue.pop_front();
+        lp_dllp_end[j] <= dllp_end_queue.pop_front();
         lp_valid[j] <= 1;
       end
       wait(pl_trdy == 1);
       @(posedge lclk);
     end
-    for(int i = 0; i < lpif_bus_width / 8; i++) begin
+    for(i = 0; i < lpif_bus_width / 8; i++) begin
       lp_valid[i] <= 0;
     end
-    if(data.size() != 0) begin
-      num_of_loops = data.size();
-      for(int i = 0; i < num_of_loops; i++) begin
-        lp_data[(i*8)+:8] <= data.pop_front();
-        tlp_start[i] <= tlp_start.pop_front();
-        tlp_end[i] <= tlp_end.pop_front();
-        dllp_start[i] <= dllp_start.pop_front();
-        dllp_end[i] <= dllp_end.pop_front();
+    if(data_queue.size() != 0) begin
+      num_of_loops = data_queue.size();
+      for(i = 0; i < num_of_loops; i++) begin
+        lp_data[(i*8)+:8] <= data_queue.pop_front();
+        lp_tlp_start[i] <= tlp_start_queue.pop_front();
+        lp_tlp_end[i] <= tlp_end_queue.pop_front();
+        lp_dllp_start[i] <= dllp_start_queue.pop_front();
+        lp_dllp_end[i] <= dllp_end_queue.pop_front();
         lp_valid[i] <= 1;
       end
       wait(pl_trdy == 1);
       @(posedge lclk);
     end
-    for(int i = 0; i < lpif_bus_width / 8; i++) begin
+    for(i = 0; i < lpif_bus_width / 8; i++) begin
       lp_valid[i] <= 0;
     end
     lp_irdy <= 0;

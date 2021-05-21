@@ -66,6 +66,7 @@ interface pipe_driver_bfm
 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
+import common_pkg::*;
 import pipe_agent_pkg::*;
   
 

@@ -69,7 +69,8 @@ function void pcie_test::end_of_elaboration_phase(uvm_phase phase);
 endfunction : end_of_elaboration_phase
 
 task pcie_test::run_phase(uvm_phase phase);
-  uvm_factory factory = uvm_coreservice_t::get().get_factory();
+  // uvm_factory factory = uvm_coreservice_t::get().get_factory();
+  uvm_factory factory = uvm_factory::get();
 
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];

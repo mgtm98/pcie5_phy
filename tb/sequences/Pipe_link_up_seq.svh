@@ -25,13 +25,11 @@ class pipe_link_up_seq extends pipe_base_seq;
   extern local task config_linkwidth_start_state_upstream;
   extern local task config_linkwidth_accept_state_upstream;
   extern local task config_lanenum_wait_state_upstream;
-  extern local task config_lanenum_accept_state_upstream;
   extern local task config_complete_state_upstream;
   extern local task config_idle_state_upstream;
   extern local task config_linkwidth_start_state_downstream;
   extern local task config_linkwidth_accept_state_downstream;
   extern local task config_lanenum_wait_state_downstream;
-  extern local task config_lanenum_accept_state_downstream;
   extern local task config_complete_state_downstream;
   extern local task config_idle_state_downstream;
   
@@ -191,16 +189,17 @@ endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int unsigned num_of_ts1s_with_non_pad_link_number [`NUM_OF_LANES];
+  bit two_consecutive_ts1s_with_non_pad_link_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
-  int unsigned num_of_ts1s_with_non_pad_link_number [`NUM_OF_LANES];
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts1s_with_non_pad_link_number[i])
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
-  bit two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
+  two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
   fork
     begin
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
@@ -241,9 +240,11 @@ endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  bit [7:0] used_link_num;
+  bit ts1_with_non_pad_lane_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   // Use the link number of the ts1s on the first lane to be transmitted
-  bit [7:0] used_link_num = tses_received[0].link_number;
+  used_link_num = tses_received[0].link_number;
   foreach(tses_sent[i])
   begin
     tses_sent[i].link_number = used_link_num;
@@ -273,9 +274,9 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
           assert (tses_received[i].ts_type == TS1) 
           else   `uvm_error(get_name(), "Expected TS1s but detected TS2s")
           // Non PAD lane number
-          if(tses_received[i].use_lane_num)
+          if(tses_received[i].use_lane_number)
           begin
-            ts1_with_non_pad_lane_number_detected = 1
+            ts1_with_non_pad_lane_number_detected = 1;
           end
         end
       end
@@ -293,16 +294,17 @@ endtask
 
 task pipe_link_up_seq::config_lanenum_wait_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int num_of_ts2_received [`NUM_OF_LANES];
+  bit two_consecutive_ts2s_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
-  int num_of_ts2_received [`NUM_OF_LANES];
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts2_received[i])
   begin
     num_of_ts2_received[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
-  bit two_consecutive_ts2s_detected = 0;
+  two_consecutive_ts2s_detected = 0;
   fork
     begin
       while (!two_consecutive_ts2s_detected)
@@ -343,8 +345,10 @@ endtask
 
 task pipe_link_up_seq::config_complete_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int num_of_ts2_received [`NUM_OF_LANES];
+  bit eight_consecutive_ts2s_detected;
+  int i;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
-  int num_of_ts2_received [`NUM_OF_LANES];  
 
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts2_received[i])
@@ -352,14 +356,14 @@ task pipe_link_up_seq::config_complete_state_upstream;
     num_of_ts2_received[i] = 0;
   end
 
-  foreach (tses_sent) begin
-    tses_sent.ts_type = TS2;
+  foreach (tses_sent[i]) begin
+    tses_sent[i].ts_type = TS2;
   end
   
   pipe_seq_item_h.tses_sent = tses_sent;
 
   // Transmit 16 TS2s until 8 consecutive TS2s are received
-  bit eight_consecutive_ts2s_detected = 0;
+  eight_consecutive_ts2s_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.detected_tses_e);
@@ -410,8 +414,10 @@ endtask
 
 task pipe_link_up_seq::config_idle_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int num_of_idle_data_received [`NUM_OF_LANES];
+  bit eight_consecutive_idle_data_detected;
+  int i;
   pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
-  int num_of_idle_data_received [`NUM_OF_LANES];  
 
   // Initialize the num_of_idle_data_received array with zeros
   foreach(num_of_idle_data_received[i])
@@ -420,7 +426,7 @@ task pipe_link_up_seq::config_idle_state_upstream;
   end
 
   // Transmit 16 idle data until 8 consecutive idle data are received
-  bit eight_consecutive_idle_data_detected = 0;
+  eight_consecutive_idle_data_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
@@ -459,6 +465,8 @@ endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];
+  bit two_ts1s_with_same_link_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   foreach(tses_sent[i])
   begin
@@ -466,7 +474,6 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
     tses_sent[i].use_link_number = 1;
   end
   pipe_seq_item_h.tses_sent = tses_sent;
-  int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];  
   // Initialize the num_of_detected_ts1s_with_same_link_number array with zeros
   foreach(num_of_detected_ts1s_with_same_link_number[i])
   begin
@@ -490,7 +497,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
         
         foreach(tses_received[i])
         begin
-          if(tses_received[i].link_number == link_number && tses_received.use_link_number)
+          if(tses_received[i].link_number == link_number && tses_received[i].use_link_number)
           begin
             num_of_detected_ts1s_with_same_link_number[i] += 1;
           end
@@ -524,11 +531,14 @@ endtask
 
 task pipe_link_up_seq::config_lanenum_wait_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int unsigned num_of_detected_ts1s_with_same_lane_numbers;
+  bit two_ts1s_with_same_lane_numbers_detected;
+  bit all_lane_numbers_are_correct;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
-  int unsigned num_of_detected_ts1s_with_same_lane_numbers = 0;
   // Send ts1s with the generated lane numbers until two ts1s are received with the same link numbers
-  bit two_ts1s_with_same_lane_numbers_detected = 0;
+  num_of_detected_ts1s_with_same_lane_numbers = 0;
+  two_ts1s_with_same_lane_numbers_detected = 0;
   fork
     begin
       while (!two_ts1s_with_same_lane_numbers_detected)
@@ -543,7 +553,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
         @(pipe_agent_config_h.detected_tses_e);
         tses_received = pipe_agent_config_h.tses_received;
         
-        bit all_lane_numbers_are_correct = 1;
+        all_lane_numbers_are_correct = 1;
         foreach(tses_received[i])
         begin
           if(tses_received[i].lane_number != tses_sent[i].lane_number || !tses_received[i].use_lane_number)
@@ -572,8 +582,10 @@ endtask
 
 task pipe_link_up_seq::config_complete_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int num_of_ts2_received [`NUM_OF_LANES];
+  bit eight_consecutive_ts2s_detected;
+  int i;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
-  int num_of_ts2_received [`NUM_OF_LANES];  
 
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts2_received[i])
@@ -581,14 +593,14 @@ task pipe_link_up_seq::config_complete_state_downstream;
     num_of_ts2_received[i] = 0;
   end
 
-  foreach (tses_sent)
-    tses_sent.ts_type = TS2;
+  foreach (tses_sent[i]) begin
+    tses_sent[i].ts_type = TS2;
   end
   
   pipe_seq_item_h.tses_sent = tses_sent;
 
   // Transmit 16 TS2s until 8 consecutive TS2s are received
-  bit eight_consecutive_ts2s_detected = 0;
+  eight_consecutive_ts2s_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.detected_tses_e);
@@ -639,8 +651,10 @@ endtask
 
 task pipe_link_up_seq::config_idle_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  int num_of_idle_data_received [`NUM_OF_LANES];
+  bit eight_consecutive_idle_data_detected;
+  int i;
   pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
-  int num_of_idle_data_received [`NUM_OF_LANES];  
 
   // Initialize the num_of_idle_data_received array with zeros
   foreach(num_of_idle_data_received[i])
@@ -649,7 +663,7 @@ task pipe_link_up_seq::config_idle_state_downstream;
   end
 
   // Transmit 16 idle data until 8 consecutive idle data are received
-  bit eight_consecutive_idle_data_detected = 0;
+  eight_consecutive_idle_data_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
