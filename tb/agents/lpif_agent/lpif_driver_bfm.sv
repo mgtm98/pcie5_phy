@@ -34,9 +34,9 @@ interface lpif_driver_bfm #(
   );
 
   `include "uvm_macros.svh"
-  import lpif_agent_pkg::*;
   import uvm_pkg::*;
   import common_pkg::*;
+  import lpif_agent_pkg::*;
 
   task link_up ();
   	lp_state_req <= LINK_RESET;
@@ -47,13 +47,76 @@ interface lpif_driver_bfm #(
   	@(posedge lclk);
   endtask
 
-  task send_tlp(tlp_t tlp);
-    //to be implemented
-  endtask
+/********************************** Normal Data Operation ***********************************/
+  bit [7:0] data [$];
+  bit tlp_start [$];
+  bit tlp_end [$];
+  bit dllp_start [$];
+  bit dllp_end [$];
 
+  function void send_tlp(tlp_t tlp);
+    foreach(tlp[i]) begin
+      data.push_back(tlp[i]);
+      tlp_start.push_back(0);
+      tlp_end.push_back(0);
+      dllp_start.push_back(0);
+      dllp_end.push_back(0);
+    end
+    tlp_start.pop_front();
+    tlp_start.push_front(1);
+    tlp_end.pop_back();
+    tlp_end.push_back(1);
+  endfunction
 
-  task send_dllp(dllp_t dllp);
-    //to be implemented
+  function void send_dllp(dllp_t dllp);
+    foreach(dllp[i]) begin
+      data.push_back(dllp[i]);
+      tlp_start.push_back(0);
+      tlp_end.push_back(0);
+      dllp_start.push_back(0);
+      dllp_end.push_back(0);
+    end
+    dllp_start.pop_front();
+    dllp_start.push_front(1);
+    dllp_end.pop_back();
+    dllp_end.push_back(1);
+  endfunction
+
+  task send_data();
+    lp_irdy <= 1;
+    longint unsigned num_of_loops = data.size() / (lpif_bus_width / 8);
+    for(longint unsigned i = 0; i < num_of_loops; i++) begin
+      for(int j = 0; j < lpif_bus_width / 8; j++) begin
+        lp_data[(j*8)+:8] <= data.pop_front();
+        tlp_start[j] <= tlp_start.pop_front();
+        tlp_end[j] <= tlp_end.pop_front();
+        dllp_start[j] <= dllp_start.pop_front();
+        dllp_end[j] <= dllp_end.pop_front();
+        lp_valid[j] <= 1;
+      end
+      wait(pl_trdy == 1);
+      @(posedge lclk);
+    end
+    for(int i = 0; i < lpif_bus_width / 8; i++) begin
+      lp_valid[i] <= 0;
+    end
+    if(data.size() != 0) begin
+      num_of_loops = data.size();
+      for(int i = 0; i < num_of_loops; i++) begin
+        lp_data[(i*8)+:8] <= data.pop_front();
+        tlp_start[i] <= tlp_start.pop_front();
+        tlp_end[i] <= tlp_end.pop_front();
+        dllp_start[i] <= dllp_start.pop_front();
+        dllp_end[i] <= dllp_end.pop_front();
+        lp_valid[i] <= 1;
+      end
+      wait(pl_trdy == 1);
+      @(posedge lclk);
+    end
+    for(int i = 0; i < lpif_bus_width / 8; i++) begin
+      lp_valid[i] <= 0;
+    end
+    lp_irdy <= 0;
   endtask
 
   task reset ();
