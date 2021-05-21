@@ -1,5 +1,4 @@
 `include "settings.svh"
-`include "uvm_macros.svh"
 
 import uvm_pkg::*;
 import pipe_agent_pkg::*;
@@ -69,7 +68,7 @@ interface pipe_driver_bfm
 );
 
 
-  
+`include "uvm_macros.svh" 
 
   
 //------------------------------------------

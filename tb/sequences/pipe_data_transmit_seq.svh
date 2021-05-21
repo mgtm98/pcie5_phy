@@ -1,12 +1,17 @@
 class pipe_data_transmit_seq extends pipe_base_seq;
+
   `uvm_object_utils(pipe_data_transmit_seq)
+
   rand int num_of_packets;
+
   constraint num_of_packets_c {
   	num_of_packets >= 10;
   	num_of_packets <= 100;
   }
+
   extern function new(string name = "pipe_data_transmit_seq");
   extern virtual task body();
+  
 endclass //pipe_data_transmit_seq
 
 function pipe_data_transmit_seq::new(string name = "pipe_data_transmit_seq");
@@ -23,7 +28,7 @@ task pipe_data_transmit_seq::body();
   // Wait for the sequencer to give grant
 	repeat(num_of_packets) begin
 	  start_item(pipe_seq_item_h);
-	  if (!pipe_seq_item_h.randomize() with {pipe_operation == TLP_TRANSFER || pipe_operation == DLLP_TRANSFER;})
+	  if (!pipe_seq_item_h.randomize() with {pipe_operation == pipe_agent_pkg::TLP_TRANSFER || pipe_operation == pipe_agent_pkg::DLLP_TRANSFER;})
 	  begin
 	    `uvm_fatal(get_name(), "Couldn't randomize the pipe_seq_item")
 	  end
