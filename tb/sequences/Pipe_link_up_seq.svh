@@ -46,8 +46,9 @@ function pipe_link_up_seq::new(string name = "pipe_link_up_seq");
 endfunction
   
 task pipe_link_up_seq::body;
-  super.body;
-  this.randomize();
+  if(!this.randomize()) begin
+    `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
+  end
 
   ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = 0;
