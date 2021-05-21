@@ -471,6 +471,9 @@ end
 
 bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
 bit [22:0] lfsr_3_4_5 [pipe_num_of_lanes];
+bit [0:10] tlp_length_field;
+byte tlp_gen3_symbol_0;
+byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
 
@@ -487,19 +490,59 @@ endfunction
 
 function void send_tlp (tlp_t tlp);
 	if (current_gen == GEN1 || current_gen == GEN2) begin
+    data.push_back(`STP_gen_1_2);          K_data.push_back(K);
+
+    for (int i = 0; i < tlp.size(); i++) begin
+      data.push_back(tlp[i]);              K_data.push_back(D);
+    end
+
+    data.push_back(`END_gen_1_2);          K_data.push_back(K);
+
 	end
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)begin
+    tlp_length_field  = tlp.size() + 2;
+    tlp_gen3_symbol_0 = {`STP_gen_3 , tlp_length_field[0:3]};
+    tlp_gen3_symbol_1 = {tlp_length_field[4:10] , 1'b0};
+
+    data.push_back(tlp_gen3_symbol_0);    K_data.push_back(K); //nosaha K w nosaha D ???
+    data.push_back(tlp_gen3_symbol_1);    K_data.push_back(D);
+    //check if i need K_data queue in gen3 or not??
+    //check on lenth constraint of TLP , is it different than earlier gens??? 
+    for (int i = 0; i < tlp.size(); i++) begin
+      data.push_back(tlp[i]);              K_data.push_back(D);
+    end
+
 	end
 endfunction
 
 function void send_dllp (dllp_t dllp);
 	if (current_gen == GEN1 || current_gen == GEN2) begin
+    data.push_back(`SDP_gen_1_2);          K_data.push_back(K);
+    data.push_back(dllp[0]);               K_data.push_back(D);
+    data.push_back(dllp[1]);               K_data.push_back(D);
+    data.push_back(dllp[2]);               K_data.push_back(D);
+    data.push_back(dllp[3]);               K_data.push_back(D);
+    data.push_back(dllp[4]);               K_data.push_back(D);
+    data.push_back(dllp[5]);               K_data.push_back(D);
+    data.push_back(`END_gen_1_2);          K_data.push_back(K);
 	end
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
+    //check if i need K_data queue in gen3 or not??
+    data.push_back(`SDP_gen_3_symbol_0);   K_data.push_back(K);
+    data.push_back(`SDP_gen_3_symbol_1);   K_data.push_back(K);
+    data.push_back(dllp[0]);               K_data.push_back(D);
+    data.push_back(dllp[1]);               K_data.push_back(D);
+    data.push_back(dllp[2]);               K_data.push_back(D);
+    data.push_back(dllp[3]);               K_data.push_back(D);
+    data.push_back(dllp[4]);               K_data.push_back(D);
+    data.push_back(dllp[5]);               K_data.push_back(D);
 	end
 endfunction
 
 function void send_idle_data ();
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    data.push_back(000000000);            K_data.push_back(D); //control but scrambled
+  end
 endfunction
 
 task send_data (int start_lane = 0, int end_lane = pipe_num_of_lanes);

@@ -7,6 +7,11 @@ typedef enum{
 } ts_type_t;
 
 typedef enum{
+  D=0,
+  K=1
+} D_K_character;
+
+typedef enum{
   GEN1,
   GEN2,
   GEN3,
