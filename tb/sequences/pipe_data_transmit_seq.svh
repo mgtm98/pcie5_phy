@@ -1,12 +1,17 @@
 class pipe_data_transmit_seq extends pipe_base_seq;
+
   `uvm_object_utils(pipe_data_transmit_seq)
+
   rand int num_of_packets;
+
   constraint num_of_packets_c {
   	num_of_packets >= 10;
   	num_of_packets <= 100;
   }
+
   extern function new(string name = "pipe_data_transmit_seq");
   extern virtual task body();
+  
 endclass //pipe_data_transmit_seq
 
 function pipe_data_transmit_seq::new(string name = "pipe_data_transmit_seq");
