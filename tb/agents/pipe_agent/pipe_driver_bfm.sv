@@ -478,7 +478,6 @@ task send_data ();
 endtask
 
 task send_data_gen_1_2 ();
-task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   static int lanenum;
   byte data_scrambled [$];
   static int pipe_width = get_width();
