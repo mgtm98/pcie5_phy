@@ -26,13 +26,13 @@ interface pipe_driver_bfm
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
-  input logic [bus_data_width_param:0]      TxData,    
-  input logic [pipe_num_of_lanes-1:0]       TxDataValid,
-  input logic [bus_data_kontrol_param:0]    TxDataK,
-  input logic [pipe_num_of_lanes-1:0]       TxStartBlock,
-  input logic [2*pipe_num_of_lanes-1:0]     TxSyncHeader,
-  input logic [pipe_num_of_lanes-1:0]       TxElecIdle,
-  input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
+  input  logic [bus_data_width_param:0]      TxData,    
+  input  logic [pipe_num_of_lanes-1:0]       TxDataValid,
+  input  logic [bus_data_kontrol_param:0]    TxDataK,
+  input  logic [pipe_num_of_lanes-1:0]       TxStartBlock,
+  input  logic [2*pipe_num_of_lanes-1:0]     TxSyncHeader,
+  input  logic [pipe_num_of_lanes-1:0]       TxElecIdle,
+  input  logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
   input  logic [3:0]                         PowerDown,
@@ -49,26 +49,28 @@ interface pipe_driver_bfm
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  output logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients,
-  input  logic [18*pipe_num_of_lanes-1:0]   TxDeemph,
-  output logic [6*pipe_num_of_lanes-1:0]    LocalFS,
-  output logic [6*pipe_num_of_lanes-1:0]    LocalLF,
-  input  logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients,
-  output logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid,
-  input  logic [6*pipe_num_of_lanes-1:0]    FS,    // TODO: Review specs for these values
-  input  logic [6*pipe_num_of_lanes-1:0]    LF,    // TODO: Review specs for these values
-  input  logic [pipe_num_of_lanes-1:0]      RxEqEval,
-  input  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
-  input  logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange,
+  output logic [18*pipe_num_of_lanes-1:0]    LocalTxPresetCoeffcients,
+  input  logic [18*pipe_num_of_lanes-1:0]    TxDeemph,
+  output logic [6*pipe_num_of_lanes-1:0]     LocalFS,
+  output logic [6*pipe_num_of_lanes-1:0]     LocalLF,
+  input  logic [pipe_num_of_lanes-1:0]       GetLocalPresetCoeffcients,
+  output logic [pipe_num_of_lanes-1:0]       LocalTxCoeffcientsValid,
+  input  logic [6*pipe_num_of_lanes-1:0]     FS,    // TODO: Review specs for these values
+  input  logic [6*pipe_num_of_lanes-1:0]     LF,    // TODO: Review specs for these values
+  input  logic [pipe_num_of_lanes-1:0]       RxEqEval,
+  input  logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
+  input  logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
+  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
 
-  input logic                               PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  input logic                                PCLK,     //TODO: This signal is removed 
+  input logic [4:0]                          PclkRate     //TODO: This signal is removed 
 );
 
-
-`include "uvm_macros.svh" 
+`include "uvm_macros.svh"
+import uvm_pkg::*;
+import common_pkg::*;
+import pipe_agent_pkg::*;
 
   
 //------------------------------------------
@@ -157,9 +159,9 @@ task send_ts(ts_s ts, int start_lane = 0, int end_lane = pipe_num_of_lanes);
     end
     else 
       RxData <= 8'h1E;
+    
     //Symbol 1
     @(posedge PCLK);
-
     if(ts.use_link_number)
     begin
       RxData <= ts.link_number;
@@ -423,51 +425,6 @@ end
     PclkChangeOk <= 0;
   endtask : change_speed
 
-// task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
-//    fork
-//     variable no. of process
-//     scrambler (0000, )
-//    join
-//    hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
-//    scrambling w n-send 3l signals
-//     @(posedge PCLK);
-//     RxValid = 1'b1;
-//     RxData [7:0] = 8'b0000_0000;
-//     RxDataK = 1'b0;    // at2kd
-// endtask
-
-// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
-//   bit [15:0] lfsr_new;
-
-//   // LFSR value after 8 serial clocks
-//   for (i=0; i<8; i++)
-//   begin
-//     lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
-//     lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
-//     lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
-//     lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
-//     lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
-//     lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
-//     lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
-//     lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
-//     lfsr_new[11] = lfsr_1_2 [lane_num] [10];
-//     lfsr_new[12] = lfsr_1_2 [lane_num] [11];
-//     lfsr_new[13] = lfsr_1_2 [lane_num] [12];
-//     lfsr_new[14] = lfsr_1_2 [lane_num] [13];
-//     lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
-
-//     // Generation of Scrambled Data
-//     scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
-    
-//     lfsr_1_2 [lane_num] = lfsr_new;
-//   end
-//   return scrambled_data;
-// endfunction
-
-
 /******************************* Normal Data Operation *******************************/
 
 bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
@@ -484,6 +441,16 @@ function void reset_lfsr ();
   begin
     lfsr_3_4_5[i] = 16'h0000;
   end
+endfunction
+
+function int get_width ();
+	int lane_width;
+	case (Width)
+		2'b00: lane_width = 8;
+		2'b01: lane_width = 16;
+		2'b11: lane_width = 32;
+	endcase
+	return lane_width;
 endfunction
 
 function void send_tlp (tlp_t tlp);
@@ -503,13 +470,14 @@ endfunction
 function void send_idle_data ();
 endfunction
 
-task send_data (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+task send_data ();
 	if (current_gen == GEN1 || current_gen == GEN2)
-		send_data_gen_1_2 (start_lane, end_lane);
+		send_data_gen_1_2 ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
-	 	send_data_gen_3_4_5 (start_lane, end_lane);
+	 	send_data_gen_3_4_5 ();
 endtask
 
+task send_data_gen_1_2 ();
 task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   static int lanenum;
   byte data_scrambled [$];
@@ -544,7 +512,53 @@ task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   end
 endtask
 
-task send_data_gen_3_4_5 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+task automatic send_data_gen_3_4_5 ();
+  int unsigned data_block_size = (128*pipe_num_of_lanes)/8;
+  int num_of_idle_data = data_block_size - (data.size() % data_block_size);
+  int num_of_data_blocks = data.size()/data_block_size;   
+  int lane_width = get_width();
+  int num_of_clks = 128/lane_width;
+  int num_of_bytes_in_lane = lane_width/8;
+  assert (PowerDown == 4'b0000) 
+  else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
+  if (data.size() % data_block_size != 0) begin
+    for (int i = 0; i < num_of_idle_data; i++) begin
+      data.push_back(8'b00000000);
+      k_data.push_back(0);
+    end
+  end
+  RxElecIdle = 1'b0;  
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    RxDataValid [i] = 1'b1;
+    RxValid [i] = 1'b1;
+  end
+  for (int i = 0; i < num_of_data_blocks; i++) begin 
+    for (int j = 0; j < num_of_clks; j++) begin 
+      for (int k = 0; k < num_of_bytes_in_lane; k++) begin
+        for (int l = 0; l < pipe_num_of_lanes; l++) begin
+          if (j == 0) begin
+            RxStartBlock [l] = 1'b1;
+            RxSyncHeader [l*2 +: 2] = 2'b10;
+          end
+          else begin
+            RxStartBlock [l] = 1'b0;
+          end
+          RxDataK [l*pipe_max_width/8 + k] = k_data.pop_front();
+          if (RxDataK [l*pipe_max_width/8 + k]) begin
+            RxData [(l*pipe_max_width + (k*8)) +: 8] = data.pop_front();
+          end
+          else begin
+            RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(data.pop_front(),l);
+          end
+        end
+      end
+      @(posedge PCLK);
+    end
+  end
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    RxDataValid [i] = 1'b0;
+    RxValid [i] = 1'b0;
+  end
 endtask
 
 function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
@@ -554,10 +568,38 @@ function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
 		return scramble_gen_3_4_5 (in_data, lane_num);
 endfunction
 
+function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
+  bit [15:0] lfsr_new;
+  bit [7:0] scrambled_data;
+
+  // LFSR value after 8 serial clocks
+  for (int i = 0; i < 8; i++)
+  begin
+    lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
+    lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
+    lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
+    lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
+    lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
+    lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
+    lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
+    lfsr_new[11] = lfsr_1_2 [lane_num] [10];
+    lfsr_new[12] = lfsr_1_2 [lane_num] [11];
+    lfsr_new[13] = lfsr_1_2 [lane_num] [12];
+    lfsr_new[14] = lfsr_1_2 [lane_num] [13];
+    lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
+
+    // Generation of Scrambled Data
+    scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
+    
+    lfsr_1_2 [lane_num] = lfsr_new;
+  end
+  return scrambled_data;
+endfunction
+
 function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 endfunction
-
-function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-endfunction
 endinterface
-

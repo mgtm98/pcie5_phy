@@ -46,18 +46,18 @@ interface pipe_monitor_bfm
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  input logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients,
-  input  logic [18*pipe_num_of_lanes-1:0]   TxDeemph,
-  input logic [6*pipe_num_of_lanes-1:0]    LocalFS,
-  input logic [6*pipe_num_of_lanes-1:0]    LocalLF,
-  input  logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients,
-  input logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid,
-  input  logic [6*pipe_num_of_lanes-1:0]    FS,    // TODO: Review specs for these values
-  input  logic [6*pipe_num_of_lanes-1:0]    LF,    // TODO: Review specs for these values
-  input  logic [pipe_num_of_lanes-1:0]      RxEqEval,
-  input  logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
-  input  logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange,
+  input logic [18*pipe_num_of_lanes-1:0]    LocalTxPresetCoeffcients,
+  input logic [18*pipe_num_of_lanes-1:0]    TxDeemph,
+  input logic [6*pipe_num_of_lanes-1:0]     LocalFS,
+  input logic [6*pipe_num_of_lanes-1:0]     LocalLF,
+  input logic [pipe_num_of_lanes-1:0]       GetLocalPresetCoeffcients,
+  input logic [pipe_num_of_lanes-1:0]       LocalTxCoeffcientsValid,
+  input logic [6*pipe_num_of_lanes-1:0]     FS,    // TODO: Review specs for these values
+  input logic [6*pipe_num_of_lanes-1:0]     LF,    // TODO: Review specs for these values
+  input logic [pipe_num_of_lanes-1:0]       RxEqEval,
+  input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
+  input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
 
   input logic                               PCLK,     //TODO: This signal is removed 
@@ -69,19 +69,13 @@ interface pipe_monitor_bfm
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
 
+  gen_t current_gen;
+
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
 
   pipe_monitor proxy;
-  bit [15:0] lfsr[pipe_num_of_lanes];
-
-  function void reset_lfsr;
-    foreach(lfsr[i])
-    begin
-      lfsr[i] = 16'hFFFF;
-    end
-  endfunction
 
   initial begin
     @(build_connect_finished_e);
@@ -89,7 +83,7 @@ interface pipe_monitor_bfm
       proxy.detect_link_up;
     end
   end
-
+ 
   //clock wait
 initial begin
   forever begin
@@ -377,46 +371,30 @@ end
       end    
   endtask
   
-
-  // task receive_data ();
-  //   @(posedge PCLK);
-  //   TxValid = 1'b1;
-  //   RxData [7:0] = 8'b0000_0000;
-  //   RxDataK = 1'b0;    // at2kd
-  // if data l gat == 0 masln ha2ol de idle data 
-  // endtask
-
-  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
-    bit [15:0] lfsr_new;
-    bit [7:0] descrambled_data;
-
-    // LFSR value after 8 serial clocks
-    for (int i=0; i<8; i++)
+  //waiting on power down to be P0
+  initial 
+  begin
+    forever
     begin
-      lfsr_new[ 0] = lfsr [lane_num] [15];
-      lfsr_new[ 1] = lfsr [lane_num] [ 0];
-      lfsr_new[ 2] = lfsr [lane_num] [ 1];
-      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-      lfsr_new[ 6] = lfsr [lane_num] [ 5];
-      lfsr_new[ 7] = lfsr [lane_num] [ 6];
-      lfsr_new[ 8] = lfsr [lane_num] [ 7];
-      lfsr_new[ 9] = lfsr [lane_num] [ 8];
-      lfsr_new[10] = lfsr [lane_num] [ 9];
-      lfsr_new[11] = lfsr [lane_num] [10];
-      lfsr_new[12] = lfsr [lane_num] [11];
-      lfsr_new[13] = lfsr [lane_num] [12];
-      lfsr_new[14] = lfsr [lane_num] [13];
-      lfsr_new[15] = lfsr [lane_num] [14];       
-  
-      // Generation of Decrambled Data
-      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
-      
-      lfsr [lane_num] = lfsr_new;
+        for (int i = 0; i < pipe_num_of_lanes; i++) begin
+          @ (PowerDown[i] == 'b00);
+        end
+        
+        for (int i = 0; i < pipe_num_of_lanes; i++) begin
+          @ (PhyStatus[i] == 1);
+        end
+        // TODO: CLK or PCLK
+        @(posedge PCLK);
+        for (int i = 0; i < pipe_num_of_lanes; i++) begin
+          @ (PhyStatus[i] == 0);
+        end
+
+        for (int i = 0; i < pipe_num_of_lanes; i++) begin
+          @ (TxElecIdle[i] == 0)	;
+        end
+        proxy.pipe_polling_state_start();
     end
-    return descrambled_data;
-  endfunction
+  end  
 
   //wait for exit electricle idle
   initial begin
@@ -462,16 +440,58 @@ end
         proxy.DUT_polling_state_start();
     end
   end  
+  
+/******************************* Normal Data Operation *******************************/
 
-  // Receive Idle Data
-  // initial
-  // begin
-  //   forever
-  //   begin
-  //     receive_idle_data();
-  //     proxy.notify_idle_data_detected();
-  //   end
-  // end
+  bit [15:0] lfsr[pipe_num_of_lanes];
 
+  function void reset_lfsr;
+    foreach(lfsr[i])
+    begin
+      lfsr[i] = 16'hFFFF;
+    end
+  endfunction
+
+  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
+	if (current_gen == GEN1 || current_gen == GEN2)
+		return descramble_gen_1_2 (in_data,  lane_num);
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
+		return descramble_gen_3_4_5 (in_data, lane_num);
+  endfunction
+
+  function bit [7:0] descramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
+    bit [15:0] lfsr_new;
+    bit [7:0] descrambled_data;
+
+    // LFSR value after 8 serial clocks
+    for (int i = 0; i < 8; i++)
+    begin
+      lfsr_new[ 0] = lfsr [lane_num] [15];
+      lfsr_new[ 1] = lfsr [lane_num] [ 0];
+      lfsr_new[ 2] = lfsr [lane_num] [ 1];
+      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
+      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
+      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
+      lfsr_new[ 6] = lfsr [lane_num] [ 5];
+      lfsr_new[ 7] = lfsr [lane_num] [ 6];
+      lfsr_new[ 8] = lfsr [lane_num] [ 7];
+      lfsr_new[ 9] = lfsr [lane_num] [ 8];
+      lfsr_new[10] = lfsr [lane_num] [ 9];
+      lfsr_new[11] = lfsr [lane_num] [10];
+      lfsr_new[12] = lfsr [lane_num] [11];
+      lfsr_new[13] = lfsr [lane_num] [12];
+      lfsr_new[14] = lfsr [lane_num] [13];
+      lfsr_new[15] = lfsr [lane_num] [14];       
+  
+      // Generation of Decrambled Data
+      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+      
+      lfsr [lane_num] = lfsr_new;
+    end
+    return descrambled_data;
+  endfunction
+
+	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
+	endfunction
 endinterface
 

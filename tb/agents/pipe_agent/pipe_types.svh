@@ -45,7 +45,8 @@ typedef enum {
   WIDTH_CHANGE,
   SEND_TS,
   SEND_TSES,
-  SEND_IDLE_DATA
+  SEND_IDLE_DATA,
+  SEND_DATA
 } pipe_operation_t;
 
 typedef enum bit[4:0]{
