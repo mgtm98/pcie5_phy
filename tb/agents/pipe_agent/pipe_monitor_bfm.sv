@@ -1,3 +1,5 @@
+import common_pkg::*;
+
 interface pipe_monitor_bfm 
   #(
     parameter pipe_num_of_lanes,
@@ -70,6 +72,8 @@ interface pipe_monitor_bfm
   gen_t current_gen;
 
   event build_connect_finished_e;
+  event detected_exit_electricle_idle_e;
+  event detected_power_down_change_e;
 
   pipe_monitor proxy;
 
@@ -217,7 +221,6 @@ end
         wait(PhyStatus[i]==0);
         assert (RxStatus[i]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
-      proxy.early_start_polling();
     
       wait(TxDetectRxLoopback==0);
       @(posedge PCLK);
@@ -443,6 +446,59 @@ end
     return descrambled_data;
   endfunction
 
+  //wait for exit electricle idle
+  initial begin
+    forever begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
+        @ (TxElecIdle[i] == 0);
+      end
+      proxy.exit_electricle_idle();
+    end
+  end
+
+  //wait for powerdown change
+  initial begin
+    forever begin
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
+        @ (PowerDown[i]);
+      end
+      
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
+        @ (PhyStatus[i] == 1);
+      end
+
+      @(posedge PCLK);
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
+        @ (PhyStatus[i] == 0);
+      end
+      proxy.power_down_change();
+    end
+  end
+
+  //waiting on power down to be P0
+  initial begin
+    forever begin
+        wait(detected_power_down_change_e.triggered);
+        for (int i = 0; i < pipe_num_of_lanes; i++) begin
+          assert (PowerDown[i] == 2'b00) 
+          else begin
+            wait(detected_power_down_change_e.triggered);
+            i = 0;
+          end
+        end
+        wait(detected_exit_electricle_idle_e.triggered);
+        proxy.DUT_polling_state_start();
+    end
+  end  
+
+  // Receive Idle Data
+  // initial
+  // begin
+  //   forever
+  //   begin
+  //     receive_idle_data();
+  //     proxy.notify_idle_data_detected();
+  //   end
 	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 	endfunction
 endinterface

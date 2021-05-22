@@ -6,9 +6,9 @@ class pipe_base_seq extends uvm_sequence #(pipe_seq_item);
 
   pipe_agent_config pipe_agent_config_h;
 
-  
   extern function new(string name = "pipe_base_seq");
   extern task pre_body();
+  
 endclass: pipe_base_seq
 
 function pipe_base_seq::new(string name = "pipe_base_seq");

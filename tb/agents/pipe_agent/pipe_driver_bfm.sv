@@ -1,5 +1,8 @@
 `include "settings.svh"
 
+import uvm_pkg::*;
+import pipe_agent_pkg::*;
+import common_pkg::*;
 interface pipe_driver_bfm
   #(
     parameter pipe_num_of_lanes,
@@ -68,7 +71,6 @@ interface pipe_driver_bfm
 import uvm_pkg::*;
 import common_pkg::*;
 import pipe_agent_pkg::*;
-  
 
   
 //------------------------------------------
@@ -475,7 +477,42 @@ task send_data ();
 	 	send_data_gen_3_4_5 ();
 endtask
 
+<<<<<<< HEAD
 task send_data_gen_1_2 ();
+=======
+task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  static int lanenum;
+  byte data_scrambled [$];
+  static int pipe_width = get_width();
+  static int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
+  for(int i = 0; i < data.size(); i++) begin
+    lanenum = $floor(i*(8.0/pipe_width));
+    lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
+    if(k_data [i] == 0) begin
+      data_scrambled[i] = scramble(data[i],lanenum);
+    end
+    else if (k_data [i] == 1) begin
+      data_scrambled[i] = data[i];
+    end
+  end
+  
+  //function bt3t maggie btrg3 width
+  for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width+1)/8) begin
+    @ (posedge PCLK);    
+    for (int j = k; j < pipe_num_of_lanes + k; j = j ++) begin
+      for (int i = j - k; i < (bus_data_width+1)/8; i = i + pipe_num_of_lanes) begin
+        RxData[(8*i) +: 8] = data_scrambled.pop_front();
+        RxDataK[i] = k_data.pop_front();
+      end
+    end
+  end
+  if (!(lanenum == pipe_num_of_lanes)) begin
+    for (int j = lanenum + 1; j < (bus_data_width+1)/8; j = j ++) begin
+      RxData [(8*j) +: 8] = 8'h00;
+      RxDataK[j] = 1'b0;
+    end
+  end
+>>>>>>> origin/master
 endtask
 
 task automatic send_data_gen_3_4_5 ();
@@ -538,6 +575,7 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
   bit [15:0] lfsr_new;
   bit [7:0] scrambled_data;
 
+<<<<<<< HEAD
   // LFSR value after 8 serial clocks
   for (int i = 0; i < 8; i++)
   begin
@@ -567,5 +605,9 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
 endfunction
 
 function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
+=======
+function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
+>>>>>>> origin/master
 endfunction
 endinterface
+
