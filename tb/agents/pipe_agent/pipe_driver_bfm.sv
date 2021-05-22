@@ -513,8 +513,8 @@ endtask
 task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   static int lanenum;
   byte data_scrambled [$];
-  int pipe_width = get_width();
-  int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
+  static int pipe_width = get_width();
+  static int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
   for(int i = 0; i < data.size(); i++) begin
     lanenum = $floor(i*(8.0/pipe_width));
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
