@@ -26,13 +26,13 @@ interface pipe_driver_bfm
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
-  input logic [bus_data_width_param:0]       TxData,    
-  input logic [pipe_num_of_lanes-1:0]        TxDataValid,
-  input logic [bus_data_kontrol_param:0]     TxDataK,
-  input logic [pipe_num_of_lanes-1:0]        TxStartBlock,
-  input logic [2*pipe_num_of_lanes-1:0]      TxSyncHeader,
-  input logic [pipe_num_of_lanes-1:0]        TxElecIdle,
-  input logic [pipe_num_of_lanes-1:0]        TxDetectRxLoopback,
+  input  logic [bus_data_width_param:0]      TxData,    
+  input  logic [pipe_num_of_lanes-1:0]       TxDataValid,
+  input  logic [bus_data_kontrol_param:0]    TxDataK,
+  input  logic [pipe_num_of_lanes-1:0]       TxStartBlock,
+  input  logic [2*pipe_num_of_lanes-1:0]     TxSyncHeader,
+  input  logic [pipe_num_of_lanes-1:0]       TxElecIdle,
+  input  logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
   input  logic [3:0]                         PowerDown,
@@ -477,9 +477,7 @@ task send_data ();
 	 	send_data_gen_3_4_5 ();
 endtask
 
-<<<<<<< HEAD
 task send_data_gen_1_2 ();
-=======
 task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   static int lanenum;
   byte data_scrambled [$];
@@ -512,7 +510,6 @@ task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
       RxDataK[j] = 1'b0;
     end
   end
->>>>>>> origin/master
 endtask
 
 task automatic send_data_gen_3_4_5 ();
@@ -575,7 +572,6 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
   bit [15:0] lfsr_new;
   bit [7:0] scrambled_data;
 
-<<<<<<< HEAD
   // LFSR value after 8 serial clocks
   for (int i = 0; i < 8; i++)
   begin
@@ -605,9 +601,5 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
 endfunction
 
 function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
-=======
-function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
->>>>>>> origin/master
 endfunction
 endinterface
-

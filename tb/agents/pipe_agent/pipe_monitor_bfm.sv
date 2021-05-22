@@ -46,18 +46,18 @@ interface pipe_monitor_bfm
   /*************************************************************************************/
 
   /******************** MAC Interface(in/out) Equalization signals *********************/
-  input logic [18*pipe_num_of_lanes-1:0]   LocalTxPresetCoeffcients,
-  input logic [18*pipe_num_of_lanes-1:0]   TxDeemph,
-  input logic [6*pipe_num_of_lanes-1:0]    LocalFS,
-  input logic [6*pipe_num_of_lanes-1:0]    LocalLF,
-  input logic [pipe_num_of_lanes-1:0]      GetLocalPresetCoeffcients,
-  input logic [pipe_num_of_lanes-1:0]      LocalTxCoeffcientsValid,
-  input logic [6*pipe_num_of_lanes-1:0]    FS,    // TODO: Review specs for these values
-  input logic [6*pipe_num_of_lanes-1:0]    LF,    // TODO: Review specs for these values
-  input logic [pipe_num_of_lanes-1:0]      RxEqEval,
-  input logic [4*pipe_num_of_lanes-1:0]    LocalPresetIndex,
-  input logic [pipe_num_of_lanes-1:0]      InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange,
+  input logic [18*pipe_num_of_lanes-1:0]    LocalTxPresetCoeffcients,
+  input logic [18*pipe_num_of_lanes-1:0]    TxDeemph,
+  input logic [6*pipe_num_of_lanes-1:0]     LocalFS,
+  input logic [6*pipe_num_of_lanes-1:0]     LocalLF,
+  input logic [pipe_num_of_lanes-1:0]       GetLocalPresetCoeffcients,
+  input logic [pipe_num_of_lanes-1:0]       LocalTxCoeffcientsValid,
+  input logic [6*pipe_num_of_lanes-1:0]     FS,    // TODO: Review specs for these values
+  input logic [6*pipe_num_of_lanes-1:0]     LF,    // TODO: Review specs for these values
+  input logic [pipe_num_of_lanes-1:0]       RxEqEval,
+  input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
+  input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
 
   input logic                               PCLK,     //TODO: This signal is removed 
@@ -83,7 +83,7 @@ interface pipe_monitor_bfm
       proxy.detect_link_up;
     end
   end
-
+ 
   //clock wait
 initial begin
   forever begin
@@ -491,14 +491,6 @@ end
     end
   end  
 
-  // Receive Idle Data
-  // initial
-  // begin
-  //   forever
-  //   begin
-  //     receive_idle_data();
-  //     proxy.notify_idle_data_detected();
-  //   end
 	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 	endfunction
 endinterface
