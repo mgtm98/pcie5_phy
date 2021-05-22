@@ -506,7 +506,7 @@ task send_data_gen_1_2 ();
   if (!(lanenum == pipe_num_of_lanes)) begin
     for (int j = lanenum + 1; j < (bus_data_width+1)/8; j = j ++) begin
       RxData [(8*j) +: 8] = 8'h00;
-      RxDataK[j] = 1'b0;
+      RxDataK[j] = 1'b1;
     end
   end
 endtask
