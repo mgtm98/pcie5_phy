@@ -30,4 +30,7 @@ task pipe_data_transmit_seq::body();
 	  // Wait until the sequence item is used
 	  finish_item(pipe_seq_item_h);
 	end
+  start_item(pipe_seq_item_h);
+  pipe_seq_item_h.pipe_operation = SEND_DATA;
+  finish_item(pipe_seq_item_h);
 endtask

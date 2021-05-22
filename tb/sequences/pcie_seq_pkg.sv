@@ -3,6 +3,7 @@ package pcie_seq_pkg;
   `include "settings.svh"
 
   import uvm_pkg::*;
+  import common_pkg::*;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
 
