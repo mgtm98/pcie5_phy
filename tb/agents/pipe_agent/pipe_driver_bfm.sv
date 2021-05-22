@@ -477,8 +477,13 @@ task send_data ();
 	 	send_data_gen_3_4_5 ();
 endtask
 
+<<<<<<< HEAD
  task automatic send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
   int lanenum;
+=======
+task send_data_gen_1_2 ();
+  static int lanenum;
+>>>>>>> ded99bdf0805d877cd70af9ca14131d5ae937bfe
   byte data_scrambled [$];
   int pipe_width = get_width();
   int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
