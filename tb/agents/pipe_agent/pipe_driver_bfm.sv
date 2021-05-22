@@ -477,12 +477,11 @@ task send_data ();
 	 	send_data_gen_3_4_5 ();
 endtask
 
-task send_data_gen_1_2 ();
-task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  static int lanenum;
+ task automatic send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  int lanenum;
   byte data_scrambled [$];
-  static int pipe_width = get_width();
-  static int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
+  int pipe_width = get_width();
+  int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
   for(int i = 0; i < data.size(); i++) begin
     lanenum = $floor(i*(8.0/pipe_width));
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
@@ -492,9 +491,7 @@ task send_data_gen_1_2 (int start_lane = 0, int end_lane = pipe_num_of_lanes);
     else if (k_data [i] == 1) begin
       data_scrambled[i] = data[i];
     end
-  end
-  
-  //function bt3t maggie btrg3 width
+  end  
   for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width+1)/8) begin
     @ (posedge PCLK);    
     for (int j = k; j < pipe_num_of_lanes + k; j = j ++) begin

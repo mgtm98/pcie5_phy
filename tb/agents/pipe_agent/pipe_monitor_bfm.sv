@@ -371,30 +371,6 @@ end
       end    
   endtask
   
-  //waiting on power down to be P0
-  initial 
-  begin
-    forever
-    begin
-        for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          @ (PowerDown[i] == 'b00);
-        end
-        
-        for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          @ (PhyStatus[i] == 1);
-        end
-        // TODO: CLK or PCLK
-        @(posedge PCLK);
-        for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          @ (PhyStatus[i] == 0);
-        end
-
-        for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          @ (TxElecIdle[i] == 0)	;
-        end
-        proxy.pipe_polling_state_start();
-    end
-  end  
 
   //wait for exit electricle idle
   initial begin
