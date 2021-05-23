@@ -553,10 +553,10 @@ byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 
 function void reset_lfsr ();
+  integer j,i;
   foreach(lfsr_1_2[i]) begin
     lfsr_1_2[i] = 16'hFFFF;
   end
-  integer j,i;
   foreach(lfsr_gen_3[i]) begin
     j=i;
     if (i>7) begin
@@ -808,7 +808,7 @@ endfunction
 
 function bit [7:0] scramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
   bit [7:0] scrambled_data ;
-  data_out = scramble_data_gen_3(lfsr_gen_3[lane_num],unscrambled_data);
+  scrambled_data = scramble_data_gen_3(lfsr_gen_3[lane_num],unscrambled_data);
   lfsr_gen_3[lane_num] = advance_lfsr_gen_3(lfsr_gen_3[lane_num]);
   return scrambled_data;
 endfunction
