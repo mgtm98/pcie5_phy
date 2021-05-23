@@ -35,4 +35,9 @@
   `define EDB_gen_3                  8'b0000_0011  //EDB has 4 symbols with the same value
 
   /************************************************************************************/
+  // "Set Bit" - Sets bit number "bit" of "var" to the value "val". Bit "bit" of "var" must start cleared.
+  `define SB(var,bit_no,val) var |= (val & 1) << bit_no
+  // "Get Bit" - Returns the value of bit number "bit" of "var".
+  `define GB(var,bit_no) ((var >> bit_no) & 1)
+
 `endif
