@@ -4,8 +4,8 @@ class pipe_seq_item extends uvm_sequence_item;
   // UVM Factory Registration Macro
   `uvm_object_utils(pipe_seq_item)
 
-  static const longint unsigned TLP_CONSTRAINT_MIN_WIDTH = 4;
-  static const longint unsigned TLP_CONSTRAINT_MAX_WIDTH = 7995;
+  static const longint unsigned TLP_CONSTRAINT_MIN_WIDTH = 12;
+  static const longint unsigned TLP_CONSTRAINT_MAX_WIDTH = 4000;
 
   // sequence item data variables
   rand pipe_operation_t pipe_operation; 
@@ -13,14 +13,14 @@ class pipe_seq_item extends uvm_sequence_item;
   rand dllp_t dllp;
   rand pipe_width_t pipe_width;
   rand pclk_rate_t pclk_rate;
-  rand gen_t gen;                                 // TODO: where is gen ysed in seq item
+  rand gen_t gen;                                 // TODO: where is gen used in seq item
   rand ts_s ts_sent;
   rand ts_s tses_sent [`NUM_OF_LANES];
   rand int tlp_gen_1_2_no_of_bytes;
   
   constraint c1 {
     tlp_gen_1_2_no_of_bytes > 3;
-    tlp_gen_1_2_no_of_bytes < 100;  //??
+    tlp_gen_1_2_no_of_bytes < 1000;  //??
   }
   constraint c2 {
     tlp.size() > pipe_seq_item::TLP_CONSTRAINT_MIN_WIDTH;
