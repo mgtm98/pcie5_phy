@@ -160,20 +160,9 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
   begin
     // Symbol 0
     RxData_Q = {RxData_Q,8'b1011110} ;
-    RxDataK_Q = {RxDataK_Q,1};
-
-    //Symbol 0:
-    @(posedge PCLK);
-    if(ts.max_gen_supported <= GEN2)
-    begin
-      RxData <= 8'b1011110;
-      RxDataK <= 1;
-    end
-    else 
-      RxData <= 8'h1E;
+    RxDataK_Q = {RxDataK_Q,1};    
     
     //Symbol 1
-    @(posedge PCLK);
     if(ts.use_link_number)
     begin
       RxData_Q = {RxData_Q, ts.link_number};
@@ -239,7 +228,34 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
       RxData_Q = {RxData_Q, 8'h4A,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0,0};
     end
-     
+
+
+    logic [pipe_max_width:0] Data;
+    logic [pipe_max_width/8 -1:0] Character;
+
+    while(RxData_Q.size())
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Character[j] = RxDataK_Q[0];
+          RxData_Q = RxData_Q[1:$];
+          RxDataK_Q = RxDataK_Q[1:$];  
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
+        
+      end
+
+    end     
   end
 
 
