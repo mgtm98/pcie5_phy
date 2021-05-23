@@ -156,20 +156,9 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
   begin
     // Symbol 0
     RxData_Q = {RxData_Q,8'b1011110} ;
-    RxDataK_Q = {RxDataK_Q,1};
-
-    //Symbol 0:
-    @(posedge PCLK);
-    if(ts.max_gen_supported <= GEN2)
-    begin
-      RxData <= 8'b1011110;
-      RxDataK <= 1;
-    end
-    else 
-      RxData <= 8'h1E;
+    RxDataK_Q = {RxDataK_Q,1};    
     
     //Symbol 1
-    @(posedge PCLK);
     if(ts.use_link_number)
     begin
       RxData_Q = {RxData_Q, ts.link_number};
@@ -235,7 +224,34 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
       RxData_Q = {RxData_Q, 8'h4A,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0,0};
     end
-     
+
+
+    logic [pipe_max_width:0] Data;
+    logic [pipe_max_width/8 -1:0] Character;
+
+    while(RxData_Q.size())
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Character[j] = RxDataK_Q[0];
+          RxData_Q = RxData_Q[1:$];
+          RxDataK_Q = RxDataK_Q[1:$];  
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
+        
+      end
+
+    end     
   end
 
 
@@ -526,7 +542,10 @@ end
 /******************************* Normal Data Operation *******************************/
 
 bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
-bit [22:0] lfsr_3_4_5 [pipe_num_of_lanes];
+bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
+bit [0:10] tlp_length_field;
+byte tlp_gen3_symbol_0;
+byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
 bit [0:10] tlp_length_field;
@@ -534,13 +553,25 @@ byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 
 function void reset_lfsr ();
-  foreach(lfsr_1_2[i])
-  begin
+  foreach(lfsr_1_2[i]) begin
     lfsr_1_2[i] = 16'hFFFF;
   end
-  foreach(lfsr_3_4_5[i])
-  begin
-    lfsr_3_4_5[i] = 16'h0000;
+  integer j,i;
+  foreach(lfsr_gen_3[i]) begin
+    j=i;
+    if (i>7) begin
+      j=j-8;
+    end
+    case (j)
+      0 : lfsr_gen_3[i] = 'h1DBFBC;
+      1 : lfsr_gen_3[i] = 'h0607BB;
+      2 : lfsr_gen_3[i] = 'h1EC760;
+      3 : lfsr_gen_3[i] = 'h18C0DB;
+      4 : lfsr_gen_3[i] = 'h010F12;
+      5 : lfsr_gen_3[i] = 'h19CFC9;
+      6 : lfsr_gen_3[i] = 'h0277CE;
+      7 : lfsr_gen_3[i] = 'h1BB807;
+    endcase
   end
 endfunction
 
@@ -607,7 +638,7 @@ endfunction
 
 function void send_idle_data ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    data.push_back(000000000);            K_data.push_back(D); //control but scrambled
+    data.push_back(8'b00000000);           K_data.push_back(D); //control but scrambled
   end
 endfunction
 
@@ -693,7 +724,7 @@ task automatic send_data_gen_3_4_5 ();
   end
 endtask
 
-function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+function bit [7:0] scramble(bit [7:0] in_data, shortint unsigned lane_num);
 	if (current_gen == GEN1 || current_gen == GEN2)
 		return scramble_gen_1_2 (in_data,  lane_num);
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
@@ -732,6 +763,55 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
   return scrambled_data;
 endfunction
 
-function bit [7:0] scramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
+// Function to advance the LFSR value by 8 bits, given the current LFSR value
+function int advance_lfsr_gen_3(int lfsr);
+  automatic int next_lfsr = 0;
+  `SB(next_lfsr,22, `GB(lfsr,14) ^ `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr,21, `GB(lfsr,13) ^ `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,20) ^ `GB(lfsr,21));
+  `SB(next_lfsr,20, `GB(lfsr,12) ^ `GB(lfsr,19) ^ `GB(lfsr,21));
+  `SB(next_lfsr,19, `GB(lfsr,11) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(next_lfsr,18, `GB(lfsr,10) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,21));
+  `SB(next_lfsr,17, `GB(lfsr, 9) ^ `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(next_lfsr,16, `GB(lfsr, 8) ^ `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr,15, `GB(lfsr, 7) ^ `GB(lfsr,22));
+  `SB(next_lfsr,14, `GB(lfsr, 6) ^ `GB(lfsr,21));
+  `SB(next_lfsr,13, `GB(lfsr, 5) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(next_lfsr,12, `GB(lfsr, 4) ^ `GB(lfsr,19) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr,11, `GB(lfsr, 3) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr,10, `GB(lfsr, 2) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,20) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr, 9, `GB(lfsr, 1) ^ `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,19) ^ `GB(lfsr,20) ^ `GB(lfsr,21));
+  `SB(next_lfsr, 8, `GB(lfsr, 0) ^ `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,18) ^ `GB(lfsr,19) ^ `GB(lfsr,20));
+  `SB(next_lfsr, 7, `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,20) ^ `GB(lfsr,21));
+  `SB(next_lfsr, 6, `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,19) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(next_lfsr, 5, `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,18) ^ `GB(lfsr,19) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(next_lfsr, 4, `GB(lfsr,17));
+  `SB(next_lfsr, 3, `GB(lfsr,16));
+  `SB(next_lfsr, 2, `GB(lfsr,15) ^ `GB(lfsr,22));
+  `SB(next_lfsr, 1, `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(next_lfsr, 0, `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  return next_lfsr;
 endfunction
+
+// Function to scramble a byte, given the current LFSR value
+function bit [7:0] scramble_data_gen_3(int lfsr, bit [7:0] data_in) ;
+  automatic bit [7:0] data_out = 0; //leh static "compilation"
+  `SB(data_out, 7, `GB(data_in,7) ^ `GB(lfsr,15) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,21) ^ `GB(lfsr,22));
+  `SB(data_out, 6, `GB(data_in,6) ^ `GB(lfsr,16) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(data_out, 5, `GB(data_in,5) ^ `GB(lfsr,17) ^ `GB(lfsr,19) ^ `GB(lfsr,21));
+  `SB(data_out, 4, `GB(data_in,4) ^ `GB(lfsr,18) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(data_out, 3, `GB(data_in,3) ^ `GB(lfsr,19) ^ `GB(lfsr,21));
+  `SB(data_out, 2, `GB(data_in,2) ^ `GB(lfsr,20) ^ `GB(lfsr,22));
+  `SB(data_out, 1, `GB(data_in,1) ^ `GB(lfsr,21));
+  `SB(data_out, 0, `GB(data_in,0) ^ `GB(lfsr,22));
+  return data_out;
+endfunction
+
+function bit [7:0] scramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
+  bit [7:0] scrambled_data ;
+  data_out = scramble_data_gen_3(lfsr_gen_3[lane_num],unscrambled_data);
+  lfsr_gen_3[lane_num] = advance_lfsr_gen_3(lfsr_gen_3[lane_num]);
+  return scrambled_data;
+endfunction
+
 endinterface
+
