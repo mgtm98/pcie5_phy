@@ -1,8 +1,3 @@
-`include "settings.svh"
-
-import uvm_pkg::*;
-import pipe_agent_pkg::*;
-import common_pkg::*;
 interface pipe_driver_bfm
   #(
     parameter pipe_num_of_lanes,
@@ -68,6 +63,7 @@ interface pipe_driver_bfm
 );
 
 `include "uvm_macros.svh"
+`include "settings.svh"
 import uvm_pkg::*;
 import common_pkg::*;
 import pipe_agent_pkg::*;
@@ -533,6 +529,9 @@ bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
 bit [22:0] lfsr_3_4_5 [pipe_num_of_lanes];
 byte data [$];
 bit k_data [$];
+bit [0:10] tlp_length_field;
+byte tlp_gen3_symbol_0;
+byte tlp_gen3_symbol_1;
 
 function void reset_lfsr ();
   foreach(lfsr_1_2[i])
@@ -556,23 +555,69 @@ function int get_width ();
 endfunction
 
 function void send_tlp (tlp_t tlp);
-	if (current_gen == GEN1 || current_gen == GEN2) begin
-	end
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)begin
-	end
+  if (current_gen == GEN1 || current_gen == GEN2) begin
+    data.push_back(`STP_gen_1_2);          K_data.push_back(K);
+
+    for (int i = 0; i < tlp.size(); i++) begin
+      data.push_back(tlp[i]);              K_data.push_back(D);
+    end
+
+    data.push_back(`END_gen_1_2);          K_data.push_back(K);
+
+  end
+  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)begin
+    tlp_length_field  = tlp.size() + 2;
+    tlp_gen3_symbol_0 = {`STP_gen_3 , tlp_length_field[0:3]};
+    tlp_gen3_symbol_1 = {tlp_length_field[4:10] , 1'b0};
+
+    data.push_back(tlp_gen3_symbol_0);    K_data.push_back(K); //nosaha K w nosaha D ???
+    data.push_back(tlp_gen3_symbol_1);    K_data.push_back(D);
+    //check if i need K_data queue in gen3 or not??
+    //check on lenth constraint of TLP , is it different than earlier gens??? 
+    for (int i = 0; i < tlp.size(); i++) begin
+      data.push_back(tlp[i]);              K_data.push_back(D);
+    end
+
+  end
 endfunction
 
 function void send_dllp (dllp_t dllp);
-	if (current_gen == GEN1 || current_gen == GEN2) begin
-	end
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
-	end
+  if (current_gen == GEN1 || current_gen == GEN2) begin
+    data.push_back(`SDP_gen_1_2);          K_data.push_back(K);
+    data.push_back(dllp[0]);               K_data.push_back(D);
+    data.push_back(dllp[1]);               K_data.push_back(D);
+    data.push_back(dllp[2]);               K_data.push_back(D);
+    data.push_back(dllp[3]);               K_data.push_back(D);
+    data.push_back(dllp[4]);               K_data.push_back(D);
+    data.push_back(dllp[5]);               K_data.push_back(D);
+    data.push_back(`END_gen_1_2);          K_data.push_back(K);
+  end
+  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
+    //check if i need K_data queue in gen3 or not??
+    data.push_back(`SDP_gen_3_symbol_0);   K_data.push_back(K);
+    data.push_back(`SDP_gen_3_symbol_1);   K_data.push_back(K);
+    data.push_back(dllp[0]);               K_data.push_back(D);
+    data.push_back(dllp[1]);               K_data.push_back(D);
+    data.push_back(dllp[2]);               K_data.push_back(D);
+    data.push_back(dllp[3]);               K_data.push_back(D);
+    data.push_back(dllp[4]);               K_data.push_back(D);
+    data.push_back(dllp[5]);               K_data.push_back(D);
+  end
 endfunction
 
 function void send_idle_data ();
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    data.push_back(000000000);            K_data.push_back(D); //control but scrambled
+  end
 endfunction
 
 task send_data ();
+  assert (PowerDown == 4'b0000) 
+  else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
+  RxElecIdle = 1'b0;  
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    RxDataValid [i] = 1'b1;
+    RxValid [i] = 1'b1;
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
@@ -618,18 +663,12 @@ task automatic send_data_gen_3_4_5 ();
   int lane_width = get_width();
   int num_of_clks = 128/lane_width;
   int num_of_bytes_in_lane = lane_width/8;
-  assert (PowerDown == 4'b0000) 
-  else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
   if (data.size() % data_block_size != 0) begin
     for (int i = 0; i < num_of_idle_data; i++) begin
       data.push_back(8'b00000000);
       k_data.push_back(0);
     end
   end
-  RxElecIdle = 1'b0;  
-  for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    RxDataValid [i] = 1'b1;
-    RxValid [i] = 1'b1;
   end
   for (int i = 0; i < num_of_data_blocks; i++) begin 
     for (int j = 0; j < num_of_clks; j++) begin 
@@ -642,13 +681,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxDataK [l*pipe_max_width/8 + k] = k_data.pop_front();
-          if (RxDataK [l*pipe_max_width/8 + k]) begin
-            RxData [(l*pipe_max_width + (k*8)) +: 8] = data.pop_front();
-          end
-          else begin
-            RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(data.pop_front(),l);
-          end
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(struct,data.pop_front(),l);
         end
       end
       @(posedge PCLK);
@@ -656,7 +689,7 @@ task automatic send_data_gen_3_4_5 ();
   end
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1'b0;
-    RxValid [i] = 1'b0;
+    // RxValid [i] = 1'b0;
   end
 endtask
 

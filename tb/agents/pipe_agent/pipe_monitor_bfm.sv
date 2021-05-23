@@ -1,5 +1,3 @@
-import common_pkg::*;
-
 interface pipe_monitor_bfm 
   #(
     parameter pipe_num_of_lanes,
@@ -68,6 +66,7 @@ interface pipe_monitor_bfm
 
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
+  import common_pkg::*;
 
   gen_t current_gen;
 
@@ -470,4 +469,3 @@ end
 	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 	endfunction
 endinterface
-

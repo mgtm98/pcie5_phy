@@ -437,6 +437,9 @@ task pipe_link_up_seq::config_idle_state_upstream;
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
       end
+      start_item(pipe_seq_item_h);
+      pipe_seq_item_h.pipe_operation = SEND_DATA;
+      finish_item(pipe_seq_item_h);
     end
 
     begin
