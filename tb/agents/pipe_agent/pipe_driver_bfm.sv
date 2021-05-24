@@ -138,6 +138,9 @@ end
 // Methods
 //------------------------------------------
 task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  logic [pipe_max_width:0] Data;
+  logic [pipe_max_width/8 -1:0] Character;
+  byte temp;
   byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
   // bit RxDataValid_Q[$];
   bit RxDataK_Q[$];
@@ -196,7 +199,8 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
 
     //Symbol 4
     RxDataK_Q = {RxDataK_Q, 0};
-    byte temp = 0'hFF;
+    
+    temp = 0'hFF;
     temp[0] = 0;
     temp[7:6] = 0'b00;
     if(ts.max_gen_supported == GEN1)
@@ -214,7 +218,7 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
     RxDataK_Q = {RxDataK_Q, 0};
 
     //Symbol 6~15
-    if(ts_type == TS1)
+    if(ts.ts_type_t == TS1)
     begin
     RxData_Q = {RxData_Q, 8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
     RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0,0};
@@ -226,8 +230,7 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
     end
 
 
-    logic [pipe_max_width:0] Data;
-    logic [pipe_max_width/8 -1:0] Character;
+    
 
     while(RxData_Q.size())
     begin
