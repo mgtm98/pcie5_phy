@@ -625,14 +625,14 @@ function void send_dllp (dllp_t dllp);
   end
   else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
     //check if i need K_data queue in gen3 or not??
-    data.push_back(`SDP_gen_3_symbol_0);   K_data.push_back(K);
-    data.push_back(`SDP_gen_3_symbol_1);   K_data.push_back(K);
-    data.push_back(dllp[0]);               K_data.push_back(D);
-    data.push_back(dllp[1]);               K_data.push_back(D);
-    data.push_back(dllp[2]);               K_data.push_back(D);
-    data.push_back(dllp[3]);               K_data.push_back(D);
-    data.push_back(dllp[4]);               K_data.push_back(D);
-    data.push_back(dllp[5]);               K_data.push_back(D);
+    data.push_back(`SDP_gen_3_symbol_0);   
+    data.push_back(`SDP_gen_3_symbol_1);   
+    data.push_back(dllp[0]);              
+    data.push_back(dllp[1]);               
+    data.push_back(dllp[2]);               
+    data.push_back(dllp[3]);          
+    data.push_back(dllp[4]);           
+    data.push_back(dllp[5]);            
   end
 endfunction
 
