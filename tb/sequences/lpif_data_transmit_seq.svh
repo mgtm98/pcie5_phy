@@ -35,7 +35,9 @@ task lpif_data_transmit_seq::body();
 	  begin
 	    `uvm_fatal(get_name(), "Couldn't randomize the lpif_seq_item")
 	  end
-	  // Wait until the sequence item is used
 	  finish_item(lpif_seq_item_h);
 	end
+  start_item(lpif_seq_item_h);
+  lpif_seq_item_h.lpif_operation = lpif_agent_pkg::SEND_DATA;
+  finish_item(lpif_seq_item_h);
 endtask
