@@ -55,6 +55,7 @@ interface lpif_driver_bfm #(
   bit dllp_end_queue [$];
 
   function void send_tlp(tlp_t tlp);
+    // Add the bytes of the TLP to the data queue and add the suitable values for the other signals
     foreach(tlp[i]) begin
       data_queue.push_back(tlp[i]);
       tlp_start_queue.push_back(0);
@@ -62,13 +63,16 @@ interface lpif_driver_bfm #(
       dllp_start_queue.push_back(0);
       dllp_end_queue.push_back(0);
     end
+    // Fix the first value of the tlp_start queue
     tlp_start_queue.pop_front();
     tlp_start_queue.push_front(1);
+    // Fix the last value of the tlp_end queue
     tlp_end_queue.pop_back();
     tlp_end_queue.push_back(1);
   endfunction
 
   function void send_dllp(dllp_t dllp);
+    // Add the bytes of the DLLP to the data queue and add the suitable values for the other signals
     foreach(dllp[i]) begin
       data_queue.push_back(dllp[i]);
       tlp_start_queue.push_back(0);
@@ -76,8 +80,10 @@ interface lpif_driver_bfm #(
       dllp_start_queue.push_back(0);
       dllp_end_queue.push_back(0);
     end
+    // Fix the first value of the dllp_start queue
     dllp_start_queue.pop_front();
     dllp_start_queue.push_front(1);
+    // Fix the last value of the dllp_end queue
     dllp_end_queue.pop_back();
     dllp_end_queue.push_back(1);
   endfunction
@@ -87,9 +93,13 @@ interface lpif_driver_bfm #(
     longint unsigned j;
     longint unsigned num_of_loops;
     lp_irdy <= 1;
+    // Calculate the number of times the upper layer will need to put the data on the full bus
     num_of_loops = data_queue.size() / (lpif_bus_width / 8);
+    // Loop over the number of times the upper layer will need to put the data on the full bus
     for(i = 0; i < num_of_loops; i++) begin
+      // Loop over the full bus
       for(j = 0; j < lpif_bus_width / 8; j++) begin
+        // Put the values in the queues on the signals
         lp_data[(j*8)+:8] <= data_queue.pop_front();
         lp_tlp_start[j] <= tlp_start_queue.pop_front();
         lp_tlp_end[j] <= tlp_end_queue.pop_front();
@@ -100,10 +110,12 @@ interface lpif_driver_bfm #(
       wait(pl_trdy == 1);
       @(posedge lclk);
     end
+    // Notify that some of the values on the data bus will be invalid
     for(i = 0; i < lpif_bus_width / 8; i++) begin
       lp_valid[i] <= 0;
     end
     if(data_queue.size() != 0) begin
+      // Loop over the only needed number of lanes
       num_of_loops = data_queue.size();
       for(i = 0; i < num_of_loops; i++) begin
         lp_data[(i*8)+:8] <= data_queue.pop_front();
@@ -116,6 +128,7 @@ interface lpif_driver_bfm #(
       wait(pl_trdy == 1);
       @(posedge lclk);
     end
+    // Notify that all the incoming values are invalid
     for(i = 0; i < lpif_bus_width / 8; i++) begin
       lp_valid[i] <= 0;
     end
