@@ -19,6 +19,12 @@ typedef enum bit [3:0]{
 	RETRAIN = 4'b1011
 } lpif_state_t;
 
+typedef enum {
+  WAITING_FOR_START,
+  RECEIVING_TLP,
+  RECEIVING_DLLP
+} lpif_monitor_bfm_state_t;
+
 typedef struct{
   lpif_operation_t lpif_operation;
   tlp_t tlp;
