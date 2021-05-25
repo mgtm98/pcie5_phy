@@ -7,13 +7,10 @@ class lpif_seq_item extends uvm_sequence_item;
   rand tlp_t tlp;
   rand dllp_t dllp;
 
-  static const longint unsigned TLP_CONSTRAINT_MIN_WIDTH = 20;
-  static const longint unsigned TLP_CONSTRAINT_MAX_WIDTH = 100;
-
   //  Group: Constraints
   constraint c1 {
-    tlp.size() >= lpif_seq_item::TLP_CONSTRAINT_MIN_WIDTH;
-    tlp.size() <= lpif_seq_item::TLP_CONSTRAINT_MAX_WIDTH;
+    tlp.size() >= TLP_MIN_SIZE;
+    tlp.size() <= TLP_MAX_SIZE;
   };
 
   extern function new(string name = "lpif_seq_item");
