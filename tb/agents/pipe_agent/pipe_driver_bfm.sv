@@ -809,7 +809,7 @@ function bit [7:0] scramble_data_gen_3(int lfsr, bit [7:0] data_in) ;
   return data_out;
 endfunction
 
-function bit [7:0] scramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
+function bit [7:0] scramble_gen_3_4_5 (bit [7:0] unscrambled_data, shortint unsigned lane_num);
   bit [7:0] scrambled_data ;
   scrambled_data = scramble_data_gen_3(lfsr_gen_3[lane_num],unscrambled_data);
   lfsr_gen_3[lane_num] = advance_lfsr_gen_3(lfsr_gen_3[lane_num]);
