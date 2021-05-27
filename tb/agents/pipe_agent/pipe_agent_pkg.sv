@@ -11,6 +11,7 @@ package pipe_agent_pkg;
   `include "pipe_driver.svh"
   `include "pipe_coverage_monitor.svh"
   `include "pipe_monitor.svh"
+  `include "descrambler_scrambler.svh"
   typedef uvm_sequencer#(pipe_seq_item) pipe_sequencer;
   `include "pipe_agent.svh"
 
