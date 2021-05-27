@@ -418,54 +418,7 @@ end
   
 /******************************* Normal Data Operation *******************************/
 
-  bit [15:0] lfsr[pipe_num_of_lanes];
 
-  function void reset_lfsr;
-    foreach(lfsr[i])
-    begin
-      lfsr[i] = 16'hFFFF;
-    end
-  endfunction
 
-  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
-	if (current_gen == GEN1 || current_gen == GEN2)
-		return descramble_gen_1_2 (in_data,  lane_num);
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-		return descramble_gen_3_4_5 (in_data, lane_num);
-  endfunction
 
-  function bit [7:0] descramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-    bit [15:0] lfsr_new;
-    bit [7:0] descrambled_data;
-
-    // LFSR value after 8 serial clocks
-    for (int i = 0; i < 8; i++)
-    begin
-      lfsr_new[ 0] = lfsr [lane_num] [15];
-      lfsr_new[ 1] = lfsr [lane_num] [ 0];
-      lfsr_new[ 2] = lfsr [lane_num] [ 1];
-      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-      lfsr_new[ 6] = lfsr [lane_num] [ 5];
-      lfsr_new[ 7] = lfsr [lane_num] [ 6];
-      lfsr_new[ 8] = lfsr [lane_num] [ 7];
-      lfsr_new[ 9] = lfsr [lane_num] [ 8];
-      lfsr_new[10] = lfsr [lane_num] [ 9];
-      lfsr_new[11] = lfsr [lane_num] [10];
-      lfsr_new[12] = lfsr [lane_num] [11];
-      lfsr_new[13] = lfsr [lane_num] [12];
-      lfsr_new[14] = lfsr [lane_num] [13];
-      lfsr_new[15] = lfsr [lane_num] [14];       
-  
-      // Generation of Decrambled Data
-      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
-      
-      lfsr [lane_num] = lfsr_new;
-    end
-    return descrambled_data;
-  endfunction
-
-	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
-	endfunction
 endinterface
