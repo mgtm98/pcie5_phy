@@ -73,7 +73,16 @@ import pipe_agent_pkg::*;
 // Data Members
 //------------------------------------------
 gen_t current_gen;
+bit [15:0] lfsr [`NUM_OF_LANES];
+bit [5:0]  lf_to_be_recvd;
+bit [5:0]  fs_to_be_recvd;
 
+function void reset_lfsr ();
+  foreach(lfsr[i])
+  begin
+    lfsr[i] = 16'hFFFF;
+  end
+endfunction
 
 //starting polling state
 initial begin
@@ -790,6 +799,86 @@ task automatic send_data_gen_3_4_5 ();
     // RxValid [i] = 1'b0;
   end
 endtask
+
+  task eqialization_preset_applied(preset_index);
+    @(LocalPresetIndex);
+    assert(LocalPresetIndex == preset_index) else 
+    `uvm_error(get_name(), "")
+    wait(GetLocalPresetCoeffcients == 1);
+    @(posedge PCLK);
+    LocalTxCoefficientsValid  <= 1;
+    LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
+    @(posedge PCLK);
+    LocalTxCoefficientsValid  <= 0;
+    @(TxDeemph);
+    assert(TxDeemph == 0) else 
+    `uvm_error(get_name(), "")
+  endtask : eqialization_preset_applied
+
+  function inform_lf_fs(bit [5:0] lf, bit[5:0] fs);
+    lf_to_be_recvd = lf;
+    fs_to_be_recvd = fs;
+  endfunction : inform_lf_fs
+
+  function set_local_lf_fs(bit [5:0] lf, bit[5:0] fs);
+    LocalLF <= lf;
+    LocalFS <= fs;
+  endfunction : set_local_lf_fs
+
+  initial begin
+    @(LF) assert(LF == lf_to_be_recvd) else
+    `uvm_error(get_name(), "")
+  end
+
+  initial begin
+    @(FS) assert(FS == fs_to_be_recvd) else
+    `uvm_error(get_name(), "")
+  end
+
+
+// task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
+//    fork
+//     variable no. of process
+//     scrambler (0000, )
+//    join
+//    hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
+//    scrambling w n-send 3l signals
+//     @(posedge PCLK);
+//     RxValid = 1'b1;
+//     RxData [7:0] = 8'b0000_0000;
+//     RxDataK = 1'b0;    // at2kd
+// endtask
+
+// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
+//   bit [15:0] lfsr_new;
+
+//   // LFSR value after 8 serial clocks
+//   for (i=0; i<8; i++)
+//   begin
+//     lfsr_new[ 0] = lfsr [lane_num] [15];
+//     lfsr_new[ 1] = lfsr [lane_num] [ 0];
+//     lfsr_new[ 2] = lfsr [lane_num] [ 1];
+//     lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
+//     lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
+//     lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
+//     lfsr_new[ 6] = lfsr [lane_num] [ 5];
+//     lfsr_new[ 7] = lfsr [lane_num] [ 6];
+//     lfsr_new[ 8] = lfsr [lane_num] [ 7];
+//     lfsr_new[ 9] = lfsr [lane_num] [ 8];
+//     lfsr_new[10] = lfsr [lane_num] [ 9];
+//     lfsr_new[11] = lfsr [lane_num] [10];
+//     lfsr_new[12] = lfsr [lane_num] [11];
+//     lfsr_new[13] = lfsr [lane_num] [12];
+//     lfsr_new[14] = lfsr [lane_num] [13];
+//     lfsr_new[15] = lfsr [lane_num] [14];       
+
+//     // Generation of Scrambled Data
+//     scrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+    
+//     lfsr [lane_num] = lfsr_new;
+//   end
+//   return scrambled_data;
+// endfunction
 
 
 

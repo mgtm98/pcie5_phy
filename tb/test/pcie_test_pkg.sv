@@ -1,6 +1,7 @@
 package pcie_test_pkg;
 
   import uvm_pkg::*;
+  import utility_pkg::*;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
   import pcie_env_pkg::*;
