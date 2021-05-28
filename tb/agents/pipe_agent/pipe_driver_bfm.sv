@@ -167,7 +167,7 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
   if(current_gen <= GEN2)
   begin
     // Symbol 0
-    RxData_Q = {RxData_Q,8'b1011110} ;
+    RxData_Q = {RxData_Q,8'b10111100} ;
     RxDataK_Q = {RxDataK_Q,1};    
     
     //Symbol 1
@@ -211,7 +211,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     
     temp = 0'hFF;
     temp[0] = 0;
-    temp[7:6] = 0'b00;
     if(ts.max_gen_supported == GEN1)
       temp[5:2] = 0;
     else if(ts.max_gen_supported == GEN2)
@@ -220,22 +219,47 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
       temp[5:4] = 0;
     else if(ts.max_gen_supported == GEN4)
       temp[5] = 0;
+    
+    temp[6] = ts.auto_speed_change;
+    temp[7] = ts.speed_change;
+
     RxData_Q = {RxData_Q, temp};
 
     //Symbol 5
     RxData_Q = {RxData_Q, 0'h00};
     RxDataK_Q = {RxDataK_Q, 0};
 
-    //Symbol 6~15
+
+
+    //Symbol 6
+    if(0 /*need flag*/)
+    begin
+        temp = 8'hFF;
+        temp[2:0] = ts.rx_preset_hint;
+        temp[6:3] = ts.tx_preset;
+        if(ts.ts_type_t == TS2)
+          temp[7] = ts.equalization_command;  
+    end
+    else
+      temp = 8'h4A;
+
+    RxData_Q = {RxData_Q,temp};
+    RxDataK_Q = {RxDataK_Q,0};
+    
+    
+
+
+
+    //Symbol 7~15
     if(ts.ts_type_t == TS1)
     begin
-    RxData_Q = {RxData_Q, 8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
-    RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0,0};
+      RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
+      RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
     end
     else
     begin
-      RxData_Q = {RxData_Q, 8'h4A,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
-      RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0,0};
+      RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
+      RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
     end
 
 
@@ -268,7 +292,10 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
   if(current_gen > GEN2)
   begin
     // Symbol 0
-    RxData_Q = {RxData_Q,8'h2D} ;
+    if(ts.ts_type_t ==TS1)
+      RxData_Q = {RxData_Q,8'h1E};
+    else
+      RxData_Q = {RxData_Q,8'h2D};
     
     //Symbol 1
     if(ts.use_link_number)
@@ -304,7 +331,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     
     temp = 0'hFF;
     temp[0] = 0;
-    temp[7:6] = 0'b00;
     if(ts.max_gen_supported == GEN1)
       temp[5:2] = 0;
     else if(ts.max_gen_supported == GEN2)
@@ -313,19 +339,91 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
       temp[5:4] = 0;
     else if(ts.max_gen_supported == GEN4)
       temp[5] = 0;
+    
+    temp[6] = ts.auto_speed_change;
+    temp[7] = ts.speed_change;
     RxData_Q = {RxData_Q, temp};
 
     //Symbol 5
     RxData_Q = {RxData_Q, 0'h00};
 
-    //Symbol 6~15
+
+    //Symbol 6
+    temp = 8'h00;
+    if(0) //need flag
+    begin
+      if(ts.ts_type_t == TS1)
+      begin
+        if(0)//need flag
+          temp[1:0] = ts.ec;
+
+        if(0)//need flag
+          temp[6:3] = ts.tx_preset;
+
+        temp[7] = ts.use_preset;  
+      end
+      else if(ts.ts_type_t == TS2)
+      begin
+        //not supported yet
+      end
+    end
+    else
+      temp = 8'h4A;
+
+    RxData_Q = {RxData_Q,temp};
+
+    //Symbol 7
+    temp = 8'h00;
     if(ts.ts_type_t == TS1)
     begin
-    RxData_Q = {RxData_Q, 8'h00,8'h00,8'h00,8'h00,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
+      if(ts.ec =2'b01)
+        temp[5:0] = ts.fs_value;
+      else
+        temp[5:0] = ts.pre_cursor;
+    end
+    else
+      temp = 8'h45;
+
+    RxData_Q = {RxData_Q,temp};
+
+
+    //Symbol 8
+    temp = 8'h00;
+    if(ts.ts_type_t == TS1)
+    begin
+      if(ts.ec =2'b01)
+        temp[5:0] = ts.lf_value;
+      else
+        temp[5:0] = ts.cursor;
+    end
+    else
+      temp = 8'h45;
+
+    RxData_Q = {RxData_Q,temp};
+
+    //Symbol 9
+    temp = 8'h00;
+    if(ts.ts_type_t == TS1)
+    begin
+        temp[5:0] = ts.post_cursor;
+        if(0) //need flag
+          temp[6] = reject_coeficient;
+
+        temp[7] = ^{temp[6:0],RxData_Q[6],RxData_Q[7],RxData_Q[8]}  
+    end
+    else
+      temp = 8'h45;
+
+    RxData_Q = {RxData_Q,temp};
+
+    //Symbol 10~15
+    if(ts.ts_type_t == TS1)
+    begin
+    RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
     end
     else
     begin
-      RxData_Q = {RxData_Q, 8'h00,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
+      RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
     end
 
 
@@ -340,277 +438,15 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
         for(int j=0;j<pipe_max_width/8;j++)
         begin
           Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
-          Character[j] = RxDataK_Q[0];
           RxData_Q = RxData_Q[1:$];
-          RxDataK_Q = RxDataK_Q[1:$];  
         end
 
         //duplicating the Data and Characters to each lane in the driver
         RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
         
       end
-
     end     
   end
-
-
-  
-  //prototype implementation
-  // if(ts.ts_type == TS1)
-  // begin
-
-  //   //Symbol 0:
-  //   @(posedge PCLK);
-  //   if(ts.max_gen_supported <= GEN2)
-  //   begin
-  //     RxData <= 8'b1011110;
-  //     RxDataK <= 1;
-  //   end
-  //   else 
-  //     RxData <= 8'h1E;
-  //   //Symbol 1
-  //   @(posedge PCLK);
-
-  //   if(ts.use_link_number)
-  //   begin
-  //     RxData <= ts.link_number;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //     RxData <= 8'b11110111; //PAD character
-  //     RxDataK <= 1;
-  //   end
-
-  //   //Symbol 2
-  //   @(posedge PCLK);
-  //   if(ts.use_lane_number)
-  //   begin
-  //     RxData <= ts.lane_number;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //     RxData <= 8'b11110111; //PAD character
-  //     RxDataK <= 1;
-  //   end
-
-  //   //Symbol 3
-  //   @(posedge PCLK);
-  //   if(ts.use_n_fts)
-  //   begin
-  //     RxData <= ts.n_fts;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //   //missing part ?!!
-  //   end
-
-  //   //Symbol 4
-  //   @(posedge PCLK);
-  //   RxDataK <= 0;
-  //   RxData <= 0'hff; 
-  //   // bits 6,7 value needs to be discuessed
-  //   RxData[0] <= 0;
-  //   RxData[7:6] <= 0'b00;
-
-
-  //   if(ts.max_gen_supported == GEN1)
-  //     RxData[5:2] <= 0;
-  //   else if(ts.max_gen_supported == GEN2)
-  //     RxData[5:3] <= 0;
-  //   else if(ts.max_gen_supported == GEN3)
-  //     RxData[5:4] <= 0;
-  //   else if(ts.max_gen_supported == GEN4)
-  //     RxData[5] <= 0;
-
-
-  //   //Symbol 5
-  //   //needs to be discussed
-  //   @(posedge PCLK);
-  //   RxDataK <= 0;
-  //   RxData <= 0; 
-
-  //   //Symbol 6~15 in case of Gen 1 and 2
-  //   if(ts.max_gen_supported == GEN1 || ts.max_gen_supported == GEN2)
-  //   begin
-  //     @(posedge PCLK);
-  //     RxDataK <= 0;
-  //     RxData <= 8'h4A; 
-  //     repeat(8)@(posedge PCLK);
-  //   end
-
-  //   //Symbol 6~15 in case of Gen 3
-  //   else 
-  //   begin
-
-  //     //Symbol 6
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 7
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 8
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 9
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 10~13
-  //     @(posedge PCLK);
-  //     RxData <= 8'h4A; 
-  //     repeat(3)@(posedge PCLK);
-
-  //     //Symbol 14~15
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 8'h4A; 
-  //     repeat(1)@(posedge PCLK);
-  //   end
-
-  // end
-
-
-  // if(ts.ts_type == TS2)
-  // begin
-
-  //   //Symbol 0:
-  //   @(posedge PCLK);
-  //   if(ts.max_gen_supported <= GEN2)
-  //   begin
-  //     RxData <= 8'b1011110;
-  //     RxDataK <= 1;
-  //   end
-  //   else 
-  //     RxData <= 8'h2D;
-  //   //Symbol 1
-  //   @(posedge PCLK);
-
-  //   if(ts.use_link_number)
-  //   begin
-  //     RxData <= ts.link_number;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //     RxData <= 8'b11110111; //PAD character
-  //     RxDataK <= 1;
-  //   end
-
-  //   //Symbol 2
-  //   @(posedge PCLK);
-  //   if(ts.use_lane_number)
-  //   begin
-  //     RxData <= ts.lane_number;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //     RxData <= 8'b11110111; //PAD character
-  //     RxDataK <= 1;
-  //   end
-
-  //   //Symbol 3
-  //   @(posedge PCLK);
-  //   if(ts.use_n_fts)
-  //   begin
-  //     RxData <= ts.n_fts;
-  //     RxDataK <= 0;
-  //   end
-  //   else
-  //   begin
-  //   //missing part ?!!
-  //   end
-
-  //   //Symbol 4
-  //   @(posedge PCLK);
-  //   RxDataK <= 0;
-  //   RxData <= 0'hff; 
-  //   // bits 0,6,7 value needs to be discuessed
-  //   RxData[0] <= 0;
-  //   RxData[7:6] <= 0'b00;
-
-
-  //   if(ts.max_gen_supported == GEN1)
-  //     RxData[5:2] <= 0;
-  //   else if(ts.max_gen_supported == GEN2)
-  //     RxData[5:3] <= 0;
-  //   else if(ts.max_gen_supported == GEN3)
-  //     RxData[5:4] <= 0;
-  //   else if(ts.max_gen_supported == GEN4)
-  //     RxData[5] <= 0;
-
-
-  //   //Symbol 5
-  //   //needs to be discussed
-  //   @(posedge PCLK);
-  //   RxDataK <= 0;
-  //   RxData <= 0; 
-
-  //   //Symbol 6~15 in case of Gen 1 and 2
-  //   if(ts.max_gen_supported == GEN1 || ts.max_gen_supported == GEN2)
-  //   begin
-  //     @(posedge PCLK);
-  //     RxDataK <= 0;
-  //     RxData <= 8'h4A; 
-        
-
-  //     @(posedge PCLK);
-  //     RxDataK <= 0;
-  //     RxData <= 8'h45; 
-
-  //     repeat(7)@(posedge PCLK);
-
-  //   end
-
-  //   //Symbol 6~15 in case of Gen 3
-  //   else 
-  //   begin
-
-  //     //Symbol 6
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-
-  //     //Symbol 7
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 8
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 9
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 0; 
-
-  //     //Symbol 10~13
-  //     @(posedge PCLK);
-  //     RxData <= 8'h4A; 
-  //     repeat(3)@(posedge PCLK);
-
-  //     //Symbol 14~15
-  //     //needs to be discussed
-  //     @(posedge PCLK);
-  //     RxData <= 8'h4A; 
-  //     repeat(1)@(posedge PCLK);
-  //   end
-
-  // end
 endtask
 
 task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
