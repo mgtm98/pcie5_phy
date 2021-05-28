@@ -11,7 +11,6 @@ class reporter extends uvm_report_server;
 		int line
 	);
 				
-
 endclass : reporter
 
 function reporter::new(string name = "report_server");

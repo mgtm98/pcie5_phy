@@ -14,6 +14,9 @@ class pipe_seq_item extends uvm_sequence_item;
   rand ts_s ts_sent;
   rand ts_s tses_sent [`NUM_OF_LANES];
   rand int tlp_gen_1_2_no_of_bytes;
+
+  bit [5:0] lf_to_be_informed;                    // used to inform the BFM values from the seq
+  bit [5:0] fs_to_be_informed;                    // used to inform the BFM values from the seq
   
   constraint c1 {
     tlp_gen_1_2_no_of_bytes > 3;
