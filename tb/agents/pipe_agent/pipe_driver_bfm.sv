@@ -137,7 +137,7 @@ end
 //------------------------------------------
 // Methods
 //------------------------------------------
-task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
+task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
   logic [pipe_max_width:0] Data;
   logic [pipe_max_width/8 -1:0] Character;
   byte temp;
@@ -155,7 +155,7 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
     RxValid[i] <= 1;
   end
 
-  if(used_gen <= GEN2)
+  if(current_gen <= GEN2)
   begin
     // Symbol 0
     RxData_Q = {RxData_Q,8'b1011110} ;
@@ -520,7 +520,10 @@ task send_ts(ts_s ts, gen_t used_gen ,int start_lane = 0, int end_lane = pipe_nu
 endtask
 
 task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
-
+  for(int i=0;i<ts.size();i++)
+  begin
+    send_ts(ts[i],start_lane,end_lane);
+  end
 endtask
 
 
