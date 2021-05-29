@@ -97,8 +97,8 @@ initial begin
   forever begin
     ts_s tses_received_temp [`NUM_OF_LANES];
     receive_tses(tses_received_temp,,);
-    ->pipe_agent_config_h.detected_tses_e;
-    pipe_agent_config_h.tses_received=tses_received_temp;
+    ->proxy.pipe_agent_config_h.detected_tses_e;
+    proxy.pipe_agent_config_h.tses_received=tses_received_temp;
   end
 end
   /******************************* Receive TS*******************************/
