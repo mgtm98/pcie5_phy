@@ -90,6 +90,17 @@ initial begin
     proxy.detect_posedge_clk;
   end
 end
+//-----------------------------------------------------------
+// reciveing TS
+//-----------------------------------------------------------
+initial begin
+  forever begin
+    ts_s tses_received_temp [`NUM_OF_LANES];
+    receive_tses(tses_received_temp,,);
+    ->pipe_agent_config_h.detected_tses_e;
+    pipe_agent_config_h.tses_received=tses_received_temp;
+  end
+end
   /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
