@@ -146,24 +146,9 @@ end
 //------------------------------------------
 // Methods
 //------------------------------------------
-task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  logic [pipe_max_width:0] Data;
-  logic [pipe_max_width/8 -1:0] Character;
+
+function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte RxDataK_Q[$]);
   byte temp;
-  byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
-  // bit RxDataValid_Q[$];
-  bit RxDataK_Q[$];
-  //bit RxStartBlock_Q[$];
-  //bit [1:0] RxSyncHeader_Q[$];
-  // bit RxValid_Q[$];
-  //bit [2:0] RxStatus_Q[$];
-  //bit RxElecIdle_Q[$];
-
-  for(int i = start_lane; i < end_lane; i++) begin
-    RxDataValid[i] <= 1;
-    RxValid[i] <= 1;
-  end
-
   if(current_gen <= GEN2)
   begin
     // Symbol 0
@@ -229,8 +214,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     RxData_Q = {RxData_Q, 0'h00};
     RxDataK_Q = {RxDataK_Q, 0};
 
-
-
     //Symbol 6
     if(0 /*need flag*/)
     begin
@@ -246,9 +229,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     RxData_Q = {RxData_Q,temp};
     RxDataK_Q = {RxDataK_Q,0};
     
-    
-
-
 
     //Symbol 7~15
     if(ts.ts_type_t == TS1)
@@ -260,36 +240,10 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     begin
       RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
-    end
-
-
-    while(RxData_Q.size())
-    begin
-      @(posedge PCLK);
-      
-      for(int i = start_lane;i<end_lane;i++)
-      begin
-
-        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-        for(int j=0;j<pipe_max_width/8;j++)
-        begin
-          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
-          Character[j] = RxDataK_Q[0];
-          RxData_Q = RxData_Q[1:$];
-          RxDataK_Q = RxDataK_Q[1:$];  
-        end
-
-        //duplicating the Data and Characters to each lane in the driver
-        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
-        
-      end
-
-    end     
+    end    
   end
-
-
-  if(current_gen > GEN2)
+  
+  else
   begin
     // Symbol 0
     if(ts.ts_type_t ==TS1)
@@ -299,36 +253,24 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     
     //Symbol 1
     if(ts.use_link_number)
-    begin
       RxData_Q = {RxData_Q, ts.link_number};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'b11110111}; //PAD character
-    end
+    
 
     //Symbol 2
     if(ts.use_lane_number)
-    begin
       RxData_Q = {RxData_Q, ts.lane_number};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'b11110111}; //PAD character
-    end
 
     //Symbol 3
     if(ts.use_n_fts)
-    begin
       RxData_Q = {RxData_Q, ts.n_fts};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'h00};
-    end
 
     //Symbol 4
-    
     temp = 0'hFF;
     temp[0] = 0;
     if(ts.max_gen_supported == GEN1)
@@ -354,10 +296,10 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     begin
       if(ts.ts_type_t == TS1)
       begin
-        if(0)//need flag
+        if(0) //need flag
           temp[1:0] = ts.ec;
 
-        if(0)//need flag
+        if(0) //need flag
           temp[6:3] = ts.tx_preset;
 
         temp[7] = ts.use_preset;  
@@ -418,13 +360,64 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
     //Symbol 10~15
     if(ts.ts_type_t == TS1)
-    begin
-    RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
-    end
+      RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
     else
-    begin
       RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
-    end
+  end
+
+
+endfunction: ts_symbols_maker 
+
+
+task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  logic [pipe_max_width:0] Data;
+  logic [pipe_max_width/8 -1:0] Character;
+  byte temp;
+  byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
+  // bit RxDataValid_Q[$];
+  bit RxDataK_Q[$];
+  //bit RxStartBlock_Q[$];
+  //bit [1:0] RxSyncHeader_Q[$];
+  // bit RxValid_Q[$];
+  //bit [2:0] RxStatus_Q[$];
+  //bit RxElecIdle_Q[$];
+
+  for(int i = start_lane; i < end_lane; i++) begin
+    RxDataValid[i] <= 1;
+    RxValid[i] <= 1;
+  end
+
+  ts_symbols_maker(ts,RxData_Q,RxDataK_Q);
+
+  if(current_gen <=GEN2)
+  begin
+    while(RxData_Q.size())
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Character[j] = RxDataK_Q[0];
+          RxData_Q = RxData_Q[1:$];
+          RxDataK_Q = RxDataK_Q[1:$];  
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
+        
+      end
+    end 
+  end
+
+  
+  if(current_gen > GEN2)
+  begin
+    
 
 
     while(RxData_Q.size())
