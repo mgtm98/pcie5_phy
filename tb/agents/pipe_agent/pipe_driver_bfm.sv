@@ -242,7 +242,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
     end    
   end
-  
+
   else
   begin
     // Symbol 0
@@ -436,16 +436,46 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
         //duplicating the Data and Characters to each lane in the driver
         RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        
       end
     end     
   end
 endtask
 
 task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  for(int i=0;i<ts.size();i++)
+  byte RxData_Q [][16];
+  bit RxDataK_Q [][16];
+  logic [pipe_max_width:0] Data [];
+  logic [pipe_max_width/8 -1:0] Character [];
+  RxData_Q = new[$size(ts)];
+  RxDataK_Q = new[$size(ts)];
+  Data = new[$size(ts)];
+  Character = new[$size(ts)];
+  foreach(ts[i])
   begin
-    send_ts(ts[i],start_lane,end_lane);
+    ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
+  end
+
+
+  if(current_gen <=GEN2)
+  begin
+    foreach(RxData_Q[count])
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[i][(j+1)*8 -1 : j*8] = RxData_Q[i][count];
+          Character[i][j] = RxDataK_Q[i][count];
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data[i] ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character[i];
+      end
+    end 
   end
 endtask
 
