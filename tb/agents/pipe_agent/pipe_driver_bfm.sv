@@ -319,7 +319,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     temp = 8'h00;
     if(ts.ts_type_t == TS1)
     begin
-      if(ts.ec =2'b01)
+      if(ts.ec == 2'b01) 
         temp[5:0] = ts.fs_value;
       else
         temp[5:0] = ts.pre_cursor;
@@ -334,7 +334,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     temp = 8'h00;
     if(ts.ts_type_t == TS1)
     begin
-      if(ts.ec =2'b01)
+      if(ts.ec == 2'b01)
         temp[5:0] = ts.lf_value;
       else
         temp[5:0] = ts.cursor;
@@ -501,14 +501,12 @@ end
 
 /******************************* Normal Data Operation *******************************/
 
+
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
-bit [0:10] tlp_length_field;
-byte tlp_gen3_symbol_0;
-byte tlp_gen3_symbol_1;
 scrambler_s driver_scrambler;
 
 function void send_tlp (tlp_t tlp);
@@ -578,8 +576,9 @@ task send_data ();
     RxValid [i] = 1'b1;
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
 	 	send_data_gen_3_4_5 ();
+  end
 endtask
 
 function int get_width ();
@@ -601,7 +600,7 @@ endfunction
     lanenum = $floor(i*(8.0/pipe_width));
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == 0) begin
-      data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum);
+      data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum, current_gen);
     end
     else if (k_data [i] == 1) begin
       data_scrambled[i] = data[i];
@@ -637,7 +636,6 @@ task automatic send_data_gen_3_4_5 ();
       k_data.push_back(0);
     end
   end
-  end
   for (int i = 0; i < num_of_data_blocks; i++) begin 
     for (int j = 0; j < num_of_clks; j++) begin 
       for (int k = 0; k < num_of_bytes_in_lane; k++) begin
@@ -649,7 +647,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,data.pop_front(),l);
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,data.pop_front(),l, current_gen);
         end
       end
       @(posedge PCLK);
@@ -709,39 +707,6 @@ endtask
 //     RxData [7:0] = 8'b0000_0000;
 //     RxDataK = 1'b0;    // at2kd
 // endtask
-
-// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
-//   bit [15:0] lfsr_new;
-
-//   // LFSR value after 8 serial clocks
-//   for (i=0; i<8; i++)
-//   begin
-//     lfsr_new[ 0] = lfsr [lane_num] [15];
-//     lfsr_new[ 1] = lfsr [lane_num] [ 0];
-//     lfsr_new[ 2] = lfsr [lane_num] [ 1];
-//     lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 6] = lfsr [lane_num] [ 5];
-//     lfsr_new[ 7] = lfsr [lane_num] [ 6];
-//     lfsr_new[ 8] = lfsr [lane_num] [ 7];
-//     lfsr_new[ 9] = lfsr [lane_num] [ 8];
-//     lfsr_new[10] = lfsr [lane_num] [ 9];
-//     lfsr_new[11] = lfsr [lane_num] [10];
-//     lfsr_new[12] = lfsr [lane_num] [11];
-//     lfsr_new[13] = lfsr [lane_num] [12];
-//     lfsr_new[14] = lfsr [lane_num] [13];
-//     lfsr_new[15] = lfsr [lane_num] [14];       
-
-//     // Generation of Scrambled Data
-//     scrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
-    
-//     lfsr [lane_num] = lfsr_new;
-//   end
-//   return scrambled_data;
-// endfunction
-
-
 
 endinterface
 
