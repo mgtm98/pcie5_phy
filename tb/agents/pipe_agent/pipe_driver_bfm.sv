@@ -68,6 +68,7 @@ import uvm_pkg::*;
 import common_pkg::*;
 import pipe_agent_pkg::*;
 
+
   
 //------------------------------------------
 // Data Members
@@ -508,6 +509,7 @@ bit k_data [$];
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
+scrambler_s driver_scrambler;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -599,7 +601,7 @@ endfunction
     lanenum = $floor(i*(8.0/pipe_width));
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == 0) begin
-      data_scrambled[i] = scramble(data[i],lanenum);
+      data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum);
     end
     else if (k_data [i] == 1) begin
       data_scrambled[i] = data[i];
@@ -647,7 +649,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(struct,data.pop_front(),l);
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,data.pop_front(),l);
         end
       end
       @(posedge PCLK);
