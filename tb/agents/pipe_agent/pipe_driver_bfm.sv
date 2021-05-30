@@ -74,16 +74,11 @@ import pipe_agent_pkg::*;
 // Data Members
 //------------------------------------------
 gen_t current_gen;
-bit [15:0] lfsr [`NUM_OF_LANES];
+scrambler_s driver_scrambler;
+//bit [15:0] lfsr [`NUM_OF_LANES];
 bit [5:0]  lf_to_be_recvd;
 bit [5:0]  fs_to_be_recvd;
 
-function void reset_lfsr ();
-  foreach(lfsr[i])
-  begin
-    lfsr[i] = 16'hFFFF;
-  end
-endfunction
 
 //starting polling state
 initial begin
@@ -116,6 +111,8 @@ initial begin
     foreach(PhyStatus[i]) begin
       PhyStatus[i]=0;
     end
+
+    reset_lfsr(driver_scrambler,current_gen);
   end
 end
 /******************************* Detect (Asserting needed signals) *******************************/
@@ -388,6 +385,8 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     RxValid[i] <= 1;
   end
 
+  reset_lfsr(driver_scrambler, current_gen);
+
   ts_symbols_maker(ts,RxData_Q,RxDataK_Q);
 
   if(current_gen <=GEN2)
@@ -456,6 +455,7 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
     ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
   end
 
+  reset_lfsr(driver_scrambler, current_gen);
 
   if(current_gen <=GEN2)
   begin
@@ -507,7 +507,6 @@ byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
-scrambler_s driver_scrambler;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
