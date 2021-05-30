@@ -1,80 +1,89 @@
 
-bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
-bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
 
-function void reset_lfsr ();
+typedef struct
+{
+  bit [15:0] lfsr_1_2 [`NUM_OF_LANES];
+  bit [22:0] lfsr_gen_3 [`NUM_OF_LANES];
+} scrambler_s;
+
+
+function void reset_lfsr (scrambler_s scrambler, gen_t current_gen);
   integer j,i;
-  foreach(lfsr_1_2[i]) begin
-    lfsr_1_2[i] = 16'hFFFF;
-  end
-  foreach(lfsr_gen_3[i]) begin
-    j=i;
-    if (i>7) begin
-      j=j-8;
+  if (current_gen == GEN1 || current_gen == GEN2) begin
+    foreach(scrambler.lfsr_1_2[i]) begin
+      scrambler.lfsr_1_2[i] = 16'hFFFF;
     end
-    case (j)
-      0 : lfsr_gen_3[i] = 'h1DBFBC;
-      1 : lfsr_gen_3[i] = 'h0607BB;
-      2 : lfsr_gen_3[i] = 'h1EC760;
-      3 : lfsr_gen_3[i] = 'h18C0DB;
-      4 : lfsr_gen_3[i] = 'h010F12;
-      5 : lfsr_gen_3[i] = 'h19CFC9;
-      6 : lfsr_gen_3[i] = 'h0277CE;
-      7 : lfsr_gen_3[i] = 'h1BB807;
-    endcase
+  end
+  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
+    foreach(scrambler.lfsr_gen_3[i]) begin
+      j=i;
+      if (i>7) begin
+        j=j-8;
+      end
+      case (j)
+        0 : scrambler.lfsr_gen_3[i] = 'h1DBFBC;
+        1 : scrambler.lfsr_gen_3[i] = 'h0607BB;
+        2 : scrambler.lfsr_gen_3[i] = 'h1EC760;
+        3 : scrambler.lfsr_gen_3[i] = 'h18C0DB;
+        4 : scrambler.lfsr_gen_3[i] = 'h010F12;
+        5 : scrambler.lfsr_gen_3[i] = 'h19CFC9;
+        6 : scrambler.lfsr_gen_3[i] = 'h0277CE;
+        7 : scrambler.lfsr_gen_3[i] = 'h1BB807;
+      endcase
+    end
   end
 endfunction
 
-function bit [7:0] scramble(bit [7:0] in_data, shortint unsigned lane_num);
+function bit [7:0] scramble(scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
 	if (current_gen == GEN1 || current_gen == GEN2)
-		return scramble_gen_1_2 (in_data,  lane_num);
+		return scramble_gen_1_2 (scrambler, in_data,  lane_num);
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-		return scramble_gen_3_4_5 (in_data, lane_num);
+		return scramble_gen_3_4_5 (scrambler, in_data, lane_num);
 endfunction
 
-function bit [7:0] descramble(bit [7:0] in_data, shortint unsigned lane_num);
+function bit [7:0] descramble(scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
   if (current_gen == GEN1 || current_gen == GEN2)
-    return scramble_gen_1_2 (in_data,  lane_num);
+    return scramble_gen_1_2 (scrambler, in_data,  lane_num);
   else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-    return scramble_gen_3_4_5 (in_data, lane_num);
+    return scramble_gen_3_4_5 (scrambler, in_data, lane_num);
 endfunction
 
-function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
+function bit [7:0] scramble_gen_1_2 (scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num);
   bit [15:0] lfsr_new;
   bit [7:0] scrambled_data;
 
   // LFSR value after 8 serial clocks
   for (int i = 0; i < 8; i++)
   begin
-    lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
-    lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
-    lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
-    lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
-    lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
-    lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
-    lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
-    lfsr_new[11] = lfsr_1_2 [lane_num] [10];
-    lfsr_new[12] = lfsr_1_2 [lane_num] [11];
-    lfsr_new[13] = lfsr_1_2 [lane_num] [12];
-    lfsr_new[14] = lfsr_1_2 [lane_num] [13];
-    lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
+    lfsr_new[ 0] = scrambler.lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 1] = scrambler.lfsr_1_2 [lane_num] [ 0];
+    lfsr_new[ 2] = scrambler.lfsr_1_2 [lane_num] [ 1];
+    lfsr_new[ 3] = scrambler.lfsr_1_2 [lane_num] [ 2] ^ scrambler.lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 4] = scrambler.lfsr_1_2 [lane_num] [ 3] ^ scrambler.lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 5] = scrambler.lfsr_1_2 [lane_num] [ 4] ^ scrambler.lfsr_1_2 [lane_num] [15];
+    lfsr_new[ 6] = scrambler.lfsr_1_2 [lane_num] [ 5];
+    lfsr_new[ 7] = scrambler.lfsr_1_2 [lane_num] [ 6];
+    lfsr_new[ 8] = scrambler.lfsr_1_2 [lane_num] [ 7];
+    lfsr_new[ 9] = scrambler.lfsr_1_2 [lane_num] [ 8];
+    lfsr_new[10] = scrambler.lfsr_1_2 [lane_num] [ 9];
+    lfsr_new[11] = scrambler.lfsr_1_2 [lane_num] [10];
+    lfsr_new[12] = scrambler.lfsr_1_2 [lane_num] [11];
+    lfsr_new[13] = scrambler.lfsr_1_2 [lane_num] [12];
+    lfsr_new[14] = scrambler.lfsr_1_2 [lane_num] [13];
+    lfsr_new[15] = scrambler.lfsr_1_2 [lane_num] [14];       
 
     // Generation of Scrambled Data
-    scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
+    scrambled_data [i] = scrambler.lfsr_1_2 [lane_num] [15] ^ in_data [i];
     
-    lfsr_1_2 [lane_num] = lfsr_new;
+    scrambler.lfsr_1_2 [lane_num] = lfsr_new;
   end
   return scrambled_data;
 endfunction
 
-function bit [7:0] scramble_gen_3_4_5 (bit [7:0] unscrambled_data, shortint unsigned lane_num);
+function bit [7:0] scramble_gen_3_4_5 (scrambler_s scrambler, bit [7:0] unscrambled_data, shortint unsigned lane_num);
   bit [7:0] scrambled_data ;
-  scrambled_data = scramble_data_gen_3(lfsr_gen_3[lane_num],unscrambled_data);
-  lfsr_gen_3[lane_num] = advance_lfsr_gen_3(lfsr_gen_3[lane_num]);
+  scrambled_data = scramble_data_gen_3(scrambler.lfsr_gen_3[lane_num],unscrambled_data);
+  scrambler.lfsr_gen_3[lane_num] = advance_lfsr_gen_3(scrambler.lfsr_gen_3[lane_num]);
   return scrambled_data;
 endfunction
 
