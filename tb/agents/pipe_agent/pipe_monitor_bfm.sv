@@ -63,7 +63,6 @@ interface pipe_monitor_bfm
 );
 
   `include "uvm_macros.svh"
-
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
   import common_pkg::*;
@@ -429,7 +428,8 @@ end
   
 /******************************* Normal Data Operation *******************************/
 
-
+scrambler_s monitor_rx_scrambler;
+scrambler_s monitor_tx_scrambler;
 
 
 endinterface
