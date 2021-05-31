@@ -18,6 +18,8 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxValid,
   input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   input logic                               RxElecIdle,
+  //input logic [pipe_num_of_lanes-1:0]       RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
