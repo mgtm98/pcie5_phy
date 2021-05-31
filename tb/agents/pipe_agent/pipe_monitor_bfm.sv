@@ -18,6 +18,8 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxValid,
   input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   input logic                               RxElecIdle,
+  //input logic [pipe_num_of_lanes-1:0]       RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
@@ -63,7 +65,6 @@ interface pipe_monitor_bfm
 );
 
   `include "uvm_macros.svh"
-
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
   import common_pkg::*;
@@ -75,6 +76,9 @@ interface pipe_monitor_bfm
   event detected_power_down_change_e;
 
   pipe_monitor proxy;
+
+  scrambler_s monitor_rx_scrambler;
+  scrambler_s monitor_tx_scrambler;
 
   initial begin
     @(build_connect_finished_e);
@@ -90,12 +94,37 @@ initial begin
     proxy.detect_posedge_clk;
   end
 end
+//-----------------------------------------------------------
+// reciveing TS
+//-----------------------------------------------------------
+initial begin
+  forever begin
+    ts_s tses_received_temp [`NUM_OF_LANES];
+    receive_tses(tses_received_temp,,);
+    ->proxy.pipe_agent_config_h.detected_tses_e;
+    proxy.pipe_agent_config_h.tses_received=tses_received_temp;
+  end
+end
+
+/*
+initial begin 
+  for (int i = 0; i < count; i++) begin
+
+  end
+  wait(RxData[]==8'b101_11100);              
+  reset_lfsr(monitor_rx_scrambler,current_gen);
+end
+*/
+
   /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
     if(Width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; // link number
         for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
         begin
@@ -124,6 +153,9 @@ end
     else if(Width==2'b10) // 32 pipe parallel interface  
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; //link number
         ts.lane_number=TxData[(start_lane*32+0)+:8]; // lane number
         ts.n_fts=TxData[(start_lane*32+24)+:8]; // number of fast training sequnces
@@ -149,6 +181,9 @@ end
     else //8 bit pipe paraleel interface 
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
         begin
             @(posedge PCLK);
@@ -178,6 +213,7 @@ end
     forever begin   
       wait(Reset==1);
       @(posedge PCLK);
+      reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
       assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset");
       assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset");
@@ -237,6 +273,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -283,6 +322,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -326,6 +368,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+          
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -424,53 +469,6 @@ end
   byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
 
-  function void reset_lfsr;
-    foreach(lfsr[i])
-    begin
-      lfsr[i] = 16'hFFFF;
-    end
-  endfunction
 
-  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
-	if (current_gen == GEN1 || current_gen == GEN2)
-		return descramble_gen_1_2 (in_data,  lane_num);
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-		return descramble_gen_3_4_5 (in_data, lane_num);
-  endfunction
 
-  function bit [7:0] descramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-    bit [15:0] lfsr_new;
-    bit [7:0] descrambled_data;
-
-    // LFSR value after 8 serial clocks
-    for (int i = 0; i < 8; i++)
-    begin
-      lfsr_new[ 0] = lfsr [lane_num] [15];
-      lfsr_new[ 1] = lfsr [lane_num] [ 0];
-      lfsr_new[ 2] = lfsr [lane_num] [ 1];
-      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-      lfsr_new[ 6] = lfsr [lane_num] [ 5];
-      lfsr_new[ 7] = lfsr [lane_num] [ 6];
-      lfsr_new[ 8] = lfsr [lane_num] [ 7];
-      lfsr_new[ 9] = lfsr [lane_num] [ 8];
-      lfsr_new[10] = lfsr [lane_num] [ 9];
-      lfsr_new[11] = lfsr [lane_num] [10];
-      lfsr_new[12] = lfsr [lane_num] [11];
-      lfsr_new[13] = lfsr [lane_num] [12];
-      lfsr_new[14] = lfsr [lane_num] [13];
-      lfsr_new[15] = lfsr [lane_num] [14];       
-  
-      // Generation of Decrambled Data
-      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
-      
-      lfsr [lane_num] = lfsr_new;
-    end
-    return descrambled_data;
-  endfunction
-
-	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
-	endfunction
-  
 endinterface
