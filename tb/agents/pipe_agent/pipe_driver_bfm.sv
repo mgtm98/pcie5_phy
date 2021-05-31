@@ -18,6 +18,8 @@ interface pipe_driver_bfm
   output logic [pipe_num_of_lanes-1:0]       RxValid,
   output logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   output logic                               RxElecIdle,
+  //output logic [pipe_num_of_lanes-1:0]     RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
