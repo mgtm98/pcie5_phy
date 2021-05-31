@@ -18,6 +18,8 @@ interface pipe_driver_bfm
   output logic [pipe_num_of_lanes-1:0]       RxValid,
   output logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   output logic                               RxElecIdle,
+  //output logic [pipe_num_of_lanes-1:0]     RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
@@ -68,21 +70,17 @@ import uvm_pkg::*;
 import common_pkg::*;
 import pipe_agent_pkg::*;
 
+
   
 //------------------------------------------
 // Data Members
 //------------------------------------------
 gen_t current_gen;
-bit [15:0] lfsr [`NUM_OF_LANES];
+scrambler_s driver_scrambler;
+//bit [15:0] lfsr [`NUM_OF_LANES];
 bit [5:0]  lf_to_be_recvd;
 bit [5:0]  fs_to_be_recvd;
 
-function void reset_lfsr ();
-  foreach(lfsr[i])
-  begin
-    lfsr[i] = 16'hFFFF;
-  end
-endfunction
 
 //starting polling state
 initial begin
@@ -115,6 +113,8 @@ initial begin
     foreach(PhyStatus[i]) begin
       PhyStatus[i]=0;
     end
+
+    reset_lfsr(driver_scrambler,current_gen);
   end
 end
 /******************************* Detect (Asserting needed signals) *******************************/
@@ -146,24 +146,9 @@ end
 //------------------------------------------
 // Methods
 //------------------------------------------
-task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  logic [pipe_max_width:0] Data;
-  logic [pipe_max_width/8 -1:0] Character;
+
+function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte RxDataK_Q[$]);
   byte temp;
-  byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
-  // bit RxDataValid_Q[$];
-  bit RxDataK_Q[$];
-  //bit RxStartBlock_Q[$];
-  //bit [1:0] RxSyncHeader_Q[$];
-  // bit RxValid_Q[$];
-  //bit [2:0] RxStatus_Q[$];
-  //bit RxElecIdle_Q[$];
-
-  for(int i = start_lane; i < end_lane; i++) begin
-    RxDataValid[i] <= 1;
-    RxValid[i] <= 1;
-  end
-
   if(current_gen <= GEN2)
   begin
     // Symbol 0
@@ -229,8 +214,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     RxData_Q = {RxData_Q, 0'h00};
     RxDataK_Q = {RxDataK_Q, 0};
 
-
-
     //Symbol 6
     if(0 /*need flag*/)
     begin
@@ -246,9 +229,6 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     RxData_Q = {RxData_Q,temp};
     RxDataK_Q = {RxDataK_Q,0};
     
-    
-
-
 
     //Symbol 7~15
     if(ts.ts_type_t == TS1)
@@ -260,36 +240,10 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     begin
       RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
-    end
-
-
-    while(RxData_Q.size())
-    begin
-      @(posedge PCLK);
-      
-      for(int i = start_lane;i<end_lane;i++)
-      begin
-
-        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-        for(int j=0;j<pipe_max_width/8;j++)
-        begin
-          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
-          Character[j] = RxDataK_Q[0];
-          RxData_Q = RxData_Q[1:$];
-          RxDataK_Q = RxDataK_Q[1:$];  
-        end
-
-        //duplicating the Data and Characters to each lane in the driver
-        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
-        
-      end
-
-    end     
+    end    
   end
 
-
-  if(current_gen > GEN2)
+  else
   begin
     // Symbol 0
     if(ts.ts_type_t ==TS1)
@@ -299,36 +253,24 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     
     //Symbol 1
     if(ts.use_link_number)
-    begin
       RxData_Q = {RxData_Q, ts.link_number};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'b11110111}; //PAD character
-    end
+    
 
     //Symbol 2
     if(ts.use_lane_number)
-    begin
       RxData_Q = {RxData_Q, ts.lane_number};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'b11110111}; //PAD character
-    end
 
     //Symbol 3
     if(ts.use_n_fts)
-    begin
       RxData_Q = {RxData_Q, ts.n_fts};
-    end
     else
-    begin
       RxData_Q = {RxData_Q, 8'h00};
-    end
 
     //Symbol 4
-    
     temp = 0'hFF;
     temp[0] = 0;
     if(ts.max_gen_supported == GEN1)
@@ -354,10 +296,10 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     begin
       if(ts.ts_type_t == TS1)
       begin
-        if(0)//need flag
+        if(0) //need flag
           temp[1:0] = ts.ec;
 
-        if(0)//need flag
+        if(0) //need flag
           temp[6:3] = ts.tx_preset;
 
         temp[7] = ts.use_preset;  
@@ -376,7 +318,7 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     temp = 8'h00;
     if(ts.ts_type_t == TS1)
     begin
-      if(ts.ec =2'b01)
+      if(ts.ec == 2'b01) 
         temp[5:0] = ts.fs_value;
       else
         temp[5:0] = ts.pre_cursor;
@@ -391,7 +333,7 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
     temp = 8'h00;
     if(ts.ts_type_t == TS1)
     begin
-      if(ts.ec =2'b01)
+      if(ts.ec == 2'b01)
         temp[5:0] = ts.lf_value;
       else
         temp[5:0] = ts.cursor;
@@ -418,13 +360,66 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
     //Symbol 10~15
     if(ts.ts_type_t == TS1)
-    begin
-    RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
-    end
+      RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
     else
-    begin
       RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
-    end
+  end
+
+
+endfunction: ts_symbols_maker 
+
+
+task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  logic [pipe_max_width:0] Data;
+  logic [pipe_max_width/8 -1:0] Character;
+  byte temp;
+  byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
+  // bit RxDataValid_Q[$];
+  bit RxDataK_Q[$];
+  //bit RxStartBlock_Q[$];
+  //bit [1:0] RxSyncHeader_Q[$];
+  // bit RxValid_Q[$];
+  //bit [2:0] RxStatus_Q[$];
+  //bit RxElecIdle_Q[$];
+
+  for(int i = start_lane; i < end_lane; i++) begin
+    RxDataValid[i] <= 1;
+    RxValid[i] <= 1;
+  end
+
+  reset_lfsr(driver_scrambler, current_gen);
+
+  ts_symbols_maker(ts,RxData_Q,RxDataK_Q);
+
+  if(current_gen <=GEN2)
+  begin
+    while(RxData_Q.size())
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Character[j] = RxDataK_Q[0];
+          RxData_Q = RxData_Q[1:$];
+          RxDataK_Q = RxDataK_Q[1:$];  
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
+        
+      end
+    end 
+  end
+
+  
+  if(current_gen > GEN2)
+  begin
+    
 
 
     while(RxData_Q.size())
@@ -443,16 +438,47 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
         //duplicating the Data and Characters to each lane in the driver
         RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        
       end
     end     
   end
 endtask
 
 task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  for(int i=0;i<ts.size();i++)
+  byte RxData_Q [][16];
+  bit RxDataK_Q [][16];
+  logic [pipe_max_width:0] Data [];
+  logic [pipe_max_width/8 -1:0] Character [];
+  RxData_Q = new[$size(ts)];
+  RxDataK_Q = new[$size(ts)];
+  Data = new[$size(ts)];
+  Character = new[$size(ts)];
+  foreach(ts[i])
   begin
-    send_ts(ts[i],start_lane,end_lane);
+    ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
+  end
+
+  reset_lfsr(driver_scrambler, current_gen);
+
+  if(current_gen <=GEN2)
+  begin
+    foreach(RxData_Q[count])
+    begin
+      @(posedge PCLK);
+      
+      for(int i = start_lane;i<end_lane;i++)
+      begin
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+        for(int j=0;j<pipe_max_width/8;j++)
+        begin
+          Data[i][(j+1)*8 -1 : j*8] = RxData_Q[i][count];
+          Character[i][j] = RxDataK_Q[i][count];
+        end
+
+        //duplicating the Data and Characters to each lane in the driver
+        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data[i] ;
+        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character[i];
+      end
+    end 
   end
 endtask
 
@@ -477,14 +503,12 @@ end
 
 /******************************* Normal Data Operation *******************************/
 
+
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
-bit [0:10] tlp_length_field;
-byte tlp_gen3_symbol_0;
-byte tlp_gen3_symbol_1;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -553,8 +577,9 @@ task send_data ();
     RxValid [i] = 1'b1;
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
 	 	send_data_gen_3_4_5 ();
+  end
 endtask
 
 function int get_width ();
@@ -576,7 +601,7 @@ endfunction
     lanenum = $floor(i*(8.0/pipe_width));
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == 0) begin
-      data_scrambled[i] = scramble(data[i],lanenum);
+      data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum, current_gen);
     end
     else if (k_data [i] == 1) begin
       data_scrambled[i] = data[i];
@@ -612,7 +637,6 @@ task automatic send_data_gen_3_4_5 ();
       k_data.push_back(0);
     end
   end
-  end
   for (int i = 0; i < num_of_data_blocks; i++) begin 
     for (int j = 0; j < num_of_clks; j++) begin 
       for (int k = 0; k < num_of_bytes_in_lane; k++) begin
@@ -624,7 +648,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(struct,data.pop_front(),l);
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,data.pop_front(),l, current_gen);
         end
       end
       @(posedge PCLK);
@@ -684,39 +708,6 @@ endtask
 //     RxData [7:0] = 8'b0000_0000;
 //     RxDataK = 1'b0;    // at2kd
 // endtask
-
-// function bit [7:0] scramble (bit [7:0] in_data, shortint unsigned lane_num);
-//   bit [15:0] lfsr_new;
-
-//   // LFSR value after 8 serial clocks
-//   for (i=0; i<8; i++)
-//   begin
-//     lfsr_new[ 0] = lfsr [lane_num] [15];
-//     lfsr_new[ 1] = lfsr [lane_num] [ 0];
-//     lfsr_new[ 2] = lfsr [lane_num] [ 1];
-//     lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-//     lfsr_new[ 6] = lfsr [lane_num] [ 5];
-//     lfsr_new[ 7] = lfsr [lane_num] [ 6];
-//     lfsr_new[ 8] = lfsr [lane_num] [ 7];
-//     lfsr_new[ 9] = lfsr [lane_num] [ 8];
-//     lfsr_new[10] = lfsr [lane_num] [ 9];
-//     lfsr_new[11] = lfsr [lane_num] [10];
-//     lfsr_new[12] = lfsr [lane_num] [11];
-//     lfsr_new[13] = lfsr [lane_num] [12];
-//     lfsr_new[14] = lfsr [lane_num] [13];
-//     lfsr_new[15] = lfsr [lane_num] [14];       
-
-//     // Generation of Scrambled Data
-//     scrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
-    
-//     lfsr [lane_num] = lfsr_new;
-//   end
-//   return scrambled_data;
-// endfunction
-
-
 
 endinterface
 

@@ -18,6 +18,8 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxValid,
   input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   input logic                               RxElecIdle,
+  //input logic [pipe_num_of_lanes-1:0]       RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
@@ -63,7 +65,6 @@ interface pipe_monitor_bfm
 );
 
   `include "uvm_macros.svh"
-
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
   import common_pkg::*;
@@ -75,6 +76,9 @@ interface pipe_monitor_bfm
   event detected_power_down_change_e;
 
   pipe_monitor proxy;
+
+  scrambler_s monitor_rx_scrambler;
+  scrambler_s monitor_tx_scrambler;
 
   initial begin
     @(build_connect_finished_e);
@@ -100,12 +104,26 @@ initial begin
     proxy.notify_tses_received(tses_received_temp);
   end
 end
+
+/*
+initial begin 
+  for (int i = 0; i < count; i++) begin
+
+  end
+  wait(RxData[]==8'b101_11100);              
+  reset_lfsr(monitor_rx_scrambler,current_gen);
+end
+*/
+
   /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
     if(Width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; // link number
         for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
         begin
@@ -134,6 +152,9 @@ end
     else if(Width==2'b10) // 32 pipe parallel interface  
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; //link number
         ts.lane_number=TxData[(start_lane*32+0)+:8]; // lane number
         ts.n_fts=TxData[(start_lane*32+24)+:8]; // number of fast training sequnces
@@ -159,6 +180,9 @@ end
     else //8 bit pipe paraleel interface 
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
         begin
             @(posedge PCLK);
@@ -188,6 +212,7 @@ end
     forever begin   
       wait(Reset==1);
       @(posedge PCLK);
+      reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
       assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset");
       assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset");
@@ -247,6 +272,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -293,6 +321,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -336,6 +367,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+          
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
