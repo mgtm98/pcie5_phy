@@ -349,9 +349,9 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     begin
         temp[5:0] = ts.post_cursor;
         if(0) //need flag
-          temp[6] = reject_coeficient;
+          temp[6] = ts.reject_coeficient;
 
-        temp[7] = ^{temp[6:0],RxData_Q[6],RxData_Q[7],RxData_Q[8]}  
+        temp[7] = ^{temp[6:0],RxData_Q[6],RxData_Q[7],RxData_Q[8]};
     end
     else
       temp = 8'h45;
