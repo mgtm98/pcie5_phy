@@ -12,6 +12,4 @@ endfunction
 
 task pipe_enter_recovery_seq::body();
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  super.body;
-  
 endtask
