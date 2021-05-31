@@ -551,9 +551,6 @@ byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
-bit [0:10] tlp_length_field;
-byte tlp_gen3_symbol_0;
-byte tlp_gen3_symbol_1;
 
 function void reset_lfsr ();
   integer j,i;
@@ -662,9 +659,9 @@ endtask
   int lanenum;
   byte data_scrambled [$];
   int pipe_width = get_width();
-  int bus_data_width = (pipe_num_of_lanes * pipe_width) - 1;
+  int bus_data_width = (pipe_num_of_lanes * pipe_width);
   for(int i = 0; i < data.size(); i++) begin
-    lanenum = $floor(i*(8.0/pipe_width));
+    lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == 0) begin
       data_scrambled[i] = scramble(data[i],lanenum);
@@ -673,17 +670,17 @@ endtask
       data_scrambled[i] = data[i];
     end
   end  
-  for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width+1)/8) begin
+  for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width)/8) begin
     @ (posedge PCLK);    
-    for (int j = k; j < pipe_num_of_lanes + k; j = j ++) begin
-      for (int i = j - k; i < (bus_data_width+1)/8; i = i + pipe_num_of_lanes) begin
+    for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
         RxData[(8*i) +: 8] = data_scrambled.pop_front();
         RxDataK[i] = k_data.pop_front();
       end
     end
   end
   if (!(lanenum == pipe_num_of_lanes)) begin
-    for (int j = lanenum + 1; j < (bus_data_width+1)/8; j = j ++) begin
+    for (int j = lanenum + 1; j < (bus_data_width)/8; j = j ++) begin
       RxData [(8*j) +: 8] = 8'h00;
       RxDataK[j] = 1'b1;
     end

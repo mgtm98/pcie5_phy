@@ -417,7 +417,11 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
-
+  byte data [$];
+  bit k_data [$];
+  bit [0:10] tlp_length_field;
+  byte tlp_gen3_symbol_0;
+  byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
 
   function void reset_lfsr;
@@ -468,4 +472,5 @@ end
 
 	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
 	endfunction
+  
 endinterface
