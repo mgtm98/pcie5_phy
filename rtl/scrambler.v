@@ -14,7 +14,7 @@ module Scrambler (input wire pclk, input wire reset_n, input wire turnOff, input
 	LFSR_16 lfsr_16(.scrambler_reset(patternReset), .reset_n(reset_n), .pclk(pclk), .data_out(lfsrOut_16[15:0]));
 	LFSR_32 lfsr_32(.scrambler_reset(patternReset), .reset_n(reset_n), .pclk(pclk), .data_out(lfsrOut_32));					
 
-	Master master(.turnOff(turnOff), .PIPEWIDTH(PIPEWIDTH), .masterData(dataout_1), .patternReset(patternReset), 
+	Mastertx master(.turnOff(turnOff), .PIPEWIDTH(PIPEWIDTH), .masterData(dataout_1), .patternReset(patternReset), 
 					.LFSRSel(lfsrSel), .advance(advance));
 
 	always@*
