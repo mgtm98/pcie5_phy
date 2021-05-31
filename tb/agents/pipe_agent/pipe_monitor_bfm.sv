@@ -65,12 +65,14 @@ interface pipe_monitor_bfm
 );
 
   `include "uvm_macros.svh"
+  `include "settings.svh"
+
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
   import common_pkg::*;
 
   gen_t current_gen;
-
+  scrambler_s monitor_scrambler;
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
@@ -469,6 +471,112 @@ end
   byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
 
+  //gen 1 and 2
+
+  int lanenum;
+  int pipe_width = get_width();
+  int bus_data_width = (pipe_num_of_lanes * pipe_width) ;
+  tlp_t tlp_receieved;
+  dllp_t dllp_receieved;
+  bit [7:0] [bus_data_kontrol_param : 0] data_descrambled;
+  byte tlp_q [$];
+  byte dllp_q [$];
+  int start_tlp;
+  int start_dllp;
+  bit dllp_done = 0;
+  bit tlp_done = 0;
+ initial begin
+   forever begin 
+     foreach(TxDataValid[i]) begin
+       wait (TxDataValid[i] == 1) ; 	
+     end	
+     @ (posedge PCLK);
+     for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
+       if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
+         start_tlp = i;
+         receive_tlp_gen_1_2; 
+       end
+       else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) || tlp_done == 0) begin
+         start_dllp = i;
+         receive_dllp_gen_1_2; 
+       end
+     end
+   end
+ end
+ 
+ task automatic receive_dllp_gen_1_2;
+  int end_dllp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_dllp;
+    if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(TxDataK [i] == 0) begin
+         data_descrambled[j] = descramble(monitor_scrambler,TxData[(8*i) +: 8],lanenum, current_gen);
+       end
+       else if (TxDataK [i] == 1) begin
+         data_descrambled[j] = (TxData[(8*i) +: 8]);
+       end
+    end
+    else begin
+      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      dllp_done = 1;
+      end_dllp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_dllp) begin
+       break;
+       end
+         dllp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (dllp_done) begin
+    for (int i = 0; i < dllp_q.size(); i++) begin
+       dllp_receieved [i] = dllp_q.pop_front();
+    end
+    proxy.notify_dllp_received(dllp_receieved);
+  end
+ endtask
+ 
+ task automatic receive_tlp_gen_1_2;
+  int end_tlp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_tlp;
+    if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(TxDataK [i] == 0) begin
+         data_descrambled[j] = descramble(monitor_scrambler,TxData[(8*i) +: 8],lanenum, current_gen);
+       end
+       else if (TxDataK [i] == 1) begin
+         data_descrambled[j] = (TxData[(8*i) +: 8]);
+       end
+    end
+    else begin
+      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      tlp_done = 1;
+      end_tlp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_tlp) begin
+       break;
+       end
+         tlp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (tlp_done) begin
+    for (int i = 0; i < tlp_q.size(); i++) begin
+       tlp_receieved [i] = tlp_q.pop_front();
+    end
+    proxy.notify_tlp_received(tlp_receieved);
+  end
+ endtask  
+ 
+  
 
 
 endinterface
