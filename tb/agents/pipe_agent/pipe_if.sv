@@ -7,10 +7,11 @@ interface pipe_if
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(
-    // input bit   CLK,
-    input bit   Reset
+    input bit   PCLK
     // input logic PhyReset
   );
+
+  logic   Reset;
 
   /*************************** RX Specific Signals *************************************/
   logic [bus_data_width_param:0]      RxData;    
@@ -61,6 +62,6 @@ interface pipe_if
   logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange;
   /*************************************************************************************/
 
-  logic                               PCLK;     //TODO: This signal is removed 
-  logic [4:0]                         PclkRate;     //TODO: This signal is removed 
+  // logic                               PCLK;     //TODO: This signal is removed 
+  // logic [4:0]                         PclkRate;     //TODO: This signal is removed 
 endinterface: pipe_if
