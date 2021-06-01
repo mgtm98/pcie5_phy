@@ -5,8 +5,8 @@ interface pipe_monitor_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  // input bit   CLK,
-  input bit   Reset,
+  input logic   PCLK,
+  input logic   Reset,
   // input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
@@ -57,11 +57,11 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  input logic                               PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  // input logic                               PCLK,     //TODO: This signal is removed 
+  // input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
   `include "uvm_macros.svh"
@@ -222,9 +222,9 @@ end
       assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
     
       //check that PCLK is operational
-      temp=PclkRate;   //shared or per lane?
-      @(posedge PCLK);
-      assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
+      // temp=PclkRate;   //shared or per lane?
+      // @(posedge PCLK);
+      // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
     
       wait(Reset==0);
       @(posedge PCLK);
@@ -463,6 +463,16 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
+  function int get_width ();
+    int lane_width;
+    case (Width)
+      2'b00: lane_width = 8;
+      2'b01: lane_width = 16;
+      2'b11: lane_width = 32;
+    endcase
+    return lane_width;
+  endfunction
+
   byte data [$];
   bit k_data [$];
   bit [0:10] tlp_length_field;
