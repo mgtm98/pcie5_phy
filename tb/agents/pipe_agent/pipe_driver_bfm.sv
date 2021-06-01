@@ -509,6 +509,7 @@ byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
+bit [7:0] temp;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -601,7 +602,8 @@ endfunction
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == D) begin
-      data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum, current_gen);
+      temp =data[i];
+      data_scrambled[i] = scramble( driver_scrambler, temp,lanenum, current_gen);
     end
     else if (k_data [i] == K) begin
       data_scrambled[i] = data[i];
@@ -648,7 +650,8 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,data.pop_front(),l, current_gen);
+          temp = data.pop_front();
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,temp,l, current_gen);
         end
       end
       @(posedge PCLK);
