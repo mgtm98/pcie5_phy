@@ -11,6 +11,8 @@ interface lpif_monitor_bfm #(
   input logic                               lp_irdy,
   input logic [bus_data_width_param:0]      lp_data,
   input logic [bus_kontrol_param:0]         lp_valid,
+    
+  input logic                                pl_linkup,
   
   input logic [3:0]                         lp_state_req,
   input logic [3:0]                         pl_state_sts,
