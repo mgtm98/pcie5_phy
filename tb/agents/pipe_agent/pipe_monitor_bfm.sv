@@ -108,15 +108,14 @@ initial begin
   end
 end
 
-/*
 initial begin 
-  for (int i = 0; i < count; i++) begin
-
+  forever begin
+    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
+      wait(RxData[ (i*8)+7 : i*8]==8'b101_11100);
+    end              
+    reset_lfsr(monitor_rx_scrambler,current_gen);
   end
-  wait(RxData[]==8'b101_11100);              
-  reset_lfsr(monitor_rx_scrambler,current_gen);
 end
-*/
 
   /******************************* Receive TS*******************************/
 
