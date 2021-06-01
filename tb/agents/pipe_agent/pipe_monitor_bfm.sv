@@ -500,6 +500,8 @@ end
          start_dllp = i;
          receive_dllp_gen_1_2; 
        end
+        else if ((TxDataK[i] == 0 && TxData[(8*i) +: 8] == 8'b0000_0000)) begin
+        end
      end
    end
  end

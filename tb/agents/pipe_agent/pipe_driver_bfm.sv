@@ -600,10 +600,10 @@ endfunction
   for(int i = 0; i < data.size(); i++) begin
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
-    if(k_data [i] == 0) begin
+    if(k_data [i] == D) begin
       data_scrambled[i] = scramble( driver_scrambler, data[i],lanenum, current_gen);
     end
-    else if (k_data [i] == 1) begin
+    else if (k_data [i] == K) begin
       data_scrambled[i] = data[i];
     end
   end  
@@ -618,7 +618,7 @@ endfunction
   end
   if (!(lanenum == pipe_num_of_lanes)) begin
     for (int j = lanenum + 1; j < (bus_data_width)/8; j = j ++) begin
-      RxData [(8*j) +: 8] = 8'h00;
+      RxData [(8*j) +: 8] = 8'b11110111;
       RxDataK[j] = 1'b1;
     end
   end
