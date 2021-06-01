@@ -503,44 +503,11 @@ endtask
 
 /******************************* Normal Data Operation *******************************/
 
-<<<<<<< HEAD
-bit [15:0] lfsr_gen_1_2 [pipe_num_of_lanes];
-bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
-=======
-
->>>>>>> origin/master
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
 byte data [$];
 bit k_data [$];
-<<<<<<< HEAD
-bit [0:10] tlp_length_field;
-byte tlp_gen3_symbol_0;
-byte tlp_gen3_symbol_1;
-
-function void reset_lfsr ();
-  integer j,i;
-  foreach(lfsr_gen_1_2[i]) begin
-    lfsr_gen_1_2[i] = 16'hFFFF;
-  end
-  foreach(lfsr_gen_3[i]) begin
-    j=i;
-    if (i>7) begin
-      j=j-8;
-    end
-    case (j)
-      0 : lfsr_gen_3[i] = 'h1DBFBC;
-      1 : lfsr_gen_3[i] = 'h0607BB;
-      2 : lfsr_gen_3[i] = 'h1EC760;
-      3 : lfsr_gen_3[i] = 'h18C0DB;
-      4 : lfsr_gen_3[i] = 'h010F12;
-      5 : lfsr_gen_3[i] = 'h19CFC9;
-      6 : lfsr_gen_3[i] = 'h0277CE;
-      7 : lfsr_gen_3[i] = 'h1BB807;
-    endcase
-  end
-endfunction
 
 function int get_width ();
 	int lane_width;
@@ -551,9 +518,8 @@ function int get_width ();
 	endcase
 	return lane_width;
 endfunction
-=======
+
 bit [7:0] temp;
->>>>>>> origin/master
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -624,24 +590,11 @@ task send_data ();
 		send_data_gen_1_2 ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
 	 	send_data_gen_3_4_5 ();
-<<<<<<< HEAD
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1'b0;
     // RxValid [i] = 1'b0;
-=======
->>>>>>> origin/master
   end
 endtask
-
-function int get_width ();
-  int lane_width;
-  case (Width)
-    2'b00: lane_width = 8;
-    2'b01: lane_width = 16;
-    2'b11: lane_width = 32;
-  endcase
-  return lane_width;
-endfunction
 
  task automatic send_data_gen_1_2 ();
   int lanenum;
@@ -700,12 +653,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-<<<<<<< HEAD
           RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(data.pop_front(),l);
-=======
-          temp = data.pop_front();
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler,temp,l, current_gen);
->>>>>>> origin/master
         end
       end
       @(posedge PCLK);
@@ -713,43 +661,6 @@ task automatic send_data_gen_3_4_5 ();
   end
 endtask
 
-<<<<<<< HEAD
-function bit [7:0] scramble(bit [7:0] in_data, shortint unsigned lane_num);
-	if (current_gen == GEN1 || current_gen == GEN2)
-		return scramble_gen_1_2 (in_data,  lane_num);
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-		return scramble_gen_3_4_5 (in_data, lane_num);
-endfunction
-
-function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-  bit [15:0] lfsr_new;
-  bit [7:0] scrambled_data;
-
-  // LFSR value after 8 serial clocks
-  for (int i = 0; i < 8; i++)
-  begin
-    lfsr_new[ 0] = lfsr_gen_1_2 [lane_num] [15];
-    lfsr_new[ 1] = lfsr_gen_1_2 [lane_num] [ 0];
-    lfsr_new[ 2] = lfsr_gen_1_2 [lane_num] [ 1];
-    lfsr_new[ 3] = lfsr_gen_1_2 [lane_num] [ 2] ^ lfsr_gen_1_2 [lane_num] [15];
-    lfsr_new[ 4] = lfsr_gen_1_2 [lane_num] [ 3] ^ lfsr_gen_1_2 [lane_num] [15];
-    lfsr_new[ 5] = lfsr_gen_1_2 [lane_num] [ 4] ^ lfsr_gen_1_2 [lane_num] [15];
-    lfsr_new[ 6] = lfsr_gen_1_2 [lane_num] [ 5];
-    lfsr_new[ 7] = lfsr_gen_1_2 [lane_num] [ 6];
-    lfsr_new[ 8] = lfsr_gen_1_2 [lane_num] [ 7];
-    lfsr_new[ 9] = lfsr_gen_1_2 [lane_num] [ 8];
-    lfsr_new[10] = lfsr_gen_1_2 [lane_num] [ 9];
-    lfsr_new[11] = lfsr_gen_1_2 [lane_num] [10];
-    lfsr_new[12] = lfsr_gen_1_2 [lane_num] [11];
-    lfsr_new[13] = lfsr_gen_1_2 [lane_num] [12];
-    lfsr_new[14] = lfsr_gen_1_2 [lane_num] [13];
-    lfsr_new[15] = lfsr_gen_1_2 [lane_num] [14];       
-
-    // Generation of Scrambled Data
-    scrambled_data [i] = lfsr_gen_1_2 [lane_num] [15] ^ in_data [i];
-    
-    lfsr_gen_1_2 [lane_num] = lfsr_new;
-=======
   task eqialization_preset_applied(preset_index);
     @(LocalPresetIndex);
     assert(LocalPresetIndex == preset_index) else 
@@ -778,7 +689,6 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
   initial begin
     @(LF) assert(LF == lf_to_be_recvd) else
     `uvm_error("pipe_driver_bfm", "")
->>>>>>> origin/master
   end
 
   initial begin
@@ -786,19 +696,4 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
     `uvm_error("pipe_driver_bfm", "")
   end
 
-
-// task send_data (byte data, int start_lane = 0 ,int end_lane = NUM_OF_LANES);
-//    fork
-//     variable no. of process
-//     scrambler (0000, )
-//    join
-//    hadeha l scrumbled data wl start lane wl end_lane // to do shabh tses
-//    scrambling w n-send 3l signals
-//     @(posedge PCLK);
-//     RxValid = 1'b1;
-//     RxData [7:0] = 8'b0000_0000;
-//     RxDataK = 1'b0;    // at2kd
-// endtask
-
 endinterface
-
