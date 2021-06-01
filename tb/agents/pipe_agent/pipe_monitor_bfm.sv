@@ -72,7 +72,6 @@ interface pipe_monitor_bfm
   import common_pkg::*;
 
   gen_t current_gen;
-  scrambler_s monitor_scrambler;
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
@@ -527,7 +526,7 @@ end
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
         temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -564,7 +563,7 @@ end
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
           temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -615,7 +614,8 @@ end
       for (i = 0; i < num_of_clks; i++) begin
         for (j = 0; j < num_of_bytes_in_lane; j++) begin
           for (k = 0; k < pipe_num_of_lanes; k++) begin
-            data_sent.push_back() = descramble (RxData [((k*pipe_max_width) + (j*8)) +: 8], k);
+            temp_value= RxData [((k*pipe_max_width) + (j*8)) +: 8];
+            data_sent.push_back() = descramble (monitor_rx_scrambler, temp_value, k, current_gen);
           end
         end
         @(posedge PCLK);
@@ -627,6 +627,7 @@ end
         if (is_end_of_data_block == 1) begin      
           for (i = 0; i < pipe_num_of_lanes; i++) begin
             assert (RxStartBlock [i] == 0 || RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10)
+            else `uvm_error ("pipe_monitor_bfm", "..")  //
           end
           while (data_sent.size() != 0) begin
 
@@ -676,7 +677,6 @@ end
         end
       end
     end
-  end
 
   initial begin
     int lane_width;
@@ -699,7 +699,8 @@ end
     for (i = 0; i < num_of_clks; i++) begin
       for (j = 0; j < num_of_bytes_in_lane; j++) begin
         for (k = 0; k < pipe_num_of_lanes; k++) begin
-          data_received.push_back() = descramble (TxData [((k*pipe_max_width) + (j*8)) +: 8], k);
+          temp_value=TxData [((k*pipe_max_width) + (j*8)) +: 8];
+          data_received.push_back() = descramble (monitor_tx_scrambler,temp_value, k, current_gen);
         end
       end
       @(posedge PCLK);
@@ -711,6 +712,7 @@ end
       if (is_end_of_data_block == 1) begin      
         for (i = 0; i < pipe_num_of_lanes; i++) begin
           assert (TxStartBlock [i] == 0 || TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10)
+          else `uvm_error ("pipe_monitor_bfm", "..")  //
         end
         while (data_received.size() != 0) begin
 
