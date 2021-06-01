@@ -520,6 +520,7 @@ function int get_width ();
 endfunction
 
 bit [7:0] temp;
+bit [7:0] temp_data;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -577,8 +578,6 @@ function void send_idle_data ();
     data.push_back(8'b00000000);           k_data.push_back(D); //control but scrambled
   end
 endfunction
-
-
 
 task send_data ();
   assert (PowerDown == 4'b0000) 
@@ -655,7 +654,8 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler, data.pop_front(), l, current_gen);
+          temp_data = data.pop_front();
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler, temp_data, l, current_gen);
         end
       end
       @(posedge PCLK);
