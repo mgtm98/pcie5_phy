@@ -5,8 +5,8 @@ interface pipe_monitor_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  // input bit   CLK,
-  input bit   Reset,
+  input logic   PCLK,
+  input logic   Reset,
   // input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
@@ -18,6 +18,8 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxValid,
   input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   input logic                               RxElecIdle,
+  //input logic [pipe_num_of_lanes-1:0]       RxElecIdle,
+  
   /*************************************************************************************/
   
   /*************************** TX Specific Signals *************************************/
@@ -55,26 +57,30 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  input logic                               PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  // input logic                               PCLK,     //TODO: This signal is removed 
+  // input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
   `include "uvm_macros.svh"
+  `include "settings.svh"
 
   import uvm_pkg::*;
   import pipe_agent_pkg::*;
   import common_pkg::*;
 
   gen_t current_gen;
-
+  scrambler_s monitor_scrambler;
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
 
   pipe_monitor proxy;
+
+  scrambler_s monitor_rx_scrambler;
+  scrambler_s monitor_tx_scrambler;
 
   initial begin
     @(build_connect_finished_e);
@@ -90,12 +96,36 @@ initial begin
     proxy.detect_posedge_clk;
   end
 end
+//-----------------------------------------------------------
+// reciveing TS
+//-----------------------------------------------------------
+initial begin
+  forever begin
+    ts_s tses_received_temp [`NUM_OF_LANES];
+    receive_tses(tses_received_temp);
+    proxy.notify_tses_received(tses_received_temp);
+  end
+end
+
+initial begin 
+  forever begin
+    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
+      wait(RxData[(i*8)+:8]==8'b1011_1100);
+      //@(posedge PCLK);
+    end              
+    reset_lfsr(monitor_rx_scrambler,current_gen);
+  end
+end
+
   /******************************* Receive TS*******************************/
 
   task automatic receive_ts (output ts_s ts ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
     if(Width==2'b01) // 16 bit pipe parallel interface
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; // link number
         for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
         begin
@@ -124,6 +154,9 @@ end
     else if(Width==2'b10) // 32 pipe parallel interface  
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         ts.link_number=TxData[(start_lane*32+8)+:8]; //link number
         ts.lane_number=TxData[(start_lane*32+0)+:8]; // lane number
         ts.n_fts=TxData[(start_lane*32+24)+:8]; // number of fast training sequnces
@@ -149,6 +182,9 @@ end
     else //8 bit pipe paraleel interface 
     begin
         wait(TxData[(start_lane*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+        reset_lfsr(monitor_tx_scrambler,current_gen);
+
         for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
         begin
             @(posedge PCLK);
@@ -178,6 +214,7 @@ end
     forever begin   
       wait(Reset==1);
       @(posedge PCLK);
+      reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
       assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset");
       assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset");
@@ -185,9 +222,9 @@ end
       assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
     
       //check that PCLK is operational
-      temp=PclkRate;   //shared or per lane?
-      @(posedge PCLK);
-      assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
+      // temp=PclkRate;   //shared or per lane?
+      // @(posedge PCLK);
+      // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
     
       wait(Reset==0);
       @(posedge PCLK);
@@ -237,6 +274,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -283,6 +323,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -326,6 +369,9 @@ end
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+          
+          reset_lfsr(monitor_tx_scrambler,current_gen);
+
           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -417,36 +463,9 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
-
-
-  bit [15:0] lfsr_gen_1_2 [pipe_num_of_lanes];
-  bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
   byte data_sent [$];
   byte data_received [$];
   bit k_data [$];
-
-  function void reset_lfsr ();
-    integer j,i;
-    foreach(lfsr_gen_1_2[i]) begin
-      lfsr_gen_1_2[i] = 16'hFFFF;
-    end
-    foreach(lfsr_gen_3[i]) begin
-      j=i;
-      if (i>7) begin
-        j=j-8;
-      end
-      case (j)
-        0 : lfsr_gen_3[i] = 'h1DBFBC;
-        1 : lfsr_gen_3[i] = 'h0607BB;
-        2 : lfsr_gen_3[i] = 'h1EC760;
-        3 : lfsr_gen_3[i] = 'h18C0DB;
-        4 : lfsr_gen_3[i] = 'h010F12;
-        5 : lfsr_gen_3[i] = 'h19CFC9;
-        6 : lfsr_gen_3[i] = 'h0277CE;
-        7 : lfsr_gen_3[i] = 'h1BB807;
-      endcase
-    end
-  endfunction
 
   function int get_width ();
     int lane_width;
@@ -458,45 +477,126 @@ end
     return lane_width;
   endfunction
 
-  function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
-  if (current_gen == GEN1 || current_gen == GEN2)
-    return descramble_gen_1_2 (in_data,  lane_num);
-  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-    return descramble_gen_3_4_5 (in_data, lane_num);
-  endfunction
+  byte data [$];
+  bit k_data [$];
+  bit [0:10] tlp_length_field;
+  byte tlp_gen3_symbol_0;
+  byte tlp_gen3_symbol_1;
+  bit [15:0] lfsr[pipe_num_of_lanes];
+  bit [7:0] temp_value;
 
-  function bit [7:0] descramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
-    bit [15:0] lfsr_new;
-    bit [7:0] descrambled_data;
-
-    // LFSR value after 8 serial clocks
-    for (int i = 0; i < 8; i++)
-    begin
-      lfsr_new[ 0] = lfsr_gen_1_2 [lane_num] [15];
-      lfsr_new[ 1] = lfsr_gen_1_2 [lane_num] [ 0];
-      lfsr_new[ 2] = lfsr_gen_1_2 [lane_num] [ 1];
-      lfsr_new[ 3] = lfsr_gen_1_2 [lane_num] [ 2] ^ lfsr_gen_1_2 [lane_num] [15];
-      lfsr_new[ 4] = lfsr_gen_1_2 [lane_num] [ 3] ^ lfsr_gen_1_2 [lane_num] [15];
-      lfsr_new[ 5] = lfsr_gen_1_2 [lane_num] [ 4] ^ lfsr_gen_1_2 [lane_num] [15];
-      lfsr_new[ 6] = lfsr_gen_1_2 [lane_num] [ 5];
-      lfsr_new[ 7] = lfsr_gen_1_2 [lane_num] [ 6];
-      lfsr_new[ 8] = lfsr_gen_1_2 [lane_num] [ 7];
-      lfsr_new[ 9] = lfsr_gen_1_2 [lane_num] [ 8];
-      lfsr_new[10] = lfsr_gen_1_2 [lane_num] [ 9];
-      lfsr_new[11] = lfsr_gen_1_2 [lane_num] [10];
-      lfsr_new[12] = lfsr_gen_1_2 [lane_num] [11];
-      lfsr_new[13] = lfsr_gen_1_2 [lane_num] [12];
-      lfsr_new[14] = lfsr_gen_1_2 [lane_num] [13];
-      lfsr_new[15] = lfsr_gen_1_2 [lane_num] [14];
-  
-      // Generation of Decrambled Data
-      descrambled_data [i] = lfsr_gen_1_2 [lane_num] [15] ^ in_data [i];
-      
-      lfsr_gen_1_2 [lane_num] = lfsr_new;
+  int lanenum;
+  int pipe_width = get_width();
+  int bus_data_width = (pipe_num_of_lanes * pipe_width) ;
+  tlp_t tlp_receieved;
+  dllp_t dllp_receieved;
+  bit [7:0] [bus_data_kontrol_param : 0] data_descrambled;
+  byte tlp_q [$];
+  byte dllp_q [$];
+  int start_tlp;
+  int start_dllp;
+  bit dllp_done = 0;
+  bit tlp_done = 0;
+ initial begin
+   forever begin 
+     foreach(TxDataValid[i]) begin
+       wait (TxDataValid[i] == 1) ; 	
+     end	
+     @ (posedge PCLK);
+     for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
+       if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
+         start_tlp = i;
+         receive_tlp_gen_1_2; 
+       end
+       else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) || tlp_done == 0) begin
+         start_dllp = i;
+         receive_dllp_gen_1_2; 
+       end
+        else if ((TxDataK[i] == 0 && TxData[(8*i) +: 8] == 8'b0000_0000)) begin
+        end
+     end
+   end
+ end
+ 
+ task automatic receive_dllp_gen_1_2;
+  int end_dllp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_dllp;
+    if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(TxDataK [i] == 0) begin
+        temp_value=TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+       end
+       else if (TxDataK [i] == 1) begin
+         data_descrambled[j] = (TxData[(8*i) +: 8]);
+       end
+>>>>>>> origin/master
     end
-    return descrambled_data;
-  endfunction
+    else begin
+      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      dllp_done = 1;
+      end_dllp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_dllp) begin
+       break;
+       end
+         dllp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (dllp_done) begin
+    for (int i = 0; i < dllp_q.size(); i++) begin
+       dllp_receieved [i] = dllp_q.pop_front();
+    end
+    proxy.notify_dllp_received(dllp_receieved);
+  end
+ endtask
+ 
+ task automatic receive_tlp_gen_1_2;
+  int end_tlp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_tlp;
+    if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(TxDataK [i] == 0) begin
+          temp_value=TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+       end
+       else if (TxDataK [i] == 1) begin
+         data_descrambled[j] = (TxData[(8*i) +: 8]);
+       end
+    end
+    else begin
+      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      tlp_done = 1;
+      end_tlp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_tlp) begin
+       break;
+       end
+         tlp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (tlp_done) begin
+    for (int i = 0; i < tlp_q.size(); i++) begin
+       tlp_receieved [i] = tlp_q.pop_front();
+    end
+    proxy.notify_tlp_received(tlp_receieved);
+  end
+ endtask  
+ 
+  
 
+
+<<<<<<< HEAD
   function bit [7:0] descramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
   endfunction
 
@@ -666,4 +766,6 @@ end
       end
     end
   end
+=======
+>>>>>>> origin/master
 endinterface

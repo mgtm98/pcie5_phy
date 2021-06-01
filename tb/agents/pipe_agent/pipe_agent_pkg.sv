@@ -13,5 +13,6 @@ package pipe_agent_pkg;
   `include "pipe_monitor.svh"
   typedef uvm_sequencer#(pipe_seq_item) pipe_sequencer;
   `include "pipe_agent.svh"
+  `include "descrambler_scrambler.svh"
 
 endpackage: pipe_agent_pkg

@@ -31,12 +31,19 @@ class pipe_monitor extends uvm_monitor;
   // extern function void notify_link_up_received();
   extern task          detect_link_up();
   extern function void notify_tses_received(ts_s tses [`NUM_OF_LANES]);
+<<<<<<< HEAD
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
   extern function void notify_dllp_received(dllp_t dllp);
   extern function void notify_idle_data_sent();
   extern function void notify_idle_data_received();
+=======
+  // extern function void notify_tlp_sent(tlp_t tlp);
+  extern function void notify_tlp_received(tlp_t tlp);
+  // extern function void notify_dllp_sent(dllp_t dllp);
+  extern function void notify_dllp_received(dllp_t dllp);
+>>>>>>> origin/master
   // extern function void notify_enter_recovery_sent();
   // extern function void notify_enter_recovery_received();
   // extern function void notify_gen_change_sent(gen_t gen);

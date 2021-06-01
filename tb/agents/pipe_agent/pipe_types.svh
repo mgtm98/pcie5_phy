@@ -28,8 +28,25 @@ typedef struct {
   bit                   use_lane_number;
   gen_t                 max_gen_supported;
   ts_type_t             ts_type;
+
   bit                   speed_change;                     // need to be added in the send/recv tasks
   bit                   auto_speed_change;                // need to be added in the send/recv tasks
+  bit [2:0]             rx_preset_hint;                   // need to be added in the send/recv tasks
+  bit [3:0]             tx_preset;                        // need to be added in the send/recv tasks
+  bit [1:0]             ec;
+  bit                   use_preset;
+  bit [5:0]             lf_value;
+  bit [5:0]             fs_value;
+  bit [5:0]             pre_cursor;
+  bit [5:0]             cursor;
+  bit [5:0]             post_cursor;
+  bit                   reject_coeficient;
+
+  // fields for TS2 only
+  bit                   equalization_command;         
+
+
+
 } ts_s;
 
 typedef enum {
@@ -46,8 +63,16 @@ typedef enum {
   WIDTH_CHANGE,
   SEND_TS,
   SEND_TSES,
+<<<<<<< HEAD
   // SEND_IDLE_DATA,
   SEND_DATA
+=======
+  SEND_IDLE_DATA,
+  SEND_DATA,
+  CHECK_EQ_PRESET_APPLIED,
+  INFORM_LF_FS,
+  SET_LOCAL_LF_FS
+>>>>>>> origin/master
 } pipe_operation_t;
 
 typedef enum bit[4:0]{

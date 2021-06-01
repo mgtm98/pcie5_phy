@@ -8,29 +8,31 @@ module hdl_top;
   // clk and reset
   //
   logic clk;
-  logic reset;
+  // logic reset;
 
   //
   // Instantiate the pin interfaces:
   //
   lpif_if #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
-  ) LPIF(clk);   // LPIF interface
+  ) LPIF(
+    .lclk(clk)
+  );   // LPIF interface
 
   pipe_if #(
-  .pipe_num_of_lanes(`NUM_OF_LANES),
-  .pipe_max_width(`PIPE_MAX_WIDTH)
-) PIPE(
-  // clk,
-  reset
-);  // PIPE Interface
+    .pipe_num_of_lanes(`NUM_OF_LANES),
+    .pipe_max_width(`PIPE_MAX_WIDTH)
+  ) PIPE(
+    .PCLK(clk)
+    // reset
+  );  // PIPE Interface
 
   //
   // Instantiate the BFM interfaces:
   //
-lpif_driver_bfm #(
-  .lpif_bus_width(`LPIF_BUS_WIDTH)
-) LPIF_drv_bfm(
+  lpif_driver_bfm #(
+    .lpif_bus_width(`LPIF_BUS_WIDTH)
+  ) LPIF_drv_bfm(
     .lclk                   (LPIF.lclk),
     .pl_trdy                (LPIF.pl_trdy),
     .pl_data                (LPIF.pl_data),
@@ -38,6 +40,7 @@ lpif_driver_bfm #(
     .lp_irdy                (LPIF.lp_irdy),
     .lp_data                (LPIF.lp_data),
     .lp_valid               (LPIF.lp_valid),
+    .pl_linkup              (LPIF.pl_linkup),
     .lp_state_req           (LPIF.lp_state_req),
     .pl_state_sts           (LPIF.pl_state_sts),
     .lp_force_detect        (LPIF.lp_force_detect),
@@ -60,8 +63,8 @@ lpif_driver_bfm #(
   );
 
   lpif_monitor_bfm #(
-  .lpif_bus_width(`LPIF_BUS_WIDTH)
-) LPIF_mon_bfm(
+    .lpif_bus_width(`LPIF_BUS_WIDTH)
+  ) LPIF_mon_bfm(
     .lclk                   (LPIF.lclk),
     .pl_trdy                (LPIF.pl_trdy),
     .pl_data                (LPIF.pl_data),
@@ -69,6 +72,7 @@ lpif_driver_bfm #(
     .lp_irdy                (LPIF.lp_irdy),
     .lp_data                (LPIF.lp_data),
     .lp_valid               (LPIF.lp_valid),
+    .pl_linkup              (LPIF.pl_linkup),
     .lp_state_req           (LPIF.lp_state_req),
     .pl_state_sts           (LPIF.pl_state_sts),
     .lp_force_detect        (LPIF.lp_force_detect),
@@ -94,7 +98,7 @@ lpif_driver_bfm #(
     .pipe_num_of_lanes(`NUM_OF_LANES),
     .pipe_max_width(`PIPE_MAX_WIDTH)
   ) PIPE_drv_bfm(
-    // .CLK                   (PIPE.CLK), 
+    .PCLK                  (PIPE.PCLK), 
     .RxData                (PIPE.RxData),
     .RxDataValid           (PIPE.RxDataValid),
     .RxDataK               (PIPE.RxDataK),
@@ -111,8 +115,7 @@ lpif_driver_bfm #(
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
-    .PCLK                  (PIPE.PCLK),
-    .PclkRate              (PIPE.PclkRate),
+    // .PclkRate              (PIPE.PclkRate),
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
@@ -139,7 +142,7 @@ lpif_driver_bfm #(
     .pipe_num_of_lanes(`NUM_OF_LANES),
     .pipe_max_width(`PIPE_MAX_WIDTH)
   ) PIPE_mon_bfm(
-    // .CLK                   (PIPE.CLK), 
+    .PCLK                  (PIPE.PCLK), 
     .RxData                (PIPE.RxData),
     .RxDataValid           (PIPE.RxDataValid),
     .RxDataK               (PIPE.RxDataK),
@@ -156,8 +159,7 @@ lpif_driver_bfm #(
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
-    .PCLK                  (PIPE.PCLK),
-    .PclkRate              (PIPE.PclkRate),
+    // .PclkRate              (PIPE.PclkRate),
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
