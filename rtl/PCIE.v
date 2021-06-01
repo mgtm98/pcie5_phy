@@ -76,7 +76,7 @@ output [64-1:0]pl_dlpend,
 output [64-1:0]pl_tlpstart,
 output [64-1:0]pl_tlpend,
 output [64-1:0]pl_tlpedb,
-output linkUp,
+output pl_linkup,
 //optional Message bus
 output [7:0] M2P_MessageBus,
 input  [7:0] P2M_MessageBus
@@ -124,7 +124,7 @@ mainLTSSM #(
     .gotoTx(TXExitTo),
     .gotoRx(RXexitTo),
     .forceDetect(lp_force_detect),
-    .linkUp(linkUp),
+    .linkUp(pl_linkup),
     .GEN(GEN),
     .numberOfDetectedLanesOut(numberOfDetectedLanes),
     //.linkNumberOut(linkNumber),
@@ -352,7 +352,7 @@ wire [64-1:0]pl_dlpend;
 wire [64-1:0]pl_tlpstart;
 wire [64-1:0]pl_tlpend;
 wire [64-1:0]pl_tlpedb;
-wire linkUp;
+wire pl_linkup;
 //optional Message bus
 wire [7:0] M2P_MessageBus;
 reg  [7:0] P2M_MessageBus;
@@ -462,7 +462,7 @@ pl_dlpend,
 pl_tlpstart,
 pl_tlpend,
 pl_tlpedb,
-linkUp,
+pl_linkup,
 //optional Message bus
 M2P_MessageBus,
 P2M_MessageBus
