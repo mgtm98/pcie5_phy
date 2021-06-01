@@ -36,6 +36,6 @@ task pipe_data_transmit_seq::body();
 	  finish_item(pipe_seq_item_h);
 	end
   start_item(pipe_seq_item_h);
-  pipe_seq_item_h.pipe_operation = SEND_DATA;
+  pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
   finish_item(pipe_seq_item_h);
 endtask
