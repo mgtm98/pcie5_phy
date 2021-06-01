@@ -50,9 +50,9 @@ parameter GEN5_PIPEWIDTH = 8)
 //Local parameters
     //LPIF STATES
     localparam[1:0]
-        reset_   = 2'd0,
-        active_  = 2'd1,
-        retrain_ = 2'd2;
+        reset_   = 4'd0,
+        active_  = 4'd1,
+        retrain_ = 4'd11;
 
     //Tx/Rx LTSSM states
     localparam [3:0]
