@@ -4,7 +4,9 @@ interface lpif_if #(
   parameter lpif_bus_width,
   localparam bus_data_width_param = lpif_bus_width - 1,
   localparam bus_kontrol_param = (lpif_bus_width/8) - 1
-)(input logic lclk);
+)(
+  input logic lclk
+);
 
   logic                               pl_trdy;
   logic [bus_data_width_param:0]      pl_data;
@@ -13,6 +15,8 @@ interface lpif_if #(
   logic                               lp_irdy;
   logic [bus_data_width_param:0]      lp_data;
   logic [bus_kontrol_param:0]         lp_valid;
+    
+  logic                               pl_linkup;
 
   logic [3:0]                         lp_state_req;
   logic [3:0]                         pl_state_sts;
