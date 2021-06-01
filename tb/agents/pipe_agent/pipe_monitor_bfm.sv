@@ -465,7 +465,6 @@ end
 /******************************* Normal Data Operation *******************************/
   byte data_sent [$];
   byte data_received [$];
-  bit k_data [$];
 
   function int get_width ();
     int lane_width;
@@ -497,6 +496,8 @@ end
   int start_dllp;
   bit dllp_done = 0;
   bit tlp_done = 0;
+
+
  initial begin
    forever begin 
      foreach(TxDataValid[i]) begin
@@ -531,7 +532,6 @@ end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
->>>>>>> origin/master
     end
     else begin
       data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -593,8 +593,6 @@ end
   end
  endtask  
  
-  function bit [7:0] descramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
-  endfunction
 
   initial begin
       int lane_width;
