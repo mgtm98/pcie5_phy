@@ -417,7 +417,6 @@ end
       end    
   endtask
   
-
   //wait for exit electricle idle
   initial begin
     forever begin
@@ -514,11 +513,11 @@ end
     if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
-        temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+        temp_value = TxData[(8*i) +: 8];
+        data_descrambled[j] = descramble(monitor_scrambler, temp_value, lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
-         data_descrambled[j] = (TxData[(8*i) +: 8]);
+        data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
     end
     else begin
@@ -580,8 +579,4 @@ end
     proxy.notify_tlp_received(tlp_receieved);
   end
  endtask  
- 
-  
-
-
 endinterface
