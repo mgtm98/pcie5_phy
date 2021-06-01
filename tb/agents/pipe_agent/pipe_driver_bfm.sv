@@ -147,7 +147,7 @@ end
 // Methods
 //------------------------------------------
 
-function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte RxDataK_Q[$]);
+function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit RxDataK_Q[$]);
   byte temp;
   if(current_gen <= GEN2)
   begin
@@ -220,7 +220,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
         temp = 8'hFF;
         temp[2:0] = ts.rx_preset_hint;
         temp[6:3] = ts.tx_preset;
-        if(ts.ts_type_t == TS2)
+        if(ts.ts_type == TS2)
           temp[7] = ts.equalization_command;  
     end
     else
@@ -231,7 +231,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     
 
     //Symbol 7~15
-    if(ts.ts_type_t == TS1)
+    if(ts.ts_type == TS1)
     begin
       RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
       RxDataK_Q = {RxDataK_Q,0,0,0,0,0,0,0,0,0};
@@ -246,7 +246,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
   else
   begin
     // Symbol 0
-    if(ts.ts_type_t ==TS1)
+    if(ts.ts_type ==TS1)
       RxData_Q = {RxData_Q,8'h1E};
     else
       RxData_Q = {RxData_Q,8'h2D};
@@ -294,7 +294,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     temp = 8'h00;
     if(0) //need flag
     begin
-      if(ts.ts_type_t == TS1)
+      if(ts.ts_type == TS1)
       begin
         if(0) //need flag
           temp[1:0] = ts.ec;
@@ -304,7 +304,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
 
         temp[7] = ts.use_preset;  
       end
-      else if(ts.ts_type_t == TS2)
+      else if(ts.ts_type == TS2)
       begin
         //not supported yet
       end
@@ -316,7 +316,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
 
     //Symbol 7
     temp = 8'h00;
-    if(ts.ts_type_t == TS1)
+    if(ts.ts_type == TS1)
     begin
       if(ts.ec == 2'b01) 
         temp[5:0] = ts.fs_value;
@@ -331,7 +331,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
 
     //Symbol 8
     temp = 8'h00;
-    if(ts.ts_type_t == TS1)
+    if(ts.ts_type == TS1)
     begin
       if(ts.ec == 2'b01)
         temp[5:0] = ts.lf_value;
@@ -345,7 +345,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
 
     //Symbol 9
     temp = 8'h00;
-    if(ts.ts_type_t == TS1)
+    if(ts.ts_type == TS1)
     begin
         temp[5:0] = ts.post_cursor;
         if(0) //need flag
@@ -359,7 +359,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref byte
     RxData_Q = {RxData_Q,temp};
 
     //Symbol 10~15
-    if(ts.ts_type_t == TS1)
+    if(ts.ts_type == TS1)
       RxData_Q = {RxData_Q,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A,8'h4A};
     else
       RxData_Q = {RxData_Q,8'h45,8'h45,8'h45,8'h45,8'h45,8'h45};
@@ -402,15 +402,15 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
         for(int j=0;j<pipe_max_width/8;j++)
         begin
-          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Data[j*8 +:8] = RxData_Q[0];
           Character[j] = RxDataK_Q[0];
           RxData_Q = RxData_Q[1:$];
           RxDataK_Q = RxDataK_Q[1:$];  
         end
 
         //duplicating the Data and Characters to each lane in the driver
-        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
-        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character;
+        RxData[i* pipe_max_width +: pipe_max_width] <=Data ;
+        RxDataK[i* pipe_max_width/8 +:pipe_max_width/8] <= Character;
         
       end
     end 
@@ -432,20 +432,20 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
         for(int j=0;j<pipe_max_width/8;j++)
         begin
-          Data[(j+1)*8 -1 : j*8] = RxData_Q[0];
+          Data[j*8 +:8] = RxData_Q[0];
           RxData_Q = RxData_Q[1:$];
         end
 
         //duplicating the Data and Characters to each lane in the driver
-        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data ;
+        RxData[i* pipe_max_width +:pipe_max_width] <=Data ;
       end
     end     
   end
 endtask
 
 task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  byte RxData_Q [][16];
-  bit RxDataK_Q [][16];
+  byte RxData_Q [][$];
+  bit RxDataK_Q [][$];
   logic [pipe_max_width:0] Data [];
   logic [pipe_max_width/8 -1:0] Character [];
   RxData_Q = new[$size(ts)];
@@ -470,13 +470,13 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
         for(int j=0;j<pipe_max_width/8;j++)
         begin
-          Data[i][(j+1)*8 -1 : j*8] = RxData_Q[i][count];
+          Data[i][j*8 +:8] = RxData_Q[i][count];
           Character[i][j] = RxDataK_Q[i][count];
         end
 
         //duplicating the Data and Characters to each lane in the driver
-        RxData[(i+1)* pipe_max_width -1 : i*pipe_max_width] <=Data[i] ;
-        RxDataK[(i+1)* pipe_max_width/8 -1 : i*pipe_max_width/8] <= Character[i];
+        RxData[i*pipe_max_width+:pipe_max_width] <=Data[i] ;
+        RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character[i];
       end
     end 
   end
@@ -666,10 +666,10 @@ endtask
     `uvm_error(get_name(), "")
     wait(GetLocalPresetCoeffcients == 1);
     @(posedge PCLK);
-    LocalTxCoefficientsValid  <= 1;
-    LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
+    LocalTxCoeffcientsValid  <= 1;
+    // LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
     @(posedge PCLK);
-    LocalTxCoefficientsValid  <= 0;
+    LocalTxCoeffcientsValid  <= 0;
     @(TxDeemph);
     assert(TxDeemph == 0) else 
     `uvm_error(get_name(), "")
