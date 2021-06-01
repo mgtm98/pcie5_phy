@@ -666,10 +666,10 @@ endtask
     `uvm_error(get_name(), "")
     wait(GetLocalPresetCoeffcients == 1);
     @(posedge PCLK);
-    LocalTxCoefficientsValid  <= 1;
-    LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
+    LocalTxCoeffcientsValid  <= 1;
+    // LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
     @(posedge PCLK);
-    LocalTxCoefficientsValid  <= 0;
+    LocalTxCoeffcientsValid  <= 0;
     @(TxDeemph);
     assert(TxDeemph == 0) else 
     `uvm_error(get_name(), "")
