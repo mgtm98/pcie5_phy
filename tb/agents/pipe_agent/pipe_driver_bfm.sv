@@ -544,7 +544,7 @@ end
 
 /******************************* Normal Data Operation *******************************/
 
-bit [15:0] lfsr_1_2 [pipe_num_of_lanes];
+bit [15:0] lfsr_gen_1_2 [pipe_num_of_lanes];
 bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
@@ -557,8 +557,8 @@ byte tlp_gen3_symbol_1;
 
 function void reset_lfsr ();
   integer j,i;
-  foreach(lfsr_1_2[i]) begin
-    lfsr_1_2[i] = 16'hFFFF;
+  foreach(lfsr_gen_1_2[i]) begin
+    lfsr_gen_1_2[i] = 16'hFFFF;
   end
   foreach(lfsr_gen_3[i]) begin
     j=i;
@@ -651,11 +651,15 @@ task send_data ();
   RxElecIdle = 1'b0;  
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1'b1;
-    RxValid [i] = 1'b1;
+    // RxValid [i] = 1'b1;
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)
 	 	send_data_gen_3_4_5 ();
+  for (int i = 0; i < pipe_num_of_lanes; i++) begin
+    RxDataValid [i] = 1'b0;
+    // RxValid [i] = 1'b0;
+  end
 endtask
 
  task automatic send_data_gen_1_2 ();
@@ -703,7 +707,6 @@ task automatic send_data_gen_3_4_5 ();
       k_data.push_back(0);
     end
   end
-  end
   for (int i = 0; i < num_of_data_blocks; i++) begin 
     for (int j = 0; j < num_of_clks; j++) begin 
       for (int k = 0; k < num_of_bytes_in_lane; k++) begin
@@ -715,15 +718,11 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(struct,data.pop_front(),l);
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(data.pop_front(),l);
         end
       end
       @(posedge PCLK);
     end
-  end
-  for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    RxDataValid [i] = 1'b0;
-    // RxValid [i] = 1'b0;
   end
 endtask
 
@@ -741,27 +740,27 @@ function bit [7:0] scramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_n
   // LFSR value after 8 serial clocks
   for (int i = 0; i < 8; i++)
   begin
-    lfsr_new[ 0] = lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 1] = lfsr_1_2 [lane_num] [ 0];
-    lfsr_new[ 2] = lfsr_1_2 [lane_num] [ 1];
-    lfsr_new[ 3] = lfsr_1_2 [lane_num] [ 2] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 4] = lfsr_1_2 [lane_num] [ 3] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 5] = lfsr_1_2 [lane_num] [ 4] ^ lfsr_1_2 [lane_num] [15];
-    lfsr_new[ 6] = lfsr_1_2 [lane_num] [ 5];
-    lfsr_new[ 7] = lfsr_1_2 [lane_num] [ 6];
-    lfsr_new[ 8] = lfsr_1_2 [lane_num] [ 7];
-    lfsr_new[ 9] = lfsr_1_2 [lane_num] [ 8];
-    lfsr_new[10] = lfsr_1_2 [lane_num] [ 9];
-    lfsr_new[11] = lfsr_1_2 [lane_num] [10];
-    lfsr_new[12] = lfsr_1_2 [lane_num] [11];
-    lfsr_new[13] = lfsr_1_2 [lane_num] [12];
-    lfsr_new[14] = lfsr_1_2 [lane_num] [13];
-    lfsr_new[15] = lfsr_1_2 [lane_num] [14];       
+    lfsr_new[ 0] = lfsr_gen_1_2 [lane_num] [15];
+    lfsr_new[ 1] = lfsr_gen_1_2 [lane_num] [ 0];
+    lfsr_new[ 2] = lfsr_gen_1_2 [lane_num] [ 1];
+    lfsr_new[ 3] = lfsr_gen_1_2 [lane_num] [ 2] ^ lfsr_gen_1_2 [lane_num] [15];
+    lfsr_new[ 4] = lfsr_gen_1_2 [lane_num] [ 3] ^ lfsr_gen_1_2 [lane_num] [15];
+    lfsr_new[ 5] = lfsr_gen_1_2 [lane_num] [ 4] ^ lfsr_gen_1_2 [lane_num] [15];
+    lfsr_new[ 6] = lfsr_gen_1_2 [lane_num] [ 5];
+    lfsr_new[ 7] = lfsr_gen_1_2 [lane_num] [ 6];
+    lfsr_new[ 8] = lfsr_gen_1_2 [lane_num] [ 7];
+    lfsr_new[ 9] = lfsr_gen_1_2 [lane_num] [ 8];
+    lfsr_new[10] = lfsr_gen_1_2 [lane_num] [ 9];
+    lfsr_new[11] = lfsr_gen_1_2 [lane_num] [10];
+    lfsr_new[12] = lfsr_gen_1_2 [lane_num] [11];
+    lfsr_new[13] = lfsr_gen_1_2 [lane_num] [12];
+    lfsr_new[14] = lfsr_gen_1_2 [lane_num] [13];
+    lfsr_new[15] = lfsr_gen_1_2 [lane_num] [14];       
 
     // Generation of Scrambled Data
-    scrambled_data [i] = lfsr_1_2 [lane_num] [15] ^ in_data [i];
+    scrambled_data [i] = lfsr_gen_1_2 [lane_num] [15] ^ in_data [i];
     
-    lfsr_1_2 [lane_num] = lfsr_new;
+    lfsr_gen_1_2 [lane_num] = lfsr_new;
   end
   return scrambled_data;
 endfunction

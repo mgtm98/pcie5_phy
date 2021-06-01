@@ -34,7 +34,8 @@ typedef struct {
 
 typedef enum {
   TLP_TRANSFER, 
-  DLLP_TRANSFER, 
+  DLLP_TRANSFER,
+  IDLE_DATA_TRANSFER,
   LINK_UP, 
   ENTER_RECOVERY, 
   // ENTER_L0S, 
@@ -45,7 +46,7 @@ typedef enum {
   WIDTH_CHANGE,
   SEND_TS,
   SEND_TSES,
-  SEND_IDLE_DATA,
+  // SEND_IDLE_DATA,
   SEND_DATA
 } pipe_operation_t;
 

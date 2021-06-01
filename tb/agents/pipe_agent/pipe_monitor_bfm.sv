@@ -418,20 +418,51 @@ end
   
 /******************************* Normal Data Operation *******************************/
 
-  bit [15:0] lfsr[pipe_num_of_lanes];
 
-  function void reset_lfsr;
-    foreach(lfsr[i])
-    begin
-      lfsr[i] = 16'hFFFF;
+  bit [15:0] lfsr_gen_1_2 [pipe_num_of_lanes];
+  bit [22:0] lfsr_gen_3 [pipe_num_of_lanes];
+  byte data_sent [$];
+  byte data_received [$];
+  bit k_data [$];
+
+  function void reset_lfsr ();
+    integer j,i;
+    foreach(lfsr_gen_1_2[i]) begin
+      lfsr_gen_1_2[i] = 16'hFFFF;
+    end
+    foreach(lfsr_gen_3[i]) begin
+      j=i;
+      if (i>7) begin
+        j=j-8;
+      end
+      case (j)
+        0 : lfsr_gen_3[i] = 'h1DBFBC;
+        1 : lfsr_gen_3[i] = 'h0607BB;
+        2 : lfsr_gen_3[i] = 'h1EC760;
+        3 : lfsr_gen_3[i] = 'h18C0DB;
+        4 : lfsr_gen_3[i] = 'h010F12;
+        5 : lfsr_gen_3[i] = 'h19CFC9;
+        6 : lfsr_gen_3[i] = 'h0277CE;
+        7 : lfsr_gen_3[i] = 'h1BB807;
+      endcase
     end
   endfunction
 
+  function int get_width ();
+    int lane_width;
+    case (Width)
+      2'b00: lane_width = 8;
+      2'b01: lane_width = 16;
+      2'b11: lane_width = 32;
+    endcase
+    return lane_width;
+  endfunction
+
   function bit [7:0] descramble (bit [7:0] in_data, shortint unsigned lane_num);
-	if (current_gen == GEN1 || current_gen == GEN2)
-		return descramble_gen_1_2 (in_data,  lane_num);
-	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-		return descramble_gen_3_4_5 (in_data, lane_num);
+  if (current_gen == GEN1 || current_gen == GEN2)
+    return descramble_gen_1_2 (in_data,  lane_num);
+  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
+    return descramble_gen_3_4_5 (in_data, lane_num);
   endfunction
 
   function bit [7:0] descramble_gen_1_2 (bit [7:0] in_data, shortint unsigned lane_num);
@@ -441,31 +472,198 @@ end
     // LFSR value after 8 serial clocks
     for (int i = 0; i < 8; i++)
     begin
-      lfsr_new[ 0] = lfsr [lane_num] [15];
-      lfsr_new[ 1] = lfsr [lane_num] [ 0];
-      lfsr_new[ 2] = lfsr [lane_num] [ 1];
-      lfsr_new[ 3] = lfsr [lane_num] [ 2] ^ lfsr [lane_num] [15];
-      lfsr_new[ 4] = lfsr [lane_num] [ 3] ^ lfsr [lane_num] [15];
-      lfsr_new[ 5] = lfsr [lane_num] [ 4] ^ lfsr [lane_num] [15];
-      lfsr_new[ 6] = lfsr [lane_num] [ 5];
-      lfsr_new[ 7] = lfsr [lane_num] [ 6];
-      lfsr_new[ 8] = lfsr [lane_num] [ 7];
-      lfsr_new[ 9] = lfsr [lane_num] [ 8];
-      lfsr_new[10] = lfsr [lane_num] [ 9];
-      lfsr_new[11] = lfsr [lane_num] [10];
-      lfsr_new[12] = lfsr [lane_num] [11];
-      lfsr_new[13] = lfsr [lane_num] [12];
-      lfsr_new[14] = lfsr [lane_num] [13];
-      lfsr_new[15] = lfsr [lane_num] [14];       
+      lfsr_new[ 0] = lfsr_gen_1_2 [lane_num] [15];
+      lfsr_new[ 1] = lfsr_gen_1_2 [lane_num] [ 0];
+      lfsr_new[ 2] = lfsr_gen_1_2 [lane_num] [ 1];
+      lfsr_new[ 3] = lfsr_gen_1_2 [lane_num] [ 2] ^ lfsr_gen_1_2 [lane_num] [15];
+      lfsr_new[ 4] = lfsr_gen_1_2 [lane_num] [ 3] ^ lfsr_gen_1_2 [lane_num] [15];
+      lfsr_new[ 5] = lfsr_gen_1_2 [lane_num] [ 4] ^ lfsr_gen_1_2 [lane_num] [15];
+      lfsr_new[ 6] = lfsr_gen_1_2 [lane_num] [ 5];
+      lfsr_new[ 7] = lfsr_gen_1_2 [lane_num] [ 6];
+      lfsr_new[ 8] = lfsr_gen_1_2 [lane_num] [ 7];
+      lfsr_new[ 9] = lfsr_gen_1_2 [lane_num] [ 8];
+      lfsr_new[10] = lfsr_gen_1_2 [lane_num] [ 9];
+      lfsr_new[11] = lfsr_gen_1_2 [lane_num] [10];
+      lfsr_new[12] = lfsr_gen_1_2 [lane_num] [11];
+      lfsr_new[13] = lfsr_gen_1_2 [lane_num] [12];
+      lfsr_new[14] = lfsr_gen_1_2 [lane_num] [13];
+      lfsr_new[15] = lfsr_gen_1_2 [lane_num] [14];
   
       // Generation of Decrambled Data
-      descrambled_data [i] = lfsr [lane_num] [15] ^ in_data [i];
+      descrambled_data [i] = lfsr_gen_1_2 [lane_num] [15] ^ in_data [i];
       
-      lfsr [lane_num] = lfsr_new;
+      lfsr_gen_1_2 [lane_num] = lfsr_new;
     end
     return descrambled_data;
   endfunction
 
-	function bit [7:0] descramble_gen_3_4_5 (bit [7:0] in_data, shortint unsigned lane_num);
-	endfunction
+  function bit [7:0] descramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
+  endfunction
+
+  initial begin
+      int lane_width;
+      int num_of_clks;
+      int num_of_bytes_in_lane;
+      dllp_t dllp;
+      tlp_t tlp;
+      bit [10:0] length;
+      int i, j ,k;
+      bit is_end_of_data_block;
+      int num_of_idle_data;
+    forever begin
+      for (i = 0; i < pipe_num_of_lanes; i++) begin
+        wait (RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10);
+      end
+      @(posedge PCLK);
+      lane_width = get_width();
+      num_of_clks = 128/lane_width;
+      num_of_bytes_in_lane = lane_width/8;
+      for (i = 0; i < num_of_clks; i++) begin
+        for (j = 0; j < num_of_bytes_in_lane; j++) begin
+          for (k = 0; k < pipe_num_of_lanes; k++) begin
+            data_sent.push_back() = descramble (RxData [((k*pipe_max_width) + (j*8)) +: 8], k);
+          end
+        end
+        @(posedge PCLK);
+      end
+      is_end_of_data_block = 0;
+      if (RxStartBlock [0] == 0 || RxStartBlock [0] == 1 && RxSyncHeader [0*2 +: 2] == 2'b10) begin
+        is_end_of_data_block = 1;
+      end
+        if (is_end_of_data_block == 1) begin      
+          for (i = 0; i < pipe_num_of_lanes; i++) begin
+            assert (RxStartBlock [i] == 0 || RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10)
+          end
+          while (data_sent.size() != 0) begin
+
+            // Notify that dllp sent
+            if (data_sent[0] == `SDP_gen_3_symbol_0 && data_sent[1] == `SDP_gen_3_symbol_1) begin
+              data_sent.pop_front();
+              data_sent.pop_front();
+              for (j = 0; j < 6; j++) begin
+                dllp[j] = data_sent.pop_front();
+              end
+              proxy.notify_dllp_sent(dllp);
+            end
+
+            // Notify that tlp sent
+            if (data_sent [0] [3:0] == `STP_gen_3) begin
+              length = {data_sent [1] [6:0], data_sent [0] [7:4]};
+              data_sent.pop_front();
+              data_sent.pop_front();
+              data_sent.pop_front();
+              data_sent.pop_front();
+              tlp = new [length];
+              foreach (tlp[j]) begin
+                tlp[j] = data_sent.pop_front();
+              end
+              proxy.notify_tlp_sent(tlp);
+            end
+
+            // Notify that idle data sent
+            num_of_idle_data = 0;
+            if (data_sent [0] == 8'b0000_0000) begin
+              foreach (data_sent[j]) begin
+                if (data_sent [j] == 8'b0000_0000) begin
+                  num_of_idle_data ++;
+                end
+                else begin
+                  break;
+                end
+              end
+              repeat (num_of_idle_data) begin
+                data_sent.pop_front();
+              end
+              repeat ($floor(num_of_idle_data/pipe_num_of_lanes)) begin
+                proxy.notify_idle_data_sent();
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  initial begin
+    int lane_width;
+    int num_of_clks;
+    int num_of_bytes_in_lane;
+    dllp_t dllp;
+    tlp_t tlp;
+    bit [10:0] length;
+    int i, j ,k;
+    bit is_end_of_data_block;
+    int num_of_idle_data;
+  forever begin
+    for (i = 0; i < pipe_num_of_lanes; i++) begin
+      wait (TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10);
+    end
+    @(posedge PCLK);
+    lane_width = get_width();
+    num_of_clks = 128/lane_width;
+    num_of_bytes_in_lane = lane_width/8;
+    for (i = 0; i < num_of_clks; i++) begin
+      for (j = 0; j < num_of_bytes_in_lane; j++) begin
+        for (k = 0; k < pipe_num_of_lanes; k++) begin
+          data_received.push_back() = descramble (TxData [((k*pipe_max_width) + (j*8)) +: 8], k);
+        end
+      end
+      @(posedge PCLK);
+    end
+    is_end_of_data_block = 0;
+    if (TxStartBlock [0] == 0 || TxStartBlock [0] == 1 && TxSyncHeader [0*2 +: 2] == 2'b10) begin
+      is_end_of_data_block = 1;
+    end
+      if (is_end_of_data_block == 1) begin      
+        for (i = 0; i < pipe_num_of_lanes; i++) begin
+          assert (TxStartBlock [i] == 0 || TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10)
+        end
+        while (data_received.size() != 0) begin
+
+          // Notify that dllp sent
+          if (data_received[0] == `SDP_gen_3_symbol_0 && data_received[1] == `SDP_gen_3_symbol_1) begin
+            data_received.pop_front();
+            data_received.pop_front();
+            for (j = 0; j < 6; j++) begin
+              dllp[j] = data_received.pop_front();
+            end
+            proxy.notify_dllp_received(dllp);
+          end
+
+          // Notify that tlp sent
+          if (data_received [0] [3:0] == `STP_gen_3) begin
+            length = {data_received [1] [6:0], data_received [0] [7:4]};
+            data_received.pop_front();
+            data_received.pop_front();
+            data_received.pop_front();
+            data_received.pop_front();
+            tlp = new [length];
+            foreach (tlp[j]) begin
+              tlp[j] = data_received.pop_front();
+            end
+            proxy.notify_tlp_received(tlp);
+          end
+
+          // Notify that idle data sent
+          num_of_idle_data = 0;
+          if (data_received [0] == 8'b0000_0000) begin
+            foreach (data_received[j]) begin
+              if (data_received [j] == 8'b0000_0000) begin
+                num_of_idle_data ++;
+              end
+              else begin
+                break;
+              end
+            end
+            repeat (num_of_idle_data) begin
+              data_received.pop_front();
+            end
+            repeat ($floor(num_of_idle_data/pipe_num_of_lanes)) begin
+              proxy.notify_idle_data_received();
+            end
+          end
+        end
+      end
+    end
+  end
 endinterface
