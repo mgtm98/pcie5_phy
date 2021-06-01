@@ -111,7 +111,8 @@ end
 initial begin 
   forever begin
     for (int i = 0; i < `NUM_OF_LANES ; i++) begin
-      wait(RxData[ (i*8)+7 : i*8]==8'b101_11100);
+      wait(RxData[(i*8)+:8]==8'b1011_1100);
+      //@(posedge PCLK);
     end              
     reset_lfsr(monitor_rx_scrambler,current_gen);
   end
@@ -469,6 +470,7 @@ end
   byte tlp_gen3_symbol_0;
   byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
+  bit [7:0] temp_value;
 
   //gen 1 and 2
 
@@ -512,7 +514,8 @@ end
     if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
-         data_descrambled[j] = descramble(monitor_scrambler,TxData[(8*i) +: 8],lanenum, current_gen);
+        temp_value=TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -548,7 +551,8 @@ end
     if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
-         data_descrambled[j] = descramble(monitor_scrambler,TxData[(8*i) +: 8],lanenum, current_gen);
+          temp_value=TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
