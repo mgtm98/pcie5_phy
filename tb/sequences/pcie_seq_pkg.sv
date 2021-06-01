@@ -18,7 +18,9 @@ package pcie_seq_pkg;
   `include "pipe_base_seq.svh"
   `include "pipe_reset_seq.svh"
   `include "pipe_link_up_seq.svh"
-  `include "pipe_speed_change_seq.svh"
+  // `include "pipe_speed_change_seq.svh"
+  // `include "pipe_speed_change_with_equalization_seq.svh"
+  // `include "pipe_speed_change_without_equalization_seq.svh"
   `include "pipe_enter_recovery_seq.svh"
   `include "pipe_data_transmit_seq.svh"
 
