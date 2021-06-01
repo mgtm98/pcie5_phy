@@ -329,6 +329,7 @@ wire 	[4*LANESNUMBER -1:0]LocalPresetIndex;
 wire 	[LANESNUMBER -1:0]GetLocalPresetCoeffcients;
 reg 	[LANESNUMBER -1:0]LocalTxCoefficientsValid;
 wire 	[6*LANESNUMBER -1:0]LF;
+wire 	[6*LANESNUMBER -1:0]FS;
 wire 	[LANESNUMBER -1:0]RxEqEval;
 wire 	[LANESNUMBER -1:0]InvalidRequest;
 reg 	[6*LANESNUMBER -1:0]LinkEvaluationFeedbackDirectionChange;
@@ -438,6 +439,7 @@ pcie
  GetLocalPresetCoeffcients,
  LocalTxCoefficientsValid,
 LF,
+FS,
 RxEqEval,
 InvalidRequest,
 LinkEvaluationFeedbackDirectionChange,

@@ -31,10 +31,12 @@ class pipe_monitor extends uvm_monitor;
   // extern function void notify_link_up_received();
   extern task          detect_link_up();
   extern function void notify_tses_received(ts_s tses [`NUM_OF_LANES]);
-  // extern function void notify_tlp_sent(tlp_t tlp);
+  extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
-  // extern function void notify_dllp_sent(dllp_t dllp);
+  extern function void notify_dllp_sent(dllp_t dllp);
   extern function void notify_dllp_received(dllp_t dllp);
+  extern function void notify_idle_data_sent();
+  extern function void notify_idle_data_received();
   // extern function void notify_enter_recovery_sent();
   // extern function void notify_enter_recovery_received();
   // extern function void notify_gen_change_sent(gen_t gen);
@@ -45,7 +47,6 @@ class pipe_monitor extends uvm_monitor;
   // extern function void notify_pclk_rate_change_sent(pclk_rate_t pclk_rate);
   // extern function void notify_pclk_rate_change_received(pclk_rate_t pclk_rate);
   extern function void DUT_polling_state_start();
-  extern function void notify_idle_data_detected();
   extern task  detect_posedge_clk();
   extern task  power_down_change();
   
@@ -119,17 +120,17 @@ endfunction
 //   ap_received.write(pipe_seq_item_h);
 // endfunction
 
-// function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
-//   // Creating the sequnce item
-//   pipe_seq_item pipe_seq_item_h;
-//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-//   // Determining the detected operation
-//   pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
-//   // Copying the data of the tlp to the sequence item
-//   pipe_seq_item_h.tlp = tlp;
-//   // Sending the sequence item to the analysis components
-//   ap_sent.write(pipe_seq_item_h);
-// endfunction
+function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.tlp = tlp;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
+endfunction
 
 function void pipe_monitor::notify_tlp_received(tlp_t tlp);
   // Creating the sequnce item
@@ -143,17 +144,17 @@ function void pipe_monitor::notify_tlp_received(tlp_t tlp);
   ap_received.write(pipe_seq_item_h);
 endfunction
 
-// function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
-//   // Creating the sequnce item
-//   pipe_seq_item pipe_seq_item_h;
-//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-//   // Determining the detected operation
-//   pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
-//   // Copying the data of the tlp to the sequence item
-//   pipe_seq_item_h.dllp = dllp;
-//   // Sending the sequence item to the analysis components
-//   ap_sent.write(pipe_seq_item_h);
-// endfunction
+function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.dllp = dllp;
+  // Sending the sequence item to the analysis components
+  ap_sent.write(pipe_seq_item_h);
+endfunction
 
 function void pipe_monitor::notify_dllp_received(dllp_t dllp);
   // Creating the sequnce item
@@ -258,7 +259,25 @@ function void pipe_monitor::DUT_polling_state_start();
  endfunction
 
 
-function void pipe_monitor::notify_idle_data_detected();
-  `uvm_info (get_type_name (), $sformatf ("notify_idle_data_detected is called"), UVM_MEDIUM)
+function void pipe_monitor::notify_idle_data_received();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
+
+  `uvm_info (get_type_name (), $sformatf ("notify_idle_data_received is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.idle_data_detected_e;
+endfunction
+
+function void pipe_monitor::notify_idle_data_sent();
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
 endfunction

@@ -29,7 +29,7 @@ input [7:0] ReadLinkNum,
 output reg HoldFIFOData,
 input FIFOReady,
 // OS generator interface 
-output reg [1:0] OSType,
+output reg [2:0] OSType,
 output reg[1:0] LaneNumber, 
 output reg[7:0] LinkNumber,
 output reg[2:0] Rate,
@@ -293,7 +293,7 @@ turnOff<=1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
-			OSType<=2'b10; //IDLE
+			OSType<=3'b100; //IDLE
 			OSGeneratorStart<=1;
 			end
 		end

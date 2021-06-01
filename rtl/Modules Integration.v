@@ -96,6 +96,7 @@ output writeLinkNumber);
 	LMCData,
 	LMCValid,
 	linkUp,
+	substate,
 	validOrderedSets,
 	orderedSets);
 	

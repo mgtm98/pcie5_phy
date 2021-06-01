@@ -5,8 +5,8 @@ interface pipe_monitor_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  // input bit   CLK,
-  input bit   Reset,
+  input logic   PCLK,
+  input logic   Reset,
   // input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
@@ -57,11 +57,11 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  input logic                               PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  // input logic                               PCLK,     //TODO: This signal is removed 
+  // input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
   `include "uvm_macros.svh"
@@ -72,7 +72,6 @@ interface pipe_monitor_bfm
   import common_pkg::*;
 
   gen_t current_gen;
-  scrambler_s monitor_scrambler;
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
@@ -102,9 +101,8 @@ end
 initial begin
   forever begin
     ts_s tses_received_temp [`NUM_OF_LANES];
-    receive_tses(tses_received_temp,,);
-    ->proxy.pipe_agent_config_h.detected_tses_e;
-    proxy.pipe_agent_config_h.tses_received=tses_received_temp;
+    receive_tses(tses_received_temp);
+    proxy.notify_tses_received(tses_received_temp);
   end
 end
 
@@ -223,9 +221,9 @@ end
       assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
     
       //check that PCLK is operational
-      temp=PclkRate;   //shared or per lane?
-      @(posedge PCLK);
-      assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
+      // temp=PclkRate;   //shared or per lane?
+      // @(posedge PCLK);
+      // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
     
       wait(Reset==0);
       @(posedge PCLK);
@@ -463,6 +461,19 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
+  byte data_sent [$];
+  byte data_received [$];
+
+  function int get_width ();
+    int lane_width;
+    case (Width)
+      2'b00: lane_width = 8;
+      2'b01: lane_width = 16;
+      2'b11: lane_width = 32;
+    endcase
+    return lane_width;
+  endfunction
+
   byte data [$];
   bit k_data [$];
   bit [0:10] tlp_length_field;
@@ -470,8 +481,6 @@ end
   byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
   bit [7:0] temp_value;
-
-  //gen 1 and 2
 
   int lanenum;
   int pipe_width = get_width();
@@ -485,6 +494,8 @@ end
   int start_dllp;
   bit dllp_done = 0;
   bit tlp_done = 0;
+
+
  initial begin
    forever begin 
      foreach(TxDataValid[i]) begin
@@ -513,8 +524,8 @@ end
     if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
-        temp_value = TxData[(8*i) +: 8];
-        data_descrambled[j] = descramble(monitor_scrambler, temp_value, lanenum, current_gen);
+        temp_value=TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
         data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -551,7 +562,7 @@ end
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
           temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -579,4 +590,175 @@ end
     proxy.notify_tlp_received(tlp_receieved);
   end
  endtask  
+ 
+
+  initial begin
+      int lane_width;
+      int num_of_clks;
+      int num_of_bytes_in_lane;
+      dllp_t dllp;
+      tlp_t tlp;
+      bit [10:0] length;
+      int i, j ,k;
+      bit is_end_of_data_block;
+      int num_of_idle_data;
+    forever begin
+      for (i = 0; i < pipe_num_of_lanes; i++) begin
+        wait (RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10);
+      end
+      @(posedge PCLK);
+      lane_width = get_width();
+      num_of_clks = 128/lane_width;
+      num_of_bytes_in_lane = lane_width/8;
+      for (i = 0; i < num_of_clks; i++) begin
+        for (j = 0; j < num_of_bytes_in_lane; j++) begin
+          for (k = 0; k < pipe_num_of_lanes; k++) begin
+            temp_value= RxData [((k*pipe_max_width) + (j*8)) +: 8];
+            data_sent.push_back() = descramble (monitor_rx_scrambler, temp_value, k, current_gen);
+          end
+        end
+        @(posedge PCLK);
+      end
+      is_end_of_data_block = 0;
+      if (RxStartBlock [0] == 0 || RxStartBlock [0] == 1 && RxSyncHeader [0*2 +: 2] == 2'b10) begin
+        is_end_of_data_block = 1;
+      end
+        if (is_end_of_data_block == 1) begin      
+          for (i = 0; i < pipe_num_of_lanes; i++) begin
+            assert (RxStartBlock [i] == 0 || RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10)
+            else `uvm_error ("pipe_monitor_bfm", "..")  //
+          end
+          while (data_sent.size() != 0) begin
+
+            // Notify that dllp sent
+            if (data_sent[0] == `SDP_gen_3_symbol_0 && data_sent[1] == `SDP_gen_3_symbol_1) begin
+              data_sent.pop_front();
+              data_sent.pop_front();
+              for (j = 0; j < 6; j++) begin
+                dllp[j] = data_sent.pop_front();
+              end
+              proxy.notify_dllp_sent(dllp);
+            end
+
+            // Notify that tlp sent
+            if (data_sent [0] [3:0] == `STP_gen_3) begin
+              length = {data_sent [1] [6:0], data_sent [0] [7:4]};
+              data_sent.pop_front();
+              data_sent.pop_front();
+              data_sent.pop_front();
+              data_sent.pop_front();
+              tlp = new [length];
+              foreach (tlp[j]) begin
+                tlp[j] = data_sent.pop_front();
+              end
+              proxy.notify_tlp_sent(tlp);
+            end
+
+            // Notify that idle data sent
+            num_of_idle_data = 0;
+            if (data_sent [0] == 8'b0000_0000) begin
+              foreach (data_sent[j]) begin
+                if (data_sent [j] == 8'b0000_0000) begin
+                  num_of_idle_data ++;
+                end
+                else begin
+                  break;
+                end
+              end
+              repeat (num_of_idle_data) begin
+                data_sent.pop_front();
+              end
+              repeat ($floor(num_of_idle_data/pipe_num_of_lanes)) begin
+                proxy.notify_idle_data_sent();
+              end
+            end
+          end
+        end
+      end
+    end
+
+  initial begin
+    int lane_width;
+    int num_of_clks;
+    int num_of_bytes_in_lane;
+    dllp_t dllp;
+    tlp_t tlp;
+    bit [10:0] length;
+    int i, j ,k;
+    bit is_end_of_data_block;
+    int num_of_idle_data;
+  forever begin
+    for (i = 0; i < pipe_num_of_lanes; i++) begin
+      wait (TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10);
+    end
+    @(posedge PCLK);
+    lane_width = get_width();
+    num_of_clks = 128/lane_width;
+    num_of_bytes_in_lane = lane_width/8;
+    for (i = 0; i < num_of_clks; i++) begin
+      for (j = 0; j < num_of_bytes_in_lane; j++) begin
+        for (k = 0; k < pipe_num_of_lanes; k++) begin
+          temp_value=TxData [((k*pipe_max_width) + (j*8)) +: 8];
+          data_received.push_back() = descramble (monitor_tx_scrambler,temp_value, k, current_gen);
+        end
+      end
+      @(posedge PCLK);
+    end
+    is_end_of_data_block = 0;
+    if (TxStartBlock [0] == 0 || TxStartBlock [0] == 1 && TxSyncHeader [0*2 +: 2] == 2'b10) begin
+      is_end_of_data_block = 1;
+    end
+      if (is_end_of_data_block == 1) begin      
+        for (i = 0; i < pipe_num_of_lanes; i++) begin
+          assert (TxStartBlock [i] == 0 || TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10)
+          else `uvm_error ("pipe_monitor_bfm", "..")  //
+        end
+        while (data_received.size() != 0) begin
+
+          // Notify that dllp sent
+          if (data_received[0] == `SDP_gen_3_symbol_0 && data_received[1] == `SDP_gen_3_symbol_1) begin
+            data_received.pop_front();
+            data_received.pop_front();
+            for (j = 0; j < 6; j++) begin
+              dllp[j] = data_received.pop_front();
+            end
+            proxy.notify_dllp_received(dllp);
+          end
+
+          // Notify that tlp sent
+          if (data_received [0] [3:0] == `STP_gen_3) begin
+            length = {data_received [1] [6:0], data_received [0] [7:4]};
+            data_received.pop_front();
+            data_received.pop_front();
+            data_received.pop_front();
+            data_received.pop_front();
+            tlp = new [length];
+            foreach (tlp[j]) begin
+              tlp[j] = data_received.pop_front();
+            end
+            proxy.notify_tlp_received(tlp);
+          end
+
+          // Notify that idle data sent
+          num_of_idle_data = 0;
+          if (data_received [0] == 8'b0000_0000) begin
+            foreach (data_received[j]) begin
+              if (data_received [j] == 8'b0000_0000) begin
+                num_of_idle_data ++;
+              end
+              else begin
+                break;
+              end
+            end
+            repeat (num_of_idle_data) begin
+              data_received.pop_front();
+            end
+            repeat ($floor(num_of_idle_data/pipe_num_of_lanes)) begin
+              proxy.notify_idle_data_received();
+            end
+          end
+        end
+      end
+    end
+  end
 endinterface

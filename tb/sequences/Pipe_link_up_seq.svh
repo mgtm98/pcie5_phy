@@ -88,7 +88,7 @@ endtask: body
 
 task pipe_link_up_seq::detect_state;
   wait(pipe_agent_config_h.receiver_detected_e.triggered);
-  `uvm_info(get_type(), "Receiver detected", UVM_MEDIUM)
+  `uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::polling_state;
@@ -418,7 +418,7 @@ task pipe_link_up_seq::config_idle_state_upstream;
   int num_of_idle_data_received [`NUM_OF_LANES];
   bit eight_consecutive_idle_data_detected;
   int i;
-  pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
+  pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
   foreach(num_of_idle_data_received[i])
@@ -438,7 +438,7 @@ task pipe_link_up_seq::config_idle_state_upstream;
         finish_item(pipe_seq_item_h);
       end
       start_item(pipe_seq_item_h);
-      pipe_seq_item_h.pipe_operation = SEND_DATA;
+      pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
       finish_item(pipe_seq_item_h);
     end
 
@@ -658,7 +658,7 @@ task pipe_link_up_seq::config_idle_state_downstream;
   int num_of_idle_data_received [`NUM_OF_LANES];
   bit eight_consecutive_idle_data_detected;
   int i;
-  pipe_seq_item_h.pipe_operation = SEND_IDLE_DATA;
+  pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
   foreach(num_of_idle_data_received[i])
@@ -678,7 +678,7 @@ task pipe_link_up_seq::config_idle_state_downstream;
         finish_item(pipe_seq_item_h);
       end
       start_item(pipe_seq_item_h);
-      pipe_seq_item_h.pipe_operation = SEND_DATA;
+      pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
       finish_item(pipe_seq_item_h);
     end
 

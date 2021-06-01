@@ -53,7 +53,7 @@ wire [2:0] gen;
 input pclk;
 input reset_n;
 //os generator internal signals
-wire [1:0] os_type;
+wire [2:0] os_type;
 wire [1:0]lane_number;
 wire [7:0]link_number;
 wire [2:0] rate;

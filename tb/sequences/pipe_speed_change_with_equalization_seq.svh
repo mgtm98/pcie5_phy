@@ -12,8 +12,8 @@ class pipe_speed_change_with_equalization_seq extends pipe_base_seq;
 	extern function new(string name = "pipe_speed_change_with_equalization_seq");
 	extern task body;
 
-  extern task send_seq_item(ts_t tses [`NUM_OF_LANES]);
-  extern function ts_t [] get_tses_recived();
+  extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
+  extern function ts_s [] get_tses_recived();
 endclass:pipe_speed_change_with_equalization_seq
 
 function pipe_speed_change_with_equalization_seq::new(string name = "pipe_speed_change_with_equalization_seq");
@@ -200,7 +200,7 @@ task pipe_speed_change_with_equalization_seq::body;
 
 endtask:body
 
-task pipe_speed_change_with_equalization_seq::send_seq_item(ts_t tses [`NUM_OF_LANES]);
+task pipe_speed_change_with_equalization_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   pipe_seq_item_h.tses_sent = tses;
   start_item (pipe_seq_item_h);
@@ -210,7 +210,7 @@ task pipe_speed_change_with_equalization_seq::send_seq_item(ts_t tses [`NUM_OF_L
   finish_item (pipe_seq_item_h);
 endtask : send_seq_item
 
-task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_t [] tses);
+task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_s [] tses);
   @(pipe_agent_config_h.detected_tses_e);
   tses = pipe_agent_config_h.tses_received;
 endtask

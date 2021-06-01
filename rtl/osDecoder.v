@@ -14,6 +14,7 @@ input [4:0]numberOfDetectedLanes,
 input [511:0]data,
 input validFromLMC,	
 input linkUp,
+input [3:0] substate,
 output reg valid,
 output reg [2047:0]outOs);
 
@@ -61,32 +62,36 @@ validnext=1'b0;
 found = 1'b0;
 if(validFromLMC)
 begin
-for(i=504;i>=0;i=i-8)
-begin	
-	if(data[i+:8]==COM &&!found/*||data[i+:8]==gen3TS1||data[i+:8]==gen3TS2||data[i+:8]==gen3SKIP*/)
-	begin
-	found = 1'b1;
-	if(capacity+i-((numberOfDetectedLanes-1)<<3) >= 128<<numberOfShifts)
-	begin
-	validnext = 1'b1;
-	out = orderedSets|(data)<<capacity;
-	end
-	orderedSetsnext = data>>i-((numberOfDetectedLanes-1)<<3);
-	capacitynext = width-i+((numberOfDetectedLanes-1)<<3);
-	end
+		if(substate==4'd9){out,valid} = {data,1'b1};
+		else
+		begin
+			for(i=504;i>=0;i=i-8)
+			begin	
+				if(data[i+:8]==COM&&!found/*||data[i+:8]==gen3TS1||data[i+:8]==gen3TS2||data[i+:8]==gen3SKIP*/)
+				begin
+				found = 1'b1;
+				if(capacity+i-((numberOfDetectedLanes-1)<<3) >= 128<<numberOfShifts)
+				begin
+				validnext = 1'b1;
+				out = orderedSets|(data)<<capacity;
+				end
+				orderedSetsnext = data>>i-((numberOfDetectedLanes-1)<<3);
+				capacitynext = width-i+((numberOfDetectedLanes-1)<<3);
+				end
 
-end
-	if(!found)
-	begin
-	orderedSetsnext = orderedSets|((2048'b0|data) << capacity);
-	capacitynext = capacity + width;
-	if(capacity>= (128<<numberOfShifts))
-	begin
-	validnext = 1'b1;
-	out = orderedSets;
-	capacitynext=12'd0;
-	end
-	end
+			end
+			if(!found)
+			begin
+				orderedSetsnext = orderedSets|((2048'b0|data) << capacity);
+				capacitynext = capacity + width;
+				if(capacity>= (128<<numberOfShifts))
+				begin
+				validnext = 1'b1;
+				out = orderedSets;
+				capacitynext=12'd0;
+				end
+			end
+		end
 end
 end
 

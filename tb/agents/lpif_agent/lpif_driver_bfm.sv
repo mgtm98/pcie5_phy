@@ -16,6 +16,8 @@ interface lpif_driver_bfm #(
     output logic [bus_data_width_param:0]      lp_data,
     output logic [bus_kontrol_param:0]         lp_valid,
     
+    input logic                                pl_linkup,
+
     output logic [3:0]                         lp_state_req,
     input logic [3:0]                          pl_state_sts,
     output logic                               lp_force_detect,
@@ -40,9 +42,19 @@ interface lpif_driver_bfm #(
   import common_pkg::*;
   import lpif_agent_pkg::*;
 
-  task link_up ();
-  	lp_state_req <= LINK_RESET;
+  task reset_scenario ();
+    @(posedge lclk);
+    reset <= 0;
+    @(posedge lclk);
+    reset <= 1;
+    @(posedge lclk);
+    lp_state_req <= LINK_RESET;
     wait(pl_state_sts == LINK_RESET);
+  	@(posedge lclk);
+  endtask
+
+  task link_up ();
+    wait(pl_linkup == 1);
   	@(posedge lclk);
     lp_state_req <= ACTIVE;
     wait(pl_state_sts == ACTIVE);
@@ -135,16 +147,6 @@ interface lpif_driver_bfm #(
       lp_valid[i] <= 0;
     end
     lp_irdy <= 0;
-  endtask
-
-  task reset ();
-    @(posedge clk);
-    reset <= 0;
-    @(posedge clk);
-    reset <= 1;
-    @(posedge clk);
-    lp_state_req <= LINK_RESET;
-    wait(pl_linkup == 1);
   endtask
 
   // task change_speed(speed_mode_t speed);

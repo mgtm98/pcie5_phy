@@ -51,7 +51,8 @@ typedef struct {
 
 typedef enum {
   TLP_TRANSFER, 
-  DLLP_TRANSFER, 
+  DLLP_TRANSFER,
+  IDLE_DATA_TRANSFER,
   LINK_UP, 
   ENTER_RECOVERY, 
   // ENTER_L0S, 
