@@ -63,16 +63,11 @@ typedef enum {
   WIDTH_CHANGE,
   SEND_TS,
   SEND_TSES,
-<<<<<<< HEAD
-  // SEND_IDLE_DATA,
-  SEND_DATA
-=======
   SEND_IDLE_DATA,
   SEND_DATA,
   CHECK_EQ_PRESET_APPLIED,
   INFORM_LF_FS,
   SET_LOCAL_LF_FS
->>>>>>> origin/master
 } pipe_operation_t;
 
 typedef enum bit[4:0]{

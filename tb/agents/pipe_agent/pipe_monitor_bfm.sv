@@ -593,10 +593,6 @@ end
   end
  endtask  
  
-  
-
-
-<<<<<<< HEAD
   function bit [7:0] descramble_gen_3_4_5 (bit [7:0] data_in, shortint unsigned lane_num);
   endfunction
 
@@ -766,6 +762,4 @@ end
       end
     end
   end
-=======
->>>>>>> origin/master
 endinterface
