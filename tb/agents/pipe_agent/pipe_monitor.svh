@@ -32,9 +32,9 @@ class pipe_monitor extends uvm_monitor;
   extern task          detect_link_up();
   extern function void notify_tses_received(ts_s tses [`NUM_OF_LANES]);
   // extern function void notify_tlp_sent(tlp_t tlp);
-  // extern function void notify_tlp_received(tlp_t tlp);
+  extern function void notify_tlp_received(tlp_t tlp);
   // extern function void notify_dllp_sent(dllp_t dllp);
-  // extern function void notify_dllp_received(dllp_t dllp);
+  extern function void notify_dllp_received(dllp_t dllp);
   // extern function void notify_enter_recovery_sent();
   // extern function void notify_enter_recovery_received();
   // extern function void notify_gen_change_sent(gen_t gen);
@@ -131,17 +131,17 @@ endfunction
 //   ap_sent.write(pipe_seq_item_h);
 // endfunction
 
-// function void pipe_monitor::notify_tlp_received(tlp_t tlp);
-//   // Creating the sequnce item
-//   pipe_seq_item pipe_seq_item_h;
-//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-//   // Determining the detected operation
-//   pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
-//   // Copying the data of the tlp to the sequence item
-//   pipe_seq_item_h.tlp = tlp;
-//   // Sending the sequence item to the analysis components
-//   ap_received.write(pipe_seq_item_h);
-// endfunction
+function void pipe_monitor::notify_tlp_received(tlp_t tlp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = TLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.tlp = tlp;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
+endfunction
 
 // function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
 //   // Creating the sequnce item
@@ -155,17 +155,17 @@ endfunction
 //   ap_sent.write(pipe_seq_item_h);
 // endfunction
 
-// function void pipe_monitor::notify_dllp_received(dllp_t dllp);
-//   // Creating the sequnce item
-//   pipe_seq_item pipe_seq_item_h;
-//   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-//   // Determining the detected operation
-//   pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
-//   // Copying the data of the tlp to the sequence item
-//   pipe_seq_item_h.dllp = dllp;
-//   // Sending the sequence item to the analysis components
-//   ap_received.write(pipe_seq_item_h);
-// endfunction
+function void pipe_monitor::notify_dllp_received(dllp_t dllp);
+  // Creating the sequnce item
+  pipe_seq_item pipe_seq_item_h;
+  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  // Determining the detected operation
+  pipe_seq_item_h.pipe_operation = DLLP_TRANSFER;
+  // Copying the data of the tlp to the sequence item
+  pipe_seq_item_h.dllp = dllp;
+  // Sending the sequence item to the analysis components
+  ap_received.write(pipe_seq_item_h);
+endfunction
 
 // function void notify_enter_recovery_sent();
 //   // Creating the sequnce item

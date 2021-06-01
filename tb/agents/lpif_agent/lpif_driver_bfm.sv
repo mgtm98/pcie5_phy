@@ -5,7 +5,9 @@ interface lpif_driver_bfm #(
   localparam bus_data_width_param = lpif_bus_width - 1,
   localparam bus_kontrol_param = (lpif_bus_width/8) - 1
 )(
-    input logic lclk,
+    input logic                                lclk,
+    output logic                               reset,
+
     input logic                                pl_trdy,
     input logic [bus_data_width_param:0]       pl_data,
     input logic [bus_kontrol_param:0]          pl_valid,
@@ -136,7 +138,13 @@ interface lpif_driver_bfm #(
   endtask
 
   task reset ();
-    //to be implemented
+    @(posedge clk);
+    reset <= 0;
+    @(posedge clk);
+    reset <= 1;
+    @(posedge clk);
+    lp_state_req <= LINK_RESET;
+    wait(pl_linkup == 1);
   endtask
 
   // task change_speed(speed_mode_t speed);
