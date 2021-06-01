@@ -101,7 +101,7 @@ parameter GEN5_PIPEWIDTH = 8)
        case (currentState)
         reset_:
         begin
-            if(finishTx&&finishRx&&gotoRx==L0&&gotoTx==L0&&lpifStateRequest==active_)
+            if(finishRx&&gotoRx==L0&&lpifStateRequest==active_)
             begin
                 nextState <= active_;
             end
@@ -180,7 +180,7 @@ end
             case ({substateTx,substateRx})
                 {detectQuiet,detectQuiet}:
                 begin
-                   if (/*finishTx&&*/finishRx&&/*gotoTx==detectActive&&*/gotoRx==detectActive) 
+                   if (finishTx&&finishRx&&gotoTx==detectActive&&gotoRx==detectActive) 
                     begin
                         {substateTxnext,substateRxnext} = {detectActive,detectActive};
                         lpifStateStatus = reset_;
@@ -292,7 +292,7 @@ end
                             lpifStateStatus = reset_;
                         end
                 {configurationIdle,configurationIdle}:
-                    if (finishRx&&gotoRx==L0&&finishTx&&gotoRx==L0) 
+                    if (finishRx&&gotoRx==L0) 
                         begin
                             linkUp = 1'b1;
                             lpifStateStatus = reset_;

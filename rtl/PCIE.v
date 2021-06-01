@@ -76,7 +76,7 @@ output [64-1:0]pl_dlpend,
 output [64-1:0]pl_tlpstart,
 output [64-1:0]pl_tlpend,
 output [64-1:0]pl_tlpedb,
-output pl_linkup,
+output linkUp,
 //optional Message bus
 output [7:0] M2P_MessageBus,
 input  [7:0] P2M_MessageBus
@@ -124,7 +124,7 @@ mainLTSSM #(
     .gotoTx(TXExitTo),
     .gotoRx(RXexitTo),
     .forceDetect(lp_force_detect),
-    .linkUp(pl_linkup),
+    .linkUp(linkUp),
     .GEN(GEN),
     .numberOfDetectedLanesOut(numberOfDetectedLanes),
     //.linkNumberOut(linkNumber),
@@ -329,6 +329,7 @@ wire 	[4*LANESNUMBER -1:0]LocalPresetIndex;
 wire 	[LANESNUMBER -1:0]GetLocalPresetCoeffcients;
 reg 	[LANESNUMBER -1:0]LocalTxCoefficientsValid;
 wire 	[6*LANESNUMBER -1:0]LF;
+wire 	[6*LANESNUMBER -1:0]FS;
 wire 	[LANESNUMBER -1:0]RxEqEval;
 wire 	[LANESNUMBER -1:0]InvalidRequest;
 reg 	[6*LANESNUMBER -1:0]LinkEvaluationFeedbackDirectionChange;
@@ -352,7 +353,7 @@ wire [64-1:0]pl_dlpend;
 wire [64-1:0]pl_tlpstart;
 wire [64-1:0]pl_tlpend;
 wire [64-1:0]pl_tlpedb;
-wire pl_linkup;
+wire linkUp;
 //optional Message bus
 wire [7:0] M2P_MessageBus;
 reg  [7:0] P2M_MessageBus;
@@ -438,6 +439,7 @@ pcie
  GetLocalPresetCoeffcients,
  LocalTxCoefficientsValid,
 LF,
+FS,
 RxEqEval,
 InvalidRequest,
 LinkEvaluationFeedbackDirectionChange,
@@ -462,7 +464,7 @@ pl_dlpend,
 pl_tlpstart,
 pl_tlpend,
 pl_tlpedb,
-pl_linkup,
+linkUp,
 //optional Message bus
 M2P_MessageBus,
 P2M_MessageBus
