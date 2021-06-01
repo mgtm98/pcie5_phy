@@ -5,8 +5,8 @@ interface pipe_driver_bfm
     localparam bus_data_width_param       = pipe_num_of_lanes  * pipe_max_width - 1,  
     localparam bus_data_kontrol_param     = (pipe_max_width / 8) * pipe_num_of_lanes - 1
   )(  
-  // input bit   CLK,
-  input bit   Reset,
+  input logic   PCLK,
+  input logic   Reset,
   // input logic PhyReset,
    
   /*************************** RX Specific Signals *************************************/
@@ -57,11 +57,11 @@ interface pipe_driver_bfm
   input  logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input  logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input  logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  input logic                                PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                          PclkRate     //TODO: This signal is removed 
+  // input logic                                PCLK,     //TODO: This signal is removed 
+  // input logic [4:0]                          PclkRate     //TODO: This signal is removed 
 );
 
 `include "uvm_macros.svh"
@@ -483,23 +483,23 @@ task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes)
 endtask
 
 
-initial begin
-  forever begin
-    @(PclkRate);
-    @(posedge PCLK);
-    PclkChangeOk <= 1;
-  end
-end
+// initial begin
+//   forever begin
+//     @(PclkRate);
+//     @(posedge PCLK);
+//     PclkChangeOk <= 1;
+//   end
+// end
 
-  task change_speed();
-    // @(TxElecIdle && RxStandby);
-    // wait random amount of time
-    @(posedge PCLK);
-    PhyStatus <= 1;
-    @(posedge PCLK);
-    PhyStatus <= 0;
-    PclkChangeOk <= 0;
-  endtask : change_speed
+  // task change_speed();
+  //   // @(TxElecIdle && RxStandby);
+  //   // wait random amount of time
+  //   @(posedge PCLK);
+  //   PhyStatus <= 1;
+  //   @(posedge PCLK);
+  //   PhyStatus <= 0;
+  //   PclkChangeOk <= 0;
+  // endtask : change_speed
 
 /******************************* Normal Data Operation *******************************/
 
@@ -513,13 +513,13 @@ bit [7:0] temp;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
-    data.push_back(`STP_gen_1_2);          K_data.push_back(K);
+    data.push_back(`STP_gen_1_2);          k_data.push_back(K);
 
     for (int i = 0; i < tlp.size(); i++) begin
-      data.push_back(tlp[i]);              K_data.push_back(D);
+      data.push_back(tlp[i]);              k_data.push_back(D);
     end
 
-    data.push_back(`END_gen_1_2);          K_data.push_back(K);
+    data.push_back(`END_gen_1_2);          k_data.push_back(K);
 
   end
   else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5)begin
@@ -527,12 +527,12 @@ function void send_tlp (tlp_t tlp);
     tlp_gen3_symbol_0 = {`STP_gen_3 , tlp_length_field[0:3]};
     tlp_gen3_symbol_1 = {tlp_length_field[4:10] , 1'b0};
 
-    data.push_back(tlp_gen3_symbol_0);    K_data.push_back(K); //nosaha K w nosaha D ???
-    data.push_back(tlp_gen3_symbol_1);    K_data.push_back(D);
-    //check if i need K_data queue in gen3 or not??
+    data.push_back(tlp_gen3_symbol_0);    k_data.push_back(K); //nosaha K w nosaha D ???
+    data.push_back(tlp_gen3_symbol_1);    k_data.push_back(D);
+    //check if i need k_data queue in gen3 or not??
     //check on lenth constraint of TLP , is it different than earlier gens??? 
     for (int i = 0; i < tlp.size(); i++) begin
-      data.push_back(tlp[i]);              K_data.push_back(D);
+      data.push_back(tlp[i]);              k_data.push_back(D);
     end
 
   end
@@ -540,17 +540,17 @@ endfunction
 
 function void send_dllp (dllp_t dllp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
-    data.push_back(`SDP_gen_1_2);          K_data.push_back(K);
-    data.push_back(dllp[0]);               K_data.push_back(D);
-    data.push_back(dllp[1]);               K_data.push_back(D);
-    data.push_back(dllp[2]);               K_data.push_back(D);
-    data.push_back(dllp[3]);               K_data.push_back(D);
-    data.push_back(dllp[4]);               K_data.push_back(D);
-    data.push_back(dllp[5]);               K_data.push_back(D);
-    data.push_back(`END_gen_1_2);          K_data.push_back(K);
+    data.push_back(`SDP_gen_1_2);          k_data.push_back(K);
+    data.push_back(dllp[0]);               k_data.push_back(D);
+    data.push_back(dllp[1]);               k_data.push_back(D);
+    data.push_back(dllp[2]);               k_data.push_back(D);
+    data.push_back(dllp[3]);               k_data.push_back(D);
+    data.push_back(dllp[4]);               k_data.push_back(D);
+    data.push_back(dllp[5]);               k_data.push_back(D);
+    data.push_back(`END_gen_1_2);          k_data.push_back(K);
   end
   else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) begin
-    //check if i need K_data queue in gen3 or not??
+    //check if i need k_data queue in gen3 or not??
     data.push_back(`SDP_gen_3_symbol_0);   
     data.push_back(`SDP_gen_3_symbol_1);   
     data.push_back(dllp[0]);              
@@ -564,7 +564,7 @@ endfunction
 
 function void send_idle_data ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    data.push_back(8'b00000000);           K_data.push_back(D); //control but scrambled
+    data.push_back(8'b00000000);           k_data.push_back(D); //control but scrambled
   end
 endfunction
 
@@ -666,7 +666,7 @@ endtask
   task eqialization_preset_applied(preset_index);
     @(LocalPresetIndex);
     assert(LocalPresetIndex == preset_index) else 
-    `uvm_error(get_name(), "")
+    `uvm_error("pipe_driver_bfm", "")
     wait(GetLocalPresetCoeffcients == 1);
     @(posedge PCLK);
     LocalTxCoeffcientsValid  <= 1;
@@ -675,7 +675,7 @@ endtask
     LocalTxCoeffcientsValid  <= 0;
     @(TxDeemph);
     assert(TxDeemph == 0) else 
-    `uvm_error(get_name(), "")
+    `uvm_error("pipe_driver_bfm", "")
   endtask : eqialization_preset_applied
 
   function inform_lf_fs(bit [5:0] lf, bit[5:0] fs);
@@ -690,12 +690,12 @@ endtask
 
   initial begin
     @(LF) assert(LF == lf_to_be_recvd) else
-    `uvm_error(get_name(), "")
+    `uvm_error("pipe_driver_bfm", "")
   end
 
   initial begin
     @(FS) assert(FS == fs_to_be_recvd) else
-    `uvm_error(get_name(), "")
+    `uvm_error("pipe_driver_bfm", "")
   end
 
 
