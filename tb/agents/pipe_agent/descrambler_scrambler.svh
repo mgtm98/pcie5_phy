@@ -7,7 +7,7 @@ typedef struct
 } scrambler_s;
 
 
-function void reset_lfsr (scrambler_s scrambler, gen_t current_gen);
+function void reset_lfsr (ref scrambler_s scrambler, gen_t current_gen);
   integer j,i;
   if (current_gen == GEN1 || current_gen == GEN2) begin
     foreach(scrambler.lfsr_1_2[i]) begin
@@ -34,21 +34,21 @@ function void reset_lfsr (scrambler_s scrambler, gen_t current_gen);
   end
 endfunction
 
-function bit [7:0] scramble(scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
+function bit [7:0] scramble(ref scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
 	if (current_gen == GEN1 || current_gen == GEN2)
 		return scramble_gen_1_2 (scrambler, in_data,  lane_num);
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
 		return scramble_gen_3_4_5 (scrambler, in_data, lane_num);
 endfunction
 
-function bit [7:0] descramble(scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
+function bit [7:0] descramble(ref scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num, gen_t current_gen);
   if (current_gen == GEN1 || current_gen == GEN2)
     return scramble_gen_1_2 (scrambler, in_data,  lane_num);
   else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
     return scramble_gen_3_4_5 (scrambler, in_data, lane_num);
 endfunction
 
-function bit [7:0] scramble_gen_1_2 (scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num);
+function bit [7:0] scramble_gen_1_2 (ref scrambler_s scrambler, bit [7:0] in_data, shortint unsigned lane_num);
   bit [15:0] lfsr_new;
   bit [7:0] scrambled_data;
 
@@ -80,7 +80,7 @@ function bit [7:0] scramble_gen_1_2 (scrambler_s scrambler, bit [7:0] in_data, s
   return scrambled_data;
 endfunction
 
-function bit [7:0] scramble_gen_3_4_5 (scrambler_s scrambler, bit [7:0] unscrambled_data, shortint unsigned lane_num);
+function bit [7:0] scramble_gen_3_4_5 (ref scrambler_s scrambler, bit [7:0] unscrambled_data, shortint unsigned lane_num);
   bit [7:0] scrambled_data ;
   scrambled_data = scramble_data_gen_3(scrambler.lfsr_gen_3[lane_num],unscrambled_data);
   scrambler.lfsr_gen_3[lane_num] = advance_lfsr_gen_3(scrambler.lfsr_gen_3[lane_num]);
