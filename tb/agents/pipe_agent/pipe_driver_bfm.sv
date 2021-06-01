@@ -506,7 +506,7 @@ endtask
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
-byte data [$];
+bit [7:0] data [$];
 bit k_data [$];
 
 function int get_width ();
@@ -587,6 +587,7 @@ task send_data ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1'b1;
     // RxValid [i] = 1'b1;
+  end
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
@@ -654,7 +655,7 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(data.pop_front(),l);
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler, data.pop_front(), l, current_gen);
         end
       end
       @(posedge PCLK);
