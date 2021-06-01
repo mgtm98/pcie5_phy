@@ -579,6 +579,7 @@ function void send_idle_data ();
 endfunction
 
 
+
 task send_data ();
   assert (PowerDown == 4'b0000) 
   else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
@@ -661,6 +662,8 @@ task automatic send_data_gen_3_4_5 ();
   end
 endtask
 
+
+/******************************* Equalization *******************************/
   task eqialization_preset_applied(preset_index);
     @(LocalPresetIndex);
     assert(LocalPresetIndex == preset_index) else 
