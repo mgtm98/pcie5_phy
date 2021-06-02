@@ -81,14 +81,16 @@ task pcie_test::run_phase(uvm_phase phase);
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
 
   phase.raise_objection(this, "pcie_test");
+
+  cmdline_proc.get_arg_value("+IS_DUT_UPSTREAM", arguments_value);
+  IS_DUT_UPSTREAM =arguments_value.atobin();
+
   //get a string from the commandline arguments
   cmdline_proc.get_arg_value("+VSEQ=", arguments_value);
   uvm_split_string(arguments_value, ",", used_vsequences);
 
-  
   foreach (used_vsequences[i]) 
   begin
-
 
     temp = factory.create_object_by_name( used_vsequences[i], get_full_name(), used_vsequences[i]);
     $cast(vseq,temp);

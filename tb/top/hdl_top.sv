@@ -4,6 +4,7 @@ module hdl_top;
 
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
+  import common_pkg::*;
 
   // clk and reset
   //
@@ -11,6 +12,10 @@ module hdl_top;
   // logic reset;
 
   //
+  uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
+  cmdline_proc.get_arg_value("+IS_ENV_UPSTREAM", arguments_value);
+  IS_ENV_UPSTREAM =arguments_value.atobin();
+
   // Instantiate the pin interfaces:
   //
   lpif_if #(
