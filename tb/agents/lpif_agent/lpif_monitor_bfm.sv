@@ -4,6 +4,7 @@ interface lpif_monitor_bfm #(
   localparam bus_kontrol_param = (lpif_bus_width/8) - 1
 )(
   input logic lclk,
+  input logic reset,
   input logic                                pl_trdy,
   input logic [bus_data_width_param:0]       pl_data,
   input logic [bus_kontrol_param:0]          pl_valid,

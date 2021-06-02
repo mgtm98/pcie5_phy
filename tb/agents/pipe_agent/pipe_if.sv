@@ -63,5 +63,5 @@ interface pipe_if
   /*************************************************************************************/
 
   // logic                               PCLK;     //TODO: This signal is removed 
-  // logic [4:0]                         PclkRate;     //TODO: This signal is removed 
+  logic [4:0]                         PclkRate;     //TODO: This signal is removed 
 endinterface: pipe_if

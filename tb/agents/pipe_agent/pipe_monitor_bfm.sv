@@ -61,7 +61,7 @@ interface pipe_monitor_bfm
   /*************************************************************************************/
 
   // input logic                               PCLK,     //TODO: This signal is removed 
-  // input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
   `include "uvm_macros.svh"

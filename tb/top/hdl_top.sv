@@ -26,13 +26,14 @@ module hdl_top;
     .PCLK(clk)
     // reset
   );  // PIPE Interface
-
+  
   //
   // Instantiate the BFM interfaces:
   //
   lpif_driver_bfm #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
   ) LPIF_drv_bfm(
+    .reset                  (LPIF.reset),
     .lclk                   (LPIF.lclk),
     .pl_trdy                (LPIF.pl_trdy),
     .pl_data                (LPIF.pl_data),
@@ -65,6 +66,7 @@ module hdl_top;
   lpif_monitor_bfm #(
     .lpif_bus_width(`LPIF_BUS_WIDTH)
   ) LPIF_mon_bfm(
+    .reset                  (LPIF.reset),
     .lclk                   (LPIF.lclk),
     .pl_trdy                (LPIF.pl_trdy),
     .pl_data                (LPIF.pl_data),
@@ -159,7 +161,7 @@ module hdl_top;
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
-    // .PclkRate              (PIPE.PclkRate),
+    .PclkRate              (PIPE.PclkRate),
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
@@ -184,9 +186,75 @@ module hdl_top;
 
     
   // DUT
-  // pcie_top DUT(
-  //     // PCIE Interface:
-  // );
+  PCIe #(
+    .MAXPIPEWIDTH (32),
+    .DEVICETYPE (0), //0 for downstream 1 for upstream
+    .LANESNUMBER (16),
+    .GEN1_PIPEWIDTH (8) ,	
+    .GEN2_PIPEWIDTH (8) ,	
+    .GEN3_PIPEWIDTH (8) ,								
+    .GEN4_PIPEWIDTH (8) ,	
+    .GEN5_PIPEWIDTH (8) ,	
+    .MAX_GEN (1)
+  ) DUT (
+  . CLK (clk),
+  . lpreset                               (LPIF.reset),
+  . phy_reset                             (PIPE.Reset),
+  . width                                 (PIPE.Width),
+  . TxData                                (PIPE.TxData),
+  . TxDataValid                           (PIPE.TxDataValid),
+  . TxElecIdle                            (PIPE.TxElecIdle),
+  . TxStartBlock                          (PIPE.TxStartBlock),
+  . TxDataK                               (PIPE.TxStartBlock),
+  . TxSyncHeader                          (PIPE.TxSyncHeader),
+  . TxDetectRx_Loopback                   (PIPE.TxDetectRxLoopback),
+  . RxData                                (PIPE.RxData),
+  . RxDataValid                           (PIPE.RxDataValid),
+  . RxDataK                               (PIPE.RxDataValid),
+  . RxStartBlock                          (PIPE.RxStartBlock),
+  . RxSyncHeader                          (PIPE.RxSyncHeader),
+  . RxStatus                              (PIPE.RxStatus),
+  . RxElectricalIdle                      (PIPE.RxElecIdle),
+  . PowerDown                             (PIPE.PowerDown),
+  . Rate                                  (PIPE.Rate),
+  . PhyStatus                             (PIPE.PhyStatus),  
+  . PCLKRate                              (PIPE.PclkRate),
+  . PclkChangeAck                         (PIPE.PclkChangeAck),
+  . PclkChangeOk                          (PIPE.PclkChangeOk),
+  .	LocalTxPresetCoefficients             (PIPE.LocalTxPresetCoeffcients),
+  .	TxDeemph                              (PIPE.TxDeemph),
+  .	LocalFS                               (PIPE.LocalFS),
+  .	LocalLF                               (PIPE.LocalLF),
+  .	LocalPresetIndex                      (PIPE.LocalPresetIndex),
+  .	GetLocalPresetCoeffcients             (PIPE.GetLocalPresetCoeffcients),
+  .	LocalTxCoefficientsValid              (PIPE.LocalTxCoeffcientsValid),
+  .	LF                                    (PIPE.LF),
+  .	FS                                    (PIPE.FS),
+  .	RxEqEval                              (PIPE.RxEqEval),
+  .	InvalidRequest                        (PIPE.InvalidRequest),
+  .	LinkEvaluationFeedbackDirectionChange (PIPE.LinkEvaluationFeedbackDirectionChange),
+  
+  . pl_trdy         (LPIF.pl_trdy),
+  . lp_irdy         (LPIF.lp_irdy),
+  . lp_data         (LPIF.lp_data),
+  . lp_valid        (LPIF.lp_valid),
+  . pl_data         (LPIF.pl_data),
+  . pl_valid        (LPIF.pl_valid),
+  . lp_state_req    (LPIF.lp_state_req),
+  . pl_state_sts    (LPIF.pl_state_sts),
+  . pl_speedmode    (LPIF.pl_speed_mode),
+  . lp_force_detect (LPIF.lp_force_detect),
+  . lp_dlpstart     (LPIF.lp_dllp_start) ,
+  . lp_dlpend       (LPIF.lp_dllp_end),
+  . lp_tlpstart     (LPIF.lp_tlp_start),
+  . lp_tlpend       (LPIF.lp_tlp_end),
+  . pl_dlpstart     (LPIF.pl_dllp_start),
+  . pl_dlpend       (LPIF.pl_dllp_end),
+  . pl_tlpstart     (LPIF.pl_tlp_start),
+  . pl_tlpend       (LPIF.pl_tlp_end),
+  . pl_tlpedb       (LPIF.pl_tlp_edb),
+  . linkUp          (LPIF.pl_linkup),
+  );
 
 
   // UVM initial block:
