@@ -72,7 +72,6 @@ interface pipe_monitor_bfm
   import common_pkg::*;
 
   gen_t current_gen;
-  scrambler_s monitor_scrambler;
   event build_connect_finished_e;
   event detected_exit_electricle_idle_e;
   event detected_power_down_change_e;
@@ -416,7 +415,6 @@ end
       end    
   endtask
   
-
   //wait for exit electricle idle
   initial begin
     forever begin
@@ -463,8 +461,6 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
-  byte data_sent [$];
-  byte data_received [$];
 
   function int get_width ();
     int lane_width;
@@ -498,6 +494,8 @@ end
   bit dllp_done = 0;
   bit tlp_done = 0;
 
+  byte data_sent [$];
+  byte data_received [$];
 
  initial begin
    forever begin 
@@ -528,10 +526,10 @@ end
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
         temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
-         data_descrambled[j] = (TxData[(8*i) +: 8]);
+        data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
     end
     else begin
@@ -565,7 +563,7 @@ end
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
           temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
