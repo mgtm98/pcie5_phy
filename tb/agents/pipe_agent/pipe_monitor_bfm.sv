@@ -61,7 +61,7 @@ interface pipe_monitor_bfm
   /*************************************************************************************/
 
   // input logic                               PCLK,     //TODO: This signal is removed 
-  // input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
 );
 
   `include "uvm_macros.svh"
@@ -486,6 +486,8 @@ end
   int bus_data_width = (pipe_num_of_lanes * pipe_width) ;
   tlp_t tlp_receieved;
   dllp_t dllp_receieved;
+  dllp_t dllp_sent;
+  tlp_t tlp_sent;
   bit [7:0] [bus_data_kontrol_param : 0] data_descrambled;
   byte tlp_q [$];
   byte dllp_q [$];
@@ -493,11 +495,13 @@ end
   int start_dllp;
   bit dllp_done = 0;
   bit tlp_done = 0;
+  int num_idle_data = 0;
 
   byte data_sent [$];
   byte data_received [$];
 
- initial begin
+//check receiving data
+initial begin
    forever begin 
      foreach(TxDataValid[i]) begin
        wait (TxDataValid[i] == 1) ; 	
@@ -513,6 +517,11 @@ end
          receive_dllp_gen_1_2; 
        end
         else if ((TxDataK[i] == 0 && TxData[(8*i) +: 8] == 8'b0000_0000)) begin
+          num_idle_data++;
+          if (num_idle_data == bus_data_width/8) begin
+            proxy.notify_idle_data_sent();
+            num_idle_data = 0;
+          end
         end
      end
    end
@@ -589,6 +598,107 @@ end
        tlp_receieved [i] = tlp_q.pop_front();
     end
     proxy.notify_tlp_received(tlp_receieved);
+  end
+ endtask  
+
+ //check sending data
+ initial begin
+   forever begin 
+     foreach(RxDataValid[i]) begin
+       wait (RxDataValid[i] == 1) ; 	
+     end	
+     @ (posedge PCLK);
+     for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
+       if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
+         start_tlp = i;
+         send_tlp_gen_1_2; 
+       end
+       else if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `SDP_gen_1_2) || tlp_done == 0) begin
+         start_dllp = i;
+         send_dllp_gen_1_2; 
+       end
+        else if ((RxDataK[i] == 0 && RxData[(8*i) +: 8] == 8'b0000_0000)) begin
+          num_idle_data++;
+          if (num_idle_data == bus_data_width/8) begin
+            proxy.notify_idle_data_sent();
+            num_idle_data = 0;
+          end
+        end
+     end
+   end
+ end
+ 
+ task automatic send_dllp_gen_1_2;
+  int end_dllp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_dllp;
+    if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(RxDataK [i] == 0) begin
+        temp_value = RxData[(8*i) +: 8];
+        data_descrambled[j] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
+       end
+       else if (RxDataK [i] == 1) begin
+        data_descrambled[j] = (RxData[(8*i) +: 8]);
+       end
+    end
+    else begin
+      data_descrambled[j] = (RxData[(8*i) +: 8]);
+      dllp_done = 1;
+      end_dllp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_dllp) begin
+       break;
+       end
+        dllp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (dllp_done) begin
+    for (int i = 0; i < dllp_q.size(); i++) begin
+       dllp_sent [i] = dllp_q.pop_front();
+    end
+    proxy.notify_dllp_sent(dllp_sent);
+  end
+ endtask
+ 
+ task automatic send_tlp_gen_1_2;
+  int end_tlp = (bus_data_width_param + 1)/8;
+  for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
+    int j = i - start_tlp;
+    if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
+      lanenum = $floor(i/(pipe_max_width/8.0));
+       if(RxDataK [i] == 0) begin
+         temp_value = RxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
+       end
+       else if (RxDataK [i] == 1) begin
+         data_descrambled[j] = (RxData[(8*i) +: 8]);
+       end
+    end
+    else begin
+      data_descrambled[j] = (RxData[(8*i) +: 8]);
+      tlp_done = 1;
+      end_tlp = j;
+      break;
+    end
+  end  
+  for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+     for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+       if (i > end_tlp) begin
+       break;
+       end
+         tlp_q.push_back(data_descrambled[(i)]); 
+     end
+  end
+  if (tlp_done) begin
+    for (int i = 0; i < tlp_q.size(); i++) begin
+      tlp_sent [i] = tlp_q.pop_front();
+    end
+    proxy.notify_tlp_sent(tlp_sent);
   end
  endtask  
  

@@ -12,6 +12,7 @@ interface lpif_if #(
   logic [bus_data_width_param:0]      pl_data;
   logic [bus_kontrol_param:0]         pl_valid;
 
+  logic                               reset;
   logic                               lp_irdy;
   logic [bus_data_width_param:0]      lp_data;
   logic [bus_kontrol_param:0]         lp_valid;
@@ -36,8 +37,8 @@ interface lpif_if #(
   logic [bus_kontrol_param:0]         lp_dllp_end;
   logic [bus_kontrol_param:0]         lp_tlpedb;
 
-  logic                               pl_exit_cg_req;
-  logic                               lp_exit_cg_ack;
+  //logic                               pl_exit_cg_req;
+  //logic                               lp_exit_cg_ack;
 
   // logic [bus_kontrol_param:0]         pl_k_char;
   // logic [bus_kontrol_param:0]         lp_k_char;
