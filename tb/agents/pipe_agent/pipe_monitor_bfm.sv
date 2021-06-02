@@ -57,7 +57,7 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
 
   // input logic                               PCLK,     //TODO: This signal is removed 

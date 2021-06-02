@@ -57,11 +57,11 @@ interface pipe_driver_bfm
   input  logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input  logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input  logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
+  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
   /*************************************************************************************/
 
   // input logic                                PCLK,     //TODO: This signal is removed 
-  output logic [4:0]                          PclkRate     //TODO: This signal is removed 
+  input logic [4:0]                          PclkRate     //TODO: This signal is removed 
 );
 
 `include "uvm_macros.svh"
@@ -680,12 +680,12 @@ endtask
     `uvm_error("pipe_driver_bfm", "")
   endtask : eqialization_preset_applied
 
-  function inform_lf_fs(bit [5:0] lf, bit[5:0] fs);
+  function void inform_lf_fs(bit [5:0] lf, bit[5:0] fs);
     lf_to_be_recvd = lf;
     fs_to_be_recvd = fs;
   endfunction : inform_lf_fs
 
-  function set_local_lf_fs(bit [5:0] lf, bit[5:0] fs);
+  function void set_local_lf_fs(bit [5:0] lf, bit[5:0] fs);
     LocalLF <= lf;
     LocalFS <= fs;
   endfunction : set_local_lf_fs

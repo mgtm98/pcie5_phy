@@ -2,9 +2,13 @@ module hdl_top;
 
   `include "settings.svh"
 
+  import uvm_pkg::*;
+  import common_pkg::*;
+  import utility_pkg::*;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
-  import common_pkg::*;
+  import pcie_env_pkg::*;
+  import pcie_seq_pkg::*;
 
   // clk and reset
   //
@@ -12,9 +16,14 @@ module hdl_top;
   // logic reset;
 
   //
-  uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
-  cmdline_proc.get_arg_value("+IS_ENV_UPSTREAM", arguments_value);
-  IS_ENV_UPSTREAM =arguments_value.atobin();
+  
+  initial begin
+    string argument_value;
+    uvm_cmdline_processor cmdline_proc;
+    cmdline_proc = uvm_cmdline_processor::get_inst();
+    cmdline_proc.get_arg_value("+IS_ENV_UPSTREAM=", argument_value);
+    IS_ENV_UPSTREAM = `IS_ENV_UPSTREAM;
+  end
 
   // Instantiate the pin interfaces:
   //
@@ -122,7 +131,7 @@ module hdl_top;
     .TxElecIdle            (PIPE.TxElecIdle),
     .Width                 (PIPE.Width),
     .Rate                  (PIPE.Rate),
-    // .PclkRate              (PIPE.PclkRate),
+    .PclkRate              (PIPE.PclkRate),
     .Reset                 (PIPE.Reset),                      
     .TxStartBlock          (PIPE.TxStartBlock),
     .TxSyncHeader          (PIPE.TxSyncHeader),
@@ -192,9 +201,9 @@ module hdl_top;
     
   // DUT
   PCIe #(
-    .MAXPIPEWIDTH (32),
-    .DEVICETYPE (0), //0 for downstream 1 for upstream
-    .LANESNUMBER (16),
+    .MAXPIPEWIDTH (`PIPE_MAX_WIDTH),
+    .DEVICETYPE (~`IS_ENV_UPSTREAM), //0 for downstream 1 for upstream
+    .LANESNUMBER (`NUM_OF_LANES),
     .GEN1_PIPEWIDTH (8) ,	
     .GEN2_PIPEWIDTH (8) ,	
     .GEN3_PIPEWIDTH (8) ,								
@@ -210,7 +219,7 @@ module hdl_top;
   . TxDataValid                           (PIPE.TxDataValid),
   . TxElecIdle                            (PIPE.TxElecIdle),
   . TxStartBlock                          (PIPE.TxStartBlock),
-  . TxDataK                               (PIPE.TxStartBlock),
+  . TxDataK                               (PIPE.TxDataK),
   . TxSyncHeader                          (PIPE.TxSyncHeader),
   . TxDetectRx_Loopback                   (PIPE.TxDetectRxLoopback),
   . RxData                                (PIPE.RxData),
@@ -257,8 +266,8 @@ module hdl_top;
   . pl_dlpend       (LPIF.pl_dllp_end),
   . pl_tlpstart     (LPIF.pl_tlp_start),
   . pl_tlpend       (LPIF.pl_tlp_end),
-  . pl_tlpedb       (LPIF.pl_tlp_edb),
-  . linkUp          (LPIF.pl_linkup),
+  . pl_tlpedb       (LPIF.pl_tlpedb),
+  . linkUp          (LPIF.pl_linkup)
   );
 
 

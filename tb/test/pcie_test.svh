@@ -70,7 +70,7 @@ endfunction : end_of_elaboration_phase
 
 task pcie_test::run_phase(uvm_phase phase);
   // uvm_factory factory = uvm_coreservice_t::get().get_factory();
-  uvm_factory factory = uvm_factory::get();
+  // uvm_factory factory = uvm_factory::get();
 
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];
@@ -81,9 +81,6 @@ task pcie_test::run_phase(uvm_phase phase);
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
 
   phase.raise_objection(this, "pcie_test");
-
-  cmdline_proc.get_arg_value("+IS_DUT_UPSTREAM", arguments_value);
-  IS_DUT_UPSTREAM =arguments_value.atobin();
 
   //get a string from the commandline arguments
   cmdline_proc.get_arg_value("+VSEQ=", arguments_value);
