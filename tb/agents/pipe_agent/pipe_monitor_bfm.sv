@@ -461,8 +461,6 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
-  byte data_sent [$];
-  byte data_received [$];
 
   function int get_width ();
     int lane_width;
@@ -473,14 +471,6 @@ end
     endcase
     return lane_width;
   endfunction
-
-  byte data [$];
-  bit k_data [$];
-  bit [0:10] tlp_length_field;
-  byte tlp_gen3_symbol_0;
-  byte tlp_gen3_symbol_1;
-  bit [15:0] lfsr[pipe_num_of_lanes];
-  bit [7:0] temp_value;
 
   int lanenum;
   int pipe_width = get_width();
@@ -495,6 +485,10 @@ end
   bit dllp_done = 0;
   bit tlp_done = 0;
 
+  bit [7:0] temp_value;
+
+  byte data_sent [$];
+  byte data_received [$];
 
  initial begin
    forever begin 
