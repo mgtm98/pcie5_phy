@@ -1,14 +1,16 @@
-TOP_ROOT_PATH			?= .																		# root of the files to be compiled
-TOP_INCLUDE_DIR  	:= $(strip $(TOP_ROOT_PATH))/..					# include directory for the `include 
+TOP_ROOT_PATH			?= $(strip .)																		# root of the files to be compiled
+TOP_INCLUDE_DIR  	:= $(strip $(TOP_ROOT_PATH)/..)					# include directory for the `include 
 TOP_FILES					:=  																		# files to be compiled
 COMPILE 					= $(strip $(TOP_ROOT_PATH))/$(1) 				# used to append the root_path to the file_name
 
 ################################## Files to be compiled ##########################################
 TOP_FILES			 		+= $(call COMPILE,hdl_top.sv)
 TOP_FILES			 		+= $(call COMPILE,hvl_top.sv)
+RTL_FILES         ?= $(call COMPILE,../../rtl/*.v)
 ##################################################################################################
 
-TOP_BUILD: 
+TOP_BUILD:
+	@vlog ${RTL_FILES}
 	@vlog +incdir+${TOP_INCLUDE_DIR} ${TOP_FILES}  -suppress 2275
 	@echo Common package BUILD Done 
 	@echo ------------------------------------------------------------------------------------------
