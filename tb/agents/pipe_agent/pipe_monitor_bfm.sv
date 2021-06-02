@@ -461,8 +461,6 @@ end
   end  
   
 /******************************* Normal Data Operation *******************************/
-  byte data_sent [$];
-  byte data_received [$];
 
   function int get_width ();
     int lane_width;
@@ -481,6 +479,7 @@ end
   byte tlp_gen3_symbol_1;
   bit [15:0] lfsr[pipe_num_of_lanes];
   bit [7:0] temp_value;
+  bit [7:0] temp_data;
 
   int lanenum;
   int pipe_width = get_width();
@@ -498,8 +497,11 @@ end
   bit tlp_done = 0;
   int num_idle_data = 0;
 
+  byte data_sent [$];
+  byte data_received [$];
+
 //check receiving data
- initial begin
+initial begin
    forever begin 
      foreach(TxDataValid[i]) begin
        wait (TxDataValid[i] == 1) ; 	
@@ -722,8 +724,9 @@ end
       for (i = 0; i < num_of_clks; i++) begin
         for (j = 0; j < num_of_bytes_in_lane; j++) begin
           for (k = 0; k < pipe_num_of_lanes; k++) begin
-            temp_value= RxData [((k*pipe_max_width) + (j*8)) +: 8];
-            data_sent.push_back() = descramble (monitor_rx_scrambler, temp_value, k, current_gen);
+            temp_data = RxData [((k*pipe_max_width) + (j*8)) +: 8];
+            temp_data = descramble(monitor_rx_scrambler, temp_data, k, current_gen);
+            data_sent.push_back(temp_data);
           end
         end
         @(posedge PCLK);
@@ -735,7 +738,7 @@ end
         if (is_end_of_data_block == 1) begin      
           for (i = 0; i < pipe_num_of_lanes; i++) begin
             assert (RxStartBlock [i] == 0 || RxStartBlock [i] == 1 && RxSyncHeader [i*2 +: 2] == 2'b10)
-            else `uvm_error ("pipe_monitor_bfm", "..")  //
+            else `uvm_fatal("pipe_monitor_bfm", "RxStartBlock & RxStartBlock values are not the same on all the lanes at Normal Data Operation")
           end
           while (data_sent.size() != 0) begin
 
@@ -807,8 +810,9 @@ end
     for (i = 0; i < num_of_clks; i++) begin
       for (j = 0; j < num_of_bytes_in_lane; j++) begin
         for (k = 0; k < pipe_num_of_lanes; k++) begin
-          temp_value=TxData [((k*pipe_max_width) + (j*8)) +: 8];
-          data_received.push_back() = descramble (monitor_tx_scrambler,temp_value, k, current_gen);
+          temp_data = TxData [((k*pipe_max_width) + (j*8)) +: 8];
+          temp_data = descramble(monitor_tx_scrambler, temp_data, k, current_gen);
+          data_received.push_back(temp_data);
         end
       end
       @(posedge PCLK);
@@ -820,7 +824,7 @@ end
       if (is_end_of_data_block == 1) begin      
         for (i = 0; i < pipe_num_of_lanes; i++) begin
           assert (TxStartBlock [i] == 0 || TxStartBlock [i] == 1 && TxSyncHeader [i*2 +: 2] == 2'b10)
-          else `uvm_error ("pipe_monitor_bfm", "..")  //
+          else `uvm_fatal("pipe_monitor_bfm", "RxStartBlock & RxStartBlock values are not the same on all the lanes at Normal Data Operation")
         end
         while (data_received.size() != 0) begin
 
