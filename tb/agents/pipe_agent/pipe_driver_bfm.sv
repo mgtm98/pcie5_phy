@@ -506,7 +506,7 @@ endtask
 bit [0:10] tlp_length_field;
 byte tlp_gen3_symbol_0;
 byte tlp_gen3_symbol_1;
-byte data [$];
+bit [7:0] data [$];
 bit k_data [$];
 
 function int get_width ();
@@ -520,6 +520,7 @@ function int get_width ();
 endfunction
 
 bit [7:0] temp;
+bit [7:0] temp_data;
 
 function void send_tlp (tlp_t tlp);
   if (current_gen == GEN1 || current_gen == GEN2) begin
@@ -578,8 +579,6 @@ function void send_idle_data ();
   end
 endfunction
 
-
-
 task send_data ();
   assert (PowerDown == 4'b0000) 
   else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
@@ -588,10 +587,10 @@ task send_data ();
     RxDataValid [i] = 1'b1;
     // RxValid [i] = 1'b1;
   end
-  if (current_gen == GEN1 || current_gen == GEN2)
-    send_data_gen_1_2 ();
-  else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
-    send_data_gen_3_4_5 ();
+	if (current_gen == GEN1 || current_gen == GEN2)
+		send_data_gen_1_2 ();
+	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
+	 	send_data_gen_3_4_5 ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1'b0;
     // RxValid [i] = 1'b0;
@@ -655,7 +654,8 @@ task automatic send_data_gen_3_4_5 ();
           else begin
             RxStartBlock [l] = 1'b0;
           end
-          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler, data.pop_front(), l, current_gen);
+          temp_data = data.pop_front();
+          RxData [((l*pipe_max_width) + (k*8)) +: 8] = scramble(driver_scrambler, temp_data, l, current_gen);
         end
       end
       @(posedge PCLK);

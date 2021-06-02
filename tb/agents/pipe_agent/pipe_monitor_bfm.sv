@@ -472,6 +472,15 @@ end
     return lane_width;
   endfunction
 
+  byte data [$];
+  bit k_data [$];
+  bit [0:10] tlp_length_field;
+  byte tlp_gen3_symbol_0;
+  byte tlp_gen3_symbol_1;
+  bit [15:0] lfsr[pipe_num_of_lanes];
+  bit [7:0] temp_value;
+  bit [7:0] temp_data;
+
   int lanenum;
   int pipe_width = get_width();
   int bus_data_width = (pipe_num_of_lanes * pipe_width) ;
@@ -484,8 +493,6 @@ end
   int start_dllp;
   bit dllp_done = 0;
   bit tlp_done = 0;
-
-  bit [7:0] temp_value;
 
   byte data_sent [$];
   byte data_received [$];
@@ -607,7 +614,9 @@ end
       for (i = 0; i < num_of_clks; i++) begin
         for (j = 0; j < num_of_bytes_in_lane; j++) begin
           for (k = 0; k < pipe_num_of_lanes; k++) begin
-            data_sent.push_back() = descramble (monitor_rx_scrambler, RxData [((k*pipe_max_width) + (j*8)) +: 8], k, current_gen);
+            temp_data = RxData [((k*pipe_max_width) + (j*8)) +: 8];
+            temp_data = descramble(monitor_rx_scrambler, temp_data, k, current_gen);
+            data_sent.push_back(temp_data);
           end
         end
         @(posedge PCLK);
@@ -669,7 +678,6 @@ end
         end
       end
     end
-  end
 
   initial begin
     int lane_width;
@@ -692,7 +700,9 @@ end
     for (i = 0; i < num_of_clks; i++) begin
       for (j = 0; j < num_of_bytes_in_lane; j++) begin
         for (k = 0; k < pipe_num_of_lanes; k++) begin
-          data_received.push_back() = descramble (monitor_tx_scrambler, TxData [((k*pipe_max_width) + (j*8)) +: 8], k, current_gen);
+          temp_data = TxData [((k*pipe_max_width) + (j*8)) +: 8];
+          temp_data = descramble(monitor_tx_scrambler, temp_data, k, current_gen);
+          data_received.push_back(temp_data);
         end
       end
       @(posedge PCLK);
