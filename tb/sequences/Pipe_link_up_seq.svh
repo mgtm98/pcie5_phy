@@ -174,18 +174,20 @@ task pipe_link_up_seq::polling_configuration_state;
 endtask
 
 task pipe_link_up_seq::config_state;
-  // Upstream
+  if (IS_ENV_UPSTREAM) begin
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
   config_lanenum_wait_state_upstream;
   config_complete_state_upstream;
   config_idle_state_upstream;
-  // Downstream
-  // config_linkwidth_start_state_downstream;
-  // config_linkwidth_accept_state_downstream;
-  // config_lanenum_wait_state_downstream;
-  // config_complete_state_downstream;
-  // config_idle_state_downstream;
+  end
+  else begin
+  config_linkwidth_start_state_downstream;
+  config_linkwidth_accept_state_downstream;
+  config_lanenum_wait_state_downstream;
+  config_complete_state_downstream;
+  config_idle_state_downstream;
+  end
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_upstream;
