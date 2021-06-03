@@ -60,6 +60,7 @@ function void pipe_agent::connect_phase(uvm_phase phase);
   pipe_monitor_h.ap_sent.connect(this.ap_sent);
   pipe_monitor_h.ap_received.connect(this.ap_received);
 
+
   if(this.pipe_agent_config_h.has_coverage_monitor) 
   begin 
     this.pipe_monitor_h.ap_received.connect(this.pipe_coverage_monitor_h.analysis_export_received);
@@ -72,4 +73,6 @@ function void pipe_agent::connect_phase(uvm_phase phase);
     // connecting driver sequence item port with the driver sequence item export
     pipe_driver_h.seq_item_port.connect(pipe_sequencer_h.seq_item_export);
   end
+
+  `uvm_info(get_name(), "Connect phase of pipe agent finished", `COMPONENT_STRUCTURE_VERBOSITY);
 endfunction: connect_phase  

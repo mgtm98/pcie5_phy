@@ -23,7 +23,7 @@ class pcie_test extends uvm_test;
   // Standard UVM Methods:
   extern function new(string name = "pcie_test", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
-  extern function void end_of_elaboration_phase (uvm_phase phase);
+  //extern function void end_of_elaboration_phase (uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
 endclass: pcie_test
@@ -40,6 +40,7 @@ function void pcie_test::build_phase(uvm_phase phase);
   lpif_agent_config lpif_agent_config_h = lpif_agent_config::type_id::create("lpif_agent_config_h");
   pipe_agent_config pipe_agent_config_h = pipe_agent_config::type_id::create("pipe_agent_config_h");
 
+  `uvm_info(get_name(), "Enter build_phase in pcie_teset", UVM_MEDIUM)
   //setting the lpif_agent conifgurations and needed handles
   if (!uvm_config_db #(lpif_driver_bfm_param) ::get(this, "", "lpif_driver_bfm", lpif_agent_config_h.lpif_driver_bfm_h))
     `uvm_fatal("VIF CONFIG", "Cannot get() BFM interface lpif_driver_bfm_h from uvm_config_db. Have you set() it?")
@@ -62,23 +63,24 @@ function void pcie_test::build_phase(uvm_phase phase);
   // Add the ENV configuration object so the ENV can access it
   uvm_config_db #(pcie_env_config)::set(this, "pcie_env_h", "pcie_env_config_h", pcie_env_config_h);
   pcie_env_h = pcie_env::type_id::create("pcie_env_h", this);
+  `uvm_info(get_name(), "Exit build_phase in pcie_teset", UVM_MEDIUM)
 endfunction: build_phase
 
-function void pcie_test::end_of_elaboration_phase(uvm_phase phase);
-  uvm_top.print_topology();
-endfunction : end_of_elaboration_phase
+// function void pcie_test::end_of_elaboration_phase(uvm_phase phase);
+//   `uvm_info(get_name(), "Enter end_of_elaboration_phase in pcie_teset", UVM_MEDIUM)
+//   uvm_top.print_topology();
+// endfunction : end_of_elaboration_phase
 
 task pcie_test::run_phase(uvm_phase phase);
   // uvm_factory factory = uvm_coreservice_t::get().get_factory();
   // uvm_factory factory = uvm_factory::get();
-
   string arguments_value = "base_vseq"; //default value needs to be reviewed default value
   string used_vsequences[$];
   base_vseq vseq;
   uvm_object temp;
 
-
   uvm_cmdline_processor cmdline_proc = uvm_cmdline_processor::get_inst();
+  `uvm_info(get_name(), "Enter run_phase in pcie_teset", UVM_MEDIUM)
 
   phase.raise_objection(this, "pcie_test");
 
@@ -88,27 +90,17 @@ task pcie_test::run_phase(uvm_phase phase);
 
   foreach (used_vsequences[i]) 
   begin
+    `uvm_info(get_name(), {"starting vseq:",used_vsequences[i]}, UVM_MEDIUM)
 
     temp = factory.create_object_by_name( used_vsequences[i], get_full_name(), used_vsequences[i]);
     $cast(vseq,temp);
 
-      //checking which vseq should be used
-    //case(used_vsequences[i])
-      //"link_up_vseq":         vseq = link_up_vseq::type_id::create("vseq");
-      //"reset_vseq":           vseq = reset_vseq::type_id::create("vseq");
-      // "data_exchange_vseq":   vseq = data_exchange_vseq::type_id::create("vseq");
-      // "enter_recovery_vseq":  vseq = enter_recovery_vseq::type_id::create("vseq");
-      // "speed_change_vseq":    vseq = speed_change_vseq::type_id::create("vseq");
-      // "enter_l0s_vseq":       vseq = enter_l0s_vseq::type_id::create("vseq");
-      // "exit_l0s_vseq":        vseq = exit_l0s_vseq::type_id::create("vseq");
-      //default:                `uvm_fatal(get_name(), "This virtual sequence doesn't exist")
-    //  endcase
 
     //assigning the secquencers handles
     vseq.lpif_sequencer_h = pcie_env_h.lpif_agent_h.lpif_sequencer_h;
     vseq.pipe_sequencer_h = pcie_env_h.pipe_agent_h.pipe_sequencer_h;
     vseq.start(null);
   end
-
   phase.drop_objection(this, "pcie_test");
+  `uvm_info(get_name(), "Exit run_phase in pcie_teset", UVM_MEDIUM)    
 endtask: run_phase

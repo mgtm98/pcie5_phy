@@ -32,7 +32,7 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
-  input logic [3:0]                         PowerDown,
+  input logic [4*pipe_num_of_lanes - 1:0]   PowerDown,
   input logic [3:0]                         Rate,
   input logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input logic [1:0]                         Width,
@@ -211,53 +211,63 @@ end
   logic [4:0] temp;
   initial begin
     forever begin   
-      wait(Reset==1);
+      wait(Reset==0);
       @(posedge PCLK);
       reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
-      assert (TxDetectRxLoopback==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't setted by default value during Reset");
-      assert (TxElecIdle==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't setted by default value during Reset");
-      //assert (TxCompliance==0) else `uvm_error ("TxCompliance isn't setted by default value during Reset");
-      assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
-    
+      foreach(TxDetectRxLoopback[i])
+       assert (TxDetectRxLoopback[i]==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't set by default value during Reset");
+      foreach(TxElecIdle[i])
+       assert (TxElecIdle[i]==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't set by default value during Reset");
+      foreach(PowerDown[i])      
+       assert (PowerDown[i]==4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
       //check that PCLK is operational
       // temp=PclkRate;   //shared or per lane?
       // @(posedge PCLK);
       // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
-    
-      wait(Reset==0);
+      wait(Reset==1);
       @(posedge PCLK);
-      
+      `uvm_info ("pipe_monitor_bfm", "Reset asserted in reset scenario", UVM_LOW)
+
       foreach(PhyStatus[i]) begin 
         wait(PhyStatus[i]==0);
       end
 
       @(posedge PCLK);
       proxy.notify_reset_detected();
-     `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW);
+     `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW)
     end
   end
 
 /******************************* Receiver detection Scenario *******************************/
   initial begin
     forever begin  
-      wait(TxDetectRxLoopback==1);
+      `uvm_info("pipe_driver_bfm", "d5alna block detect", UVM_LOW)
+      foreach(TxDetectRxLoopback[i]) begin
+        wait(TxDetectRxLoopback[i] == 1);
+      end
+      `uvm_info ("pipe_monitor_bfm", "txdetectrx is 1", UVM_LOW)
       @(posedge PCLK);
-      assert (PowerDown=='b01) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Detect")
-    
+      foreach(PowerDown[i]) begin
+        assert (PowerDown[i] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Detect")
+      end
       foreach(PhyStatus[i]) begin
         wait(PhyStatus[i]==1);
         assert (RxStatus[i]=='b011) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b011")
       end
-    
+      `uvm_info ("pipe_monitor_bfm", "Powerdown and rxstatus is tamam", UVM_LOW)
+
       @(posedge PCLK);
     
       foreach(PhyStatus[i]) begin
         wait(PhyStatus[i]==0);
         assert (RxStatus[i]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
-    
-      wait(TxDetectRxLoopback==0);
+      `uvm_info ("pipe_monitor_bfm", "waiting for txdetectrx to be deasserted", UVM_LOW)
+      foreach(TxDetectRxLoopback[i]) begin
+        wait(TxDetectRxLoopback[i] == 0);
+      end
+      
       @(posedge PCLK);
       proxy.notify_receiver_detected();
       `uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
@@ -449,7 +459,7 @@ end
     forever begin
         wait(detected_power_down_change_e.triggered);
         for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          assert (PowerDown[i] == 2'b00) 
+          assert (PowerDown[i] == 4'b0000) 
           else begin
             wait(detected_power_down_change_e.triggered);
             i = 0;

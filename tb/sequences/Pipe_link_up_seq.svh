@@ -13,7 +13,7 @@ class pipe_link_up_seq extends pipe_base_seq;
   rand int             random_start_polling;
   rand int             delay_clocks;
 
-  constraint random_start_polling_c {random_start_polling inside {0, 1, 2};}
+  constraint random_start_polling_c {random_start_polling inside {0};}
   constraint delay_clocks_c {delay_clocks inside {[1:5]};}
   // Methods
   extern local task detect_state;
@@ -87,19 +87,21 @@ task pipe_link_up_seq::body;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
+  `uvm_info(get_name(), "waiting for receiver detection", UVM_MEDIUM)
   wait(pipe_agent_config_h.receiver_detected_e.triggered);
   `uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::polling_state;
+  `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
   polling_active_state;
   polling_configuration_state;
+  `uvm_info("pipe_link_up_seq", "polling state finished", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   //check it s okay to be in task receiving
-  `uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
   wait(pipe_agent_config_h.DUT_start_polling_e.triggered);
   while (rec_8_ts1 < 8) begin
     wait(pipe_agent_config_h.detected_tses_e.triggered)

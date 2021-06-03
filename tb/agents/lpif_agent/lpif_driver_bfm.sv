@@ -43,14 +43,17 @@ interface lpif_driver_bfm #(
   import lpif_agent_pkg::*;
 
   task reset_scenario ();
+    `uvm_info("lpif_driver_bfm", "reset scenario started", UVM_LOW)
     @(posedge lclk);
     reset <= 0;
     @(posedge lclk);
     reset <= 1;
     @(posedge lclk);
     lp_state_req <= LINK_RESET;
-    wait(pl_state_sts == LINK_RESET);
-  	@(posedge lclk);
+    `uvm_info("lpif_driver_bfm", "waiting link_reset sts", UVM_LOW)
+    //wait(pl_state_sts == LINK_RESET);
+  	//@(posedge lclk);
+    `uvm_info("lpif_driver_bfm", "reset scenario finished", UVM_LOW)
   endtask
 
   task link_up ();

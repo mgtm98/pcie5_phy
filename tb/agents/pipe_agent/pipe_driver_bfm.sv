@@ -32,7 +32,7 @@ interface pipe_driver_bfm
   input  logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback,
 
   /*********************** Comands and Status Signals **********************************/
-  input  logic [3:0]                         PowerDown,
+  input  logic [4*pipe_num_of_lanes - 1:0]   PowerDown,
   input  logic [3:0]                         Rate,
   output logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input  logic [1:0]                         Width,
@@ -81,37 +81,15 @@ scrambler_s driver_scrambler;
 bit [5:0]  lf_to_be_recvd;
 bit [5:0]  fs_to_be_recvd;
 
-
-//starting polling state
-initial begin
-  forever begin
-    wait(PowerDown == 'b00);
-    @(posedge PCLK);
-    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
-      PhyStatus[i] = 1;
-    end
-    // PhyStatus = 1;
-  
-    @(posedge PCLK);
-    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
-      PhyStatus[i] = 0;
-    end
-    // PhyStatus = 0;
-
-    `uvm_info("pipe_driver_bfm", "Waiting for deassertion Txelecidle signal", UVM_LOW)
-    for (int i = 0; i < `NUM_OF_LANES; i++) begin
-      wait(TxElecIdle[i] == 0);
-    end
-  end
-end
 /******************************* RESET# (Phystatus de-assertion) *******************************/
 initial begin
   forever begin 
+    `uvm_info("pipe_driver_bfm", "pipe reset scenario started", UVM_LOW)
     wait(Reset==0);
     @(posedge PCLK);
   
     foreach(PhyStatus[i]) begin
-      PhyStatus[i]=0;
+      PhyStatus[i] = 1;
     end
 
     reset_lfsr(driver_scrambler,current_gen);
@@ -120,7 +98,11 @@ end
 /******************************* Detect (Asserting needed signals) *******************************/
 initial begin
   forever begin 
-    wait(TxDetectRxLoopback==1);
+    `uvm_info("pipe_driver_bfm", "waiting txdetectrx to be 1", UVM_LOW)
+    foreach(TxDetectRxLoopback[i]) begin
+      wait(TxDetectRxLoopback[i] == 1);
+    end
+    
     @(posedge PCLK);
   
     foreach(PhyStatus[i]) begin
@@ -143,6 +125,32 @@ initial begin
   end
 end
 
+//starting polling state
+initial begin
+  forever begin
+    for (int i = 0; i < `NUM_OF_LANES; i++) begin
+      wait(PowerDown[i] == 'b0000);
+    end
+    `uvm_info("pipe_driver_bfm", "Powerdown= P0 detected", UVM_LOW)
+    @(posedge PCLK);
+    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
+      PhyStatus[i] = 1;
+    end
+    // PhyStatus = 1;
+  
+    @(posedge PCLK);
+    for (int i = 0; i < `NUM_OF_LANES ; i++) begin
+      PhyStatus[i] = 0;
+    end
+    // PhyStatus = 0;
+
+    `uvm_info("pipe_driver_bfm", "Waiting for deassertion Txelecidle signal", UVM_LOW)
+    for (int i = 0; i < `NUM_OF_LANES; i++) begin
+      wait(TxElecIdle[i] == 0);
+    end
+    `uvm_info("pipe_driver_bfm", "deassertion of Txelecidle signal", UVM_LOW)
+  end
+end
 //------------------------------------------
 // Methods
 //------------------------------------------
@@ -690,14 +698,14 @@ endtask
     LocalFS <= fs;
   endfunction : set_local_lf_fs
 
-  initial begin
-    @(LF) assert(LF == lf_to_be_recvd) else
-    `uvm_error("pipe_driver_bfm", "")
-  end
+  // initial begin
+  //   @(LF) assert(LF == lf_to_be_recvd) else
+  //   `uvm_error("pipe_driver_bfm", "")
+  // end
 
-  initial begin
-    @(FS) assert(FS == fs_to_be_recvd) else
-    `uvm_error("pipe_driver_bfm", "")
-  end
+  // initial begin
+  //   @(FS) assert(FS == fs_to_be_recvd) else
+  //   `uvm_error("pipe_driver_bfm", "")
+  // end
 
 endinterface

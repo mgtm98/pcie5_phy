@@ -34,7 +34,7 @@ interface pipe_if
   logic [pipe_num_of_lanes-1:0]       TxDetectRxLoopback;
 
   /*********************** Comands and Status Signals **********************************/
-  logic [3:0]                         PowerDown;
+  logic [4*pipe_num_of_lanes - 1:0]   PowerDown;
   logic [3:0]                         Rate;
   logic [pipe_num_of_lanes-1:0]       PhyStatus;
   logic [1:0]                         Width;

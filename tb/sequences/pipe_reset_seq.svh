@@ -16,6 +16,5 @@ task pipe_reset_seq::body;
   super.body;
   wait(pipe_agent_config_h.reset_detected_e.triggered);
   `uvm_info(get_name(), "Reset detected", UVM_MEDIUM);
- 
   -> pipe_agent_config_h.reset_finished_e;
 endtask: body

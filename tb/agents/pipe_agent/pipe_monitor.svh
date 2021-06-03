@@ -57,17 +57,21 @@ function pipe_monitor::new(string name = "pipe_monitor", uvm_component parent = 
 endfunction
   
 function void pipe_monitor::build_phase(uvm_phase phase);
+  `uvm_info(get_name(), "Enter pipe_monitor build_phase", UVM_MEDIUM)
   super.build_phase(phase);
   ap_sent = new("ap_sent", this);
   ap_received = new("ap_received", this);
+  `uvm_info(get_name(), "Exit pipe_monitor build_phase", UVM_MEDIUM)
 endfunction: build_phase
     
 
 function void pipe_monitor::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+  `uvm_info(get_name(), "Enter pipe_monitor connect_phase", UVM_MEDIUM)
   pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
   pipe_monitor_bfm_h.proxy = this;
   -> pipe_monitor_bfm_h.build_connect_finished_e;
+  `uvm_info(get_name(), "Exit pipe_monitor connect_phase", UVM_MEDIUM)
 endfunction: connect_phase
 
 task pipe_monitor::detect_posedge_clk();

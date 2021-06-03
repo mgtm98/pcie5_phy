@@ -25,6 +25,7 @@ class lpif_coverage_monitor extends uvm_component;
     `uvm_info(get_name(), "Enter lpif_coverage_monitor build_phase", UVM_MEDIUM)
     analysis_export_sent = new("analysis_export_sent", this);
     analysis_export_received = new("analysis_export_received", this);
+    `uvm_info(get_name(), "Exit lpif_coverage_monitor build_phase", UVM_MEDIUM)
   endfunction
 
   function void write_sent(lpif_seq_item lpif_seq_item_h);

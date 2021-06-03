@@ -24,6 +24,7 @@ function pcie_env::new(string name = "pcie_env", uvm_component parent = null);
 endfunction
 
 function void pcie_env::build_phase(uvm_phase phase);
+  `uvm_info(get_name(), "Enter pcie_env build_phase", UVM_MEDIUM)
   if (!uvm_config_db #(pcie_env_config)::get(this, "", "pcie_env_config_h", pcie_env_config_h))
     `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration pcie_env_config from uvm_config_db. Have you set() it?")
 
@@ -46,9 +47,11 @@ function void pcie_env::build_phase(uvm_phase phase);
   begin
     pcie_coverage_monitor_h = pcie_coverage_monitor::type_id::create("pcie_coverage_monitor_h", this);
   end
+  `uvm_info(get_name(), "Exit pcie_env build_phase", UVM_MEDIUM)
 endfunction:build_phase
 
 function void pcie_env::connect_phase(uvm_phase phase);
+  `uvm_info(get_name(), "Enter pcie_env connect_phase", UVM_MEDIUM)
   if(pcie_env_config_h.has_scoreboard) 
   begin
     lpif_agent_h.ap_sent.connect(pcie_scoreboard_h.lpif_export_sent);
@@ -64,4 +67,5 @@ function void pcie_env::connect_phase(uvm_phase phase);
     pipe_agent_h.ap_sent.connect(pcie_coverage_monitor_h.pipe_export_sent);
     pipe_agent_h.ap_received.connect(pcie_coverage_monitor_h.pipe_export_received);
   end
+  `uvm_info(get_name(), "Exit pcie_env connect_phase", UVM_MEDIUM)
 endfunction: connect_phase

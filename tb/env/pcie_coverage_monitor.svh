@@ -30,12 +30,14 @@ function pcie_coverage_monitor::new(string name = "pcie_coverage_monitor", uvm_c
 endfunction
 
 function void pcie_coverage_monitor::build_phase(uvm_phase phase);
+  `uvm_info(get_name(), "Enter pcie_coverage_monitor build_phase", UVM_MEDIUM)
   lpif_export_sent = new("lpif_export_sent", this);
   lpif_export_received = new("lpif_export_received", this);
   pipe_export_sent = new("pipe_export_sent", this);
   pipe_export_received = new("pipe_export_received", this);
   lpif_fifo = new("lpif_fifo", this);
   pipe_fifo = new("pipe_fifo", this);
+  `uvm_info(get_name(), "Exit pcie_coverage_monitor build_phase", UVM_MEDIUM)
 endfunction:build_phase
 
 function void pcie_coverage_monitor::connect_phase(uvm_phase phase);
