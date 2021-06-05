@@ -94,11 +94,12 @@ initial begin
     // @(posedge PCLK);
 
     wait(Reset==1);
-    @(posedge PCLK);
+    // @(posedge PCLK);
 
     foreach(PhyStatus[i]) begin
       PhyStatus[i] = 0;
     end
+    @(posedge PCLK);
 
     reset_lfsr(driver_scrambler,current_gen);
   end

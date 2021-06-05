@@ -242,14 +242,21 @@ end
     end
   end
 
+  // initial begin
+  //   forever begin
+  //     `uvm_info("pipe_monitor_bfm", $sformatf("TxDetectRxLoopback = %b", TxDetectRxLoopback), UVM_LOW)
+  //     @(posedge PCLK);
+  //   end
+  // end
+
 /******************************* Receiver detection Scenario *******************************/
   initial begin
     forever begin  
-      `uvm_info("pipe_driver_bfm", "d5alna block detect", UVM_LOW)
+      `uvm_info("pipe_driver_bfm", "Entered receiver detection", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 1);
       end
-      `uvm_info ("pipe_monitor_bfm", "txdetectrx is 1", UVM_LOW)
+      `uvm_info ("pipe_monitor_bfm", "TxDetectRxLoopback = 1", UVM_LOW)
       @(posedge PCLK);
       foreach(PowerDown[i]) begin
         assert (PowerDown[i] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Detect")
