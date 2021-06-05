@@ -180,7 +180,7 @@ end
             case ({substateTx,substateRx})
                 {detectQuiet,detectQuiet}:
                 begin
-                   if (finishTx&&finishRx&&gotoTx==detectActive&&gotoRx==detectActive) 
+                   if (/*finishTx&&*/finishRx&&/*gotoTx==detectActive&&*/gotoRx==detectActive) 
                     begin
                         {substateTxnext,substateRxnext} = {detectActive,detectActive};
                         lpifStateStatus = reset_;

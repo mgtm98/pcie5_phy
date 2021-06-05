@@ -78,7 +78,7 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
             if(substate == detectQuiet)
             begin
                 comparatorsCount = 5'd0;
-                timeToWait = t12ms;
+                timeToWait = t0ms;
                 nextState = counting;
                 startTimer = 1'b1;
                 enableTimer = 1'b1;
