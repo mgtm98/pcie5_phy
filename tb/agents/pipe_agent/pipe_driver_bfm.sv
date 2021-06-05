@@ -86,10 +86,18 @@ initial begin
   forever begin 
     `uvm_info("pipe_driver_bfm", "pipe reset scenario started", UVM_LOW)
     wait(Reset==0);
-    @(posedge PCLK);
+    // @(posedge PCLK);
   
     foreach(PhyStatus[i]) begin
       PhyStatus[i] = 1;
+    end
+    // @(posedge PCLK);
+
+    wait(Reset==1);
+    @(posedge PCLK);
+
+    foreach(PhyStatus[i]) begin
+      PhyStatus[i] = 0;
     end
 
     reset_lfsr(driver_scrambler,current_gen);
@@ -98,10 +106,11 @@ end
 /******************************* Detect (Asserting needed signals) *******************************/
 initial begin
   forever begin 
-    `uvm_info("pipe_driver_bfm", "waiting txdetectrx to be 1", UVM_LOW)
+    `uvm_info("pipe_driver_bfm", "Waiting txdetectrx to be 1", UVM_LOW)
     foreach(TxDetectRxLoopback[i]) begin
       wait(TxDetectRxLoopback[i] == 1);
     end
+    `uvm_info("pipe_driver_bfm", "Received txdetectrx to be 1", UVM_LOW)
     
     @(posedge PCLK);
   

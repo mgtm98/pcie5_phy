@@ -211,8 +211,10 @@ end
   logic [4:0] temp;
   initial begin
     forever begin   
+      `uvm_info ("pipe_monitor_bfm", "Reset scenario started in PIPE", UVM_LOW)
       wait(Reset==0);
-      @(posedge PCLK);
+      `uvm_info ("pipe_monitor_bfm", "Received Reset = 0", UVM_LOW)
+      // @(posedge PCLK);
       reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
       foreach(TxDetectRxLoopback[i])
@@ -226,14 +228,15 @@ end
       // @(posedge PCLK);
       // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
       wait(Reset==1);
-      @(posedge PCLK);
-      `uvm_info ("pipe_monitor_bfm", "Reset asserted in reset scenario", UVM_LOW)
+      // @(posedge PCLK);
+      `uvm_info ("pipe_monitor_bfm", "Received Reset = 1", UVM_LOW)
 
       foreach(PhyStatus[i]) begin 
         wait(PhyStatus[i]==0);
       end
+      `uvm_info ("pipe_monitor_bfm", "Received PhyStatus = 0", UVM_LOW)
 
-      @(posedge PCLK);
+      // @(posedge PCLK);
       proxy.notify_reset_detected();
      `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW)
     end
