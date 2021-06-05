@@ -1,6 +1,7 @@
 module hdl_top;
 
   `include "settings.svh"
+  `include "uvm_macros.svh"
 
   import uvm_pkg::*;
   import common_pkg::*;
@@ -286,12 +287,16 @@ module hdl_top;
   //
   initial begin
     clk = 0;
-    forever #10ns clk = ~clk;
+    forever #1 clk = ~clk;
   end
   // initial begin 
   //   reset = 0;
   //   repeat(4) @(posedge clk);
   //   reset = 1;
   // end
+
+  initial begin
+    forever #50000 `uvm_info("hdl_top", $sformatf("Time: %t", $time), UVM_NONE)
+  end
 
 endmodule: hdl_top
