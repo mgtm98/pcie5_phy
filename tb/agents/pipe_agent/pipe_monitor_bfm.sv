@@ -277,7 +277,7 @@ end
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 0);
       end
-      
+      `uvm_info ("pipe_monitor_bfm", "txdetectrx is deasserted", UVM_LOW)
       @(posedge PCLK);
       proxy.notify_receiver_detected();
       `uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
