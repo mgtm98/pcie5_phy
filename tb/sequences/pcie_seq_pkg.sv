@@ -7,6 +7,9 @@ package pcie_seq_pkg;
   import lpif_agent_pkg::*;
   import pipe_agent_pkg::*;
 
+  // helpers macros
+  `include "helper_macros.svh"
+
   // LPIF Sequences
   `include "lpif_base_seq.svh"
   `include "lpif_reset_seq.svh"

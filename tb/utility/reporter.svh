@@ -27,7 +27,8 @@ function string reporter::compose_message(uvm_severity severity,
 	string filename,
 	int line
 );
-	string time_str;
-	$swrite(time_str, "%0t", $realtime);
-	return {time_str, " [", id, "] ", message};
+	string reporter_string;
+	$swrite(reporter_string, "%t", 10);
+	$swrite(reporter_string, "[%s:%0d]", filename, line);
+	return {reporter_string, " [", id, "] ", message};
 endfunction : compose_message
