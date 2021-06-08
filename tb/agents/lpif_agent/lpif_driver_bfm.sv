@@ -46,6 +46,19 @@ interface lpif_driver_bfm #(
     `uvm_info("lpif_driver_bfm", "reset scenario started", UVM_LOW)
     @(posedge lclk);
     reset <= 0;
+
+    // Set the default values for the signals
+    lp_irdy = 0;
+    lp_data = 0;
+    lp_valid = 0;
+    lp_state_req = RESET;
+    lp_force_detect = 0;
+    lp_tlp_start = 0;
+    lp_tlp_end = 0;
+    lp_dllp_start = 0;
+    lp_dllp_end = 0;
+    lp_tlpedb = 0;
+    
     @(posedge lclk);
     reset <= 1;
     @(posedge lclk);
