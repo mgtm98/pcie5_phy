@@ -41,6 +41,8 @@ typedef struct {
   bit [5:0]             cursor;
   bit [5:0]             post_cursor;
   bit                   reject_coeficient;
+  bit                   rcv;
+  bit                   use_preset_value;
 
   // fields for TS2 only
   bit                   equalization_command;         
@@ -66,7 +68,9 @@ typedef enum {
   SEND_DATA,
   CHECK_EQ_PRESET_APPLIED,
   INFORM_LF_FS,
-  SET_LOCAL_LF_FS
+  SET_LOCAL_LF_FS,
+  SET_CURSOR_PARAMS,
+  ASSERT_EVAL_FEEDBACK_CHANGED
 } pipe_operation_t;
 
 typedef enum bit[4:0]{

@@ -80,6 +80,10 @@ scrambler_s driver_scrambler;
 //bit [15:0] lfsr [`NUM_OF_LANES];
 bit [5:0]  lf_to_be_recvd;
 bit [5:0]  fs_to_be_recvd;
+bit [5:0]  cursor;
+bit [5:0]  pre_cursor;
+bit [5:0]  post_cursor;
+bit        eval_feedback_was_asserted = 0;
 
 /******************************* RESET# (Phystatus de-assertion) *******************************/
 initial begin
@@ -708,14 +712,33 @@ endtask
     LocalFS <= fs;
   endfunction : set_local_lf_fs
 
-  // initial begin
-  //   @(LF) assert(LF == lf_to_be_recvd) else
-  //   `uvm_error("pipe_driver_bfm", "")
-  // end
+  function void set_cursor_params(bit [5:0] cursor, bit[5:0] pre_cursor, bit[5:0] post_cursor);
+    pre_cursor = pre_cursor;
+    post_cursor = post_cursor;
+    cursor = cursor;
+  endfunction // set_cursor_params
 
-  // initial begin
-  //   @(FS) assert(FS == fs_to_be_recvd) else
-  //   `uvm_error("pipe_driver_bfm", "")
-  // end
+  initial begin
+    @(LF) assert(LF == lf_to_be_recvd) else
+    `uvm_error("pipe_driver_bfm", "")
+  end
+
+  initial begin
+    @(FS) assert(FS == fs_to_be_recvd) else
+    `uvm_error("pipe_driver_bfm", "")
+  end
+
+  initial begin
+    wait(RxEqEval == 1);
+    @(posedge PCLK);
+    LinkEvaluationFeedbackDirectionChange <= 6'b000000;
+    eval_feedback_was_asserted <= 1;
+  end
+
+  initial begin
+    @(TxDeemph);
+    assert(TxDeemph == {pre_cursor, cursor, post_cursor}) else
+    `uvm_error("pipe_driver_bfm", "")
+  end
 
 endinterface

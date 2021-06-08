@@ -4,7 +4,7 @@ module hvl_top;
   import utility_pkg::*;
   import pcie_test_pkg::*;
   
-  reporter reporter_h;
+  // reporter reporter_h;
   // color_formatter formater_h;
   initial begin
   	// reporter_h = new();

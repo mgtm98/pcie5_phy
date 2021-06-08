@@ -51,7 +51,14 @@ task pipe_driver::run_phase(uvm_phase phase);
                                                     pipe_seq_item_h.lf_to_be_informed);
       SET_LOCAL_LF_FS: pipe_driver_bfm_h.set_local_lf_fs ( pipe_seq_item_h.lf_to_be_informed,
                                                            pipe_seq_item_h.lf_to_be_informed);
+      SET_CURSOR_PARAMS: pipe_driver_bfm_h.set_cursor_params ( pipe_seq_item_h.cursor,
+                                                           pipe_seq_item_h.pre_cursor,
+                                                           pipe_seq_item_h.post_cursor);
       // SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data(pipe_seq_item_h.start_lane, pipe_seq_item_h.end_lane);
+      ASSERT_EVAL_FEEDBACK_CHANGED: begin
+        assert(pipe_driver_bfm_h.eval_feedback_was_asserted == 1) else
+        `uvm_error("", "Link eval feedback wasn't asserted")
+      end
     endcase
     seq_item_port.item_done();
   end

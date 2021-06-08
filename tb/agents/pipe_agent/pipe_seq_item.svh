@@ -17,6 +17,11 @@ class pipe_seq_item extends uvm_sequence_item;
 
   bit [5:0] lf_to_be_informed;                    // used to inform the BFM values from the seq
   bit [5:0] fs_to_be_informed;                    // used to inform the BFM values from the seq
+  bit [5:0] pre_cursor;                           // used to inform the BFM values from the seq
+  bit [5:0] cursor;                               // used to inform the BFM values from the seq
+  bit [5:0] post_cursor;                          // used to inform the BFM values from the seq
+  bit [5:0] local_lf;                             // used to inform the BFM values from the seq
+  bit [5:0] local_fs;                             // used to inform the BFM values from the seq
   
   constraint c1 {
     tlp_gen_1_2_no_of_bytes > 3;

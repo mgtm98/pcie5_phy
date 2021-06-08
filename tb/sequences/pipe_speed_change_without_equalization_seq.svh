@@ -9,16 +9,16 @@ class pipe_speed_change_without_equalization_seq extends pipe_base_seq;
   extern function new(string name = "pipe_speed_change_without_equalization_seq");
   extern task body;
 
-  extern task send_seq_item(ts_t tses [`NUM_OF_LANES]);
-  extern function ts_t [] get_tses_recived();
+  extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
+  extern task get_tses_recived(output ts_s tses [`NUM_OF_LANES] );
   
-endclass:pipe_link_up_seq
+endclass:pipe_speed_change_without_equalization_seq
 
 function pipe_speed_change_without_equalization_seq::new(string name = "pipe_speed_change_without_equalization_seq");
   super.new(name);
 endfunction
 
-task body();
+task automatic pipe_speed_change_without_equalization_seq::body();
   ts_s tses_send [`NUM_OF_LANES];
   ts_s tses_recv [`NUM_OF_LANES];
   bit flag;
@@ -28,20 +28,20 @@ task body();
   
   // receive TS1 with speed_change bit asserted
   this.get_tses_recived(tses_recv);
-  for(tses_recv[i]) begin
+  foreach(tses_recv[i]) begin
     assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS1) else 
       `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
   end
   
   // save the USP max gen supported
-  max_supported_by_usp = tses_recv[0].max_gen_supported;
+  this.max_supported_by_usp = tses_recv[0].max_gen_supported;
 
   // send TS1 until TS2 is recived from USP
   fork
     // send TS1
-    while begin
+    while (1) begin
       tses_send  = super.tses;
-      for(tses_send[i]) begin
+      foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b1;
         tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
         tses_send[i].ts_type = TS1;
@@ -55,7 +55,7 @@ task body();
         this.get_tses_recived(tses_recv);
         if(tses_recv[0].ts_type == TS2) break;
       end
-      for(tses_recv[i]) begin
+      foreach(tses_recv[i]) begin
         assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS2 && tses_recv[i].auto_speed_change) else 
           `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
       end
@@ -68,7 +68,7 @@ task body();
     // send TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
     while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
       tses_send  = super.tses;
-      for(tses_send[i]) begin
+      foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b1;
         tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
         tses_send[i].ts_type = TS2;
@@ -80,7 +80,7 @@ task body();
     begin
       while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
         this.get_tses_recived(tses_recv);
-        for(tses_recv[i]) begin
+        foreach(tses_recv[i]) begin
           assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS2 && tses_recv[i].auto_speed_change) else 
             `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
         end
@@ -97,7 +97,7 @@ task body();
   finish_item (pipe_seq_item_h);
   // wait for TS1s
   this.get_tses_recived(tses_recv);
-  for(tses_recv[i]) begin
+  foreach(tses_recv[i]) begin
     assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS1) else 
       `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
   end
@@ -105,9 +105,9 @@ task body();
   flag = 0;
   fork
 
-    while begin
+    while (1) begin
       tses_send  = super.tses;
-      for(tses_send[i]) begin
+      foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b0;
         tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
         tses_send[i].ts_type = TS1;
@@ -121,7 +121,7 @@ task body();
           this.get_tses_recived(tses_recv);
           if(tses_recv[0].ts_type == TS2) break;
       end
-      for(tses_recv[i]) begin
+      foreach(tses_recv[i]) begin
         assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else 
           `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
       end
@@ -135,7 +135,7 @@ task body();
     // send TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
     while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
       tses_send  = super.tses;
-      for(tses_send[i]) begin
+      foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b0;
         tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
         tses_send[i].ts_type = TS2;
@@ -147,7 +147,7 @@ task body();
     begin
       while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
         this.get_tses_recived(tses_recv);
-        for(tses_recv[i]) begin
+        foreach(tses_recv[i]) begin
           assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else 
             `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
         end
@@ -158,7 +158,7 @@ task body();
   
 endtask : body
 
-task pipe_speed_change_without_equalization_seq::send_seq_item(ts_t tses [`NUM_OF_LANES]);
+task pipe_speed_change_without_equalization_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   pipe_seq_item_h.tses_sent = tses;
   start_item (pipe_seq_item_h);
@@ -168,7 +168,7 @@ task pipe_speed_change_without_equalization_seq::send_seq_item(ts_t tses [`NUM_O
   finish_item (pipe_seq_item_h);
 endtask : send_seq_item
 
-task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_t [] tses);
+task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_s tses [`NUM_OF_LANES]);
   @(pipe_agent_config_h.detected_tses_e);
   tses = pipe_agent_config_h.tses_received;
 endtask
