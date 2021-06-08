@@ -258,20 +258,20 @@ end
       end
       `uvm_info ("pipe_monitor_bfm", "TxDetectRxLoopback = 1", UVM_LOW)
       @(posedge PCLK);
-      foreach(PowerDown[i]) begin
-        assert (PowerDown[i] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Detect")
+      for (int i = 0; i < `NUM_OF_LANES; i++) begin
+        assert (PowerDown[(i*4) +:4] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Detect")
       end
-      foreach(PhyStatus[i]) begin
+      for (int i = 0; i < `NUM_OF_LANES; i++) begin
         wait(PhyStatus[i]==1);
-        assert (RxStatus[i]=='b011) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b011")
+        assert (RxStatus[(i*3) +:3]=='b011) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b011")
       end
       `uvm_info ("pipe_monitor_bfm", "Powerdown and rxstatus is tamam", UVM_LOW)
 
       @(posedge PCLK);
     
-      foreach(PhyStatus[i]) begin
+      for (int i = 0; i < `NUM_OF_LANES; i++) begin
         wait(PhyStatus[i]==0);
-        assert (RxStatus[i]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
+        assert (RxStatus[(i*3) +:3]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
       `uvm_info ("pipe_monitor_bfm", "waiting for txdetectrx to be deasserted", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
@@ -449,7 +449,7 @@ end
   initial begin
     forever begin
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        @ (PowerDown[i]);
+        @ (PowerDown[(i*4) +:4]);
       end
       
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
@@ -469,7 +469,7 @@ end
     forever begin
         wait(detected_power_down_change_e.triggered);
         for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          assert (PowerDown[i] == 4'b0000) 
+          assert (PowerDown[(i*4) +:4] == 4'b0000) 
           else begin
             wait(detected_power_down_change_e.triggered);
             i = 0;

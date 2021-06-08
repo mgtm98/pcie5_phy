@@ -15,7 +15,7 @@ typedef enum {
 
 typedef enum bit [3:0]{
 	ACTIVE = 4'b0001,
-	LINK_RESET = 4'b1001,
+	RESET = 4'b0000,
 	RETRAIN = 4'b1011
 } lpif_state_t;
 

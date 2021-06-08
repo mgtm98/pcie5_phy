@@ -49,10 +49,10 @@ interface lpif_driver_bfm #(
     @(posedge lclk);
     reset <= 1;
     @(posedge lclk);
-    lp_state_req <= LINK_RESET;
+    lp_state_req <= RESET;
     `uvm_info("lpif_driver_bfm", "waiting link_reset sts", UVM_LOW)
-    //wait(pl_state_sts == LINK_RESET);
-  	//@(posedge lclk);
+    wait(pl_state_sts == RESET);
+  	@(posedge lclk);
     `uvm_info("lpif_driver_bfm", "reset scenario finished", UVM_LOW)
   endtask
 

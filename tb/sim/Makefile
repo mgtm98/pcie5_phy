@@ -32,7 +32,7 @@ build: COMMON_BUILD UTILITY_BUILD build_agents ENV_BUILD SEQ_BUILD TEST_BUILD TO
 	@echo Project is built 
 
 run:
-	vsim -do "run -all" -do "wave.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887
+	vsim -do "wave.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887
 
 clean:
 	rm -r work
