@@ -122,20 +122,18 @@ initial begin
     foreach(PhyStatus[i]) begin
       PhyStatus[i]=1;
     end
-    // TODO: Check RxStatus[i]=='b011;
-    // foreach(RxStatus[i]) begin 
-    //   RxStatus[i]=='b011;
-    // end 
+    foreach(RxStatus[i]) begin 
+      RxStatus[i]='b011;
+    end 
   
     @(posedge PCLK);
   
     foreach(PhyStatus[i]) begin
       PhyStatus[i]=0;
     end
-    // TODO: Check RxStatus[i]=='b000;
-    // foreach(RxStatus[i]) begin 
-    //   RxStatus[i]=='b000;  //??
-    // end    
+    foreach(RxStatus[i]) begin 
+      RxStatus[i]='b000;  //??
+    end    
   end
 end
 
