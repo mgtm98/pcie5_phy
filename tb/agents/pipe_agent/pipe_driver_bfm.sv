@@ -119,7 +119,7 @@ initial begin
       PhyStatus[i]=1;
     end
     foreach(RxStatus[i]) begin 
-      RxStatus[i]='b011;
+      RxStatus[i]=3'b011;
     end 
   
     @(posedge PCLK);
@@ -128,7 +128,7 @@ initial begin
       PhyStatus[i]=0;
     end
     foreach(RxStatus[i]) begin 
-      RxStatus[i]='b000;  //??
+      RxStatus[i]=3'b000;  //??
     end    
   end
 end
@@ -137,7 +137,7 @@ end
 initial begin
   forever begin
     for (int i = 0; i < `NUM_OF_LANES; i++) begin
-      wait(PowerDown[i] == 'b0000);
+      wait(PowerDown[i] == 4'b0000);
     end
     `uvm_info("pipe_driver_bfm", "Powerdown= P0 detected", UVM_LOW)
     @(posedge PCLK);
