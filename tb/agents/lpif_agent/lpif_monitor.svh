@@ -45,11 +45,11 @@ class lpif_monitor extends uvm_monitor;
   //  Notification Methods
   //------------------------------------------
   `NOTIFY_LPIF_OP_SENT(link_up, LINK_UP)
-  `NOTIFY_LPIF_OP_SENT(reset, RESET)
+  `NOTIFY_LPIF_OP_SENT(reset, LINK_RESET)
   // `NOTIFY_LPIF_OP_SENT(retrain, ENTER_RECOVERY)
 
   `NOTIFY_LPIF_OP_RECIEVED(link_up, LINK_UP)
-  `NOTIFY_LPIF_OP_RECIEVED(reset, RESET)
+  `NOTIFY_LPIF_OP_RECIEVED(reset, LINK_RESET)
   // `NOTIFY_LPIF_OP_RECIEVED(retrain, ENTER_RECOVERY)
 
   `NOTIFY_LPIF_OP_SENT_EXTENDED(dllp, DLLP_TRANSFER, dllp_t, dllp)

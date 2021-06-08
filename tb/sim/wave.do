@@ -8,8 +8,10 @@ add wave -noupdate /hdl_top/PIPE/TxDetectRxLoopback
 add wave -noupdate -radix binary /hdl_top/LPIF/lp_state_req
 add wave -noupdate /hdl_top/LPIF/pl_state_sts
 add wave -noupdate /hdl_top/PIPE/RxStatus
+add wave -noupdate /hdl_top/PIPE/PowerDown
+add wave -noupdate /hdl_top/LPIF/reset
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12 ns} 0}
+WaveRestoreCursors {{Cursor 1} {19 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 149
 configure wave -valuecolwidth 109
@@ -26,4 +28,3 @@ configure wave -timeline 0
 configure wave -timelineunits ns
 update
 WaveRestoreZoom {0 ns} {57 ns}
-run -all

@@ -96,7 +96,7 @@ initial begin
       PhyStatus[i] = 1;
     end
     @(posedge PCLK);
-
+    
     wait(Reset==1);
     @(posedge PCLK);
 

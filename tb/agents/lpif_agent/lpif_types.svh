@@ -3,7 +3,7 @@
 
 typedef enum {
   LINK_UP, 
-  RESET, 
+  LINK_RESET, 
   TLP_TRANSFER, 
   DLLP_TRANSFER, 
   ENTER_RETRAIN,
