@@ -91,10 +91,23 @@ initial begin
     `uvm_info("pipe_driver_bfm", "pipe reset scenario started", UVM_LOW)
     wait(Reset==0);
     // @(posedge PCLK);
+    RxDataK                               = 0;
+    RxData                                = 0;
+    RxStatus                              = 0;
+    RxDataValid                           = 0;
+    RxStartBlock                          = 0;
+    RxSyncHeader                          = 0;
+    RxElecIdle                            = 0;
+    PclkChangeOk                          = 0;
+    LocalTxPresetCoeffcients              = 0;
+    LocalLF                               = 0;
+    LocalFS                               = 0;
+    LocalTxCoeffcientsValid               = 0;
+    LinkEvaluationFeedbackDirectionChange = 0;
+
   
-    foreach(PhyStatus[i]) begin
-      PhyStatus[i] = 1;
-    end
+    PhyStatus = {pipe_num_of_lanes{1'b1}};
+
     @(posedge PCLK);
 
     wait(Reset==1);
