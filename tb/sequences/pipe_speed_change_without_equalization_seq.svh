@@ -133,13 +133,13 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   ts2_recived_count = 0;
   fork
     // send TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
+    tses_send  = super.tses;
+    foreach(tses_send[i]) begin
+      tses_send[i].speed_change = 1'b0;
+      tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
+      tses_send[i].ts_type = TS2;
+    end
     while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
-      tses_send  = super.tses;
-      foreach(tses_send[i]) begin
-        tses_send[i].speed_change = 1'b0;
-        tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
-        tses_send[i].ts_type = TS2;
-      end
       this.send_seq_item(tses_send);
       ts2_sent_count++;
     end

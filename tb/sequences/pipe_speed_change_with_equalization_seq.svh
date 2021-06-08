@@ -224,7 +224,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
 		      if(flag) break;
 		    end
 	  	end
-	  	// recv TS1s with ec = 0
+	  	// recv TS1s with ec = 2
 	  	begin
 	  		while(1) begin
 	        this.get_tses_recived(tses_recv);
