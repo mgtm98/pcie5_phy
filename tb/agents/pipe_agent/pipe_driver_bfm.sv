@@ -109,7 +109,7 @@ initial begin
     PhyStatus = {pipe_num_of_lanes{1'b1}};
 
     @(posedge PCLK);
-    
+
     wait(Reset==1);
     @(posedge PCLK);
 
@@ -147,6 +147,7 @@ initial begin
     for (int i = 0; i < `NUM_OF_LANES; i++) begin      
       RxStatus[(i*3) +:3] = 3'b000; 
     end    
+    @(posedge PCLK);
   end
 end
 
