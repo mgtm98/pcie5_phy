@@ -195,7 +195,13 @@ turnOff<=1;
 		end
 		DetectActive:begin
 			HoldFIFOData<=1;
-			DetectReq<= {LANESNUMBER{1'b1}};
+			//DetectReq<= {LANESNUMBER{1'b1}};
+			if (DetectStatus == {LANESNUMBER{1'b1}} || DetectLanes == {LANESNUMBER{1'b1}} )begin
+				DetectReq<= {LANESNUMBER{1'b0}};
+				end
+			else begin
+				DetectReq<= {LANESNUMBER{1'b1}};
+				end
 		end
 		 PollingActive:begin
 			HoldFIFOData<=1;
@@ -298,7 +304,7 @@ turnOff<=1;
 			end
 		end
 		L0:begin
-			turnOff<=0;
+			turnOff <= 0;
 			HoldFIFOData<=0;
 			MuxSel <=1; //TODO : check is it 1 or 0 for orderset
 		end
@@ -381,10 +387,13 @@ TimerStart <= 0;
 				TimerStart  <= 1;
 				TimerIntervalCode <= t12ms;
 			end
-			else if (NextState == PollingActive || NextState == PollingConfigration 
-			||NextState == ConfigrationIdle)begin
+			else if (NextState == PollingActive || NextState == PollingConfigration)begin
 				OSCount<=0;		
 			end			
+			else if(NextState == ConfigrationIdle) begin
+					OSCount<=0;
+				end
+
 		end		
 
 		ConfigrationIdle:begin
@@ -400,6 +409,8 @@ TimerStart <= 0;
 			|| NextState == ConfigrationComplete )begin
 				OSCount<=0;		
 			end			
+			else if(NextState == L0)
+				turnOff <= 0;
 		end		
 		
 		default:begin
@@ -432,5 +443,7 @@ begin
 		WriteDetectLanesFlag<=WriteDetectLanesFlagReg;
 	end
 end
+
+assign turnOff = (NextState == L0)? 1'b0 : 1'b1;
 
 endmodule

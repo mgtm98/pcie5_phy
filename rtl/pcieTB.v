@@ -84,21 +84,39 @@ localparam[1:0]
         reset_   = 2'd0,
         active_  = 2'd1,
         retrain_ = 2'd2;
-
+integer i;
 initial
 begin
     CLK = 0;
     reset = 0;
-    #8
+    #20
     reset = 1;
     #10
     lp_state_req = reset_;
     #10
     wait(TxDetectRx_Loopback);
+    #10
     PhyStatus={16{1'b1}};
     RxStatus={16{3'b011}};
-    #100
+    #10
     RxStatus=16'd0;
+	wait(linkUp);
+	lp_state_req = active_;
+	@(negedge CLK);
+	lp_irdy=1;
+	for (i=0;i<512;i=i+1) 
+	begin
+		lp_data[i]=$random;
+		lp_tlpstart[i]=0;
+		lp_tlpend[i]=0;
+		lp_dlpend[i]=0;
+		lp_dlpstart[i]=0;
+	end
+	lp_valid={2'b00, {62{1'b1}}};
+	lp_tlpstart[0]=1;
+	lp_tlpend[61]=1;
+	#10
+	lp_irdy=0;
 
 
 end

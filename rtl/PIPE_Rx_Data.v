@@ -4,8 +4,9 @@ module PIPE_Rx_Data #(parameter GEN1_PIPEWIDTH = 8, parameter GEN2_PIPEWIDTH = 1
 												input wire [31:0]RxData, input wire [3:0]RxDataK, output wire [1:0]PIPESyncHeader, output [5:0]PIPEWIDTH,
 												output wire PIPEElectricalIdle, output wire PIPEDataValid, output wire [31:0]PIPEData, output wire [3:0]PIPEDataK);
 	
-	reg  dataValid, dataValid_next, pipeWidth;
+	reg  dataValid, dataValid_next;
 	reg [1:0]syncHeader, syncHeader_next;
+	reg [5:0] pipeWidth;
 	reg [31:0] data, data_next;
 	reg [3:0]dataK, dataK_next;
 	always@(posedge clk or negedge reset)
@@ -74,11 +75,11 @@ module PIPE_Rx_Data #(parameter GEN1_PIPEWIDTH = 8, parameter GEN2_PIPEWIDTH = 1
 			end
 		end
 
-	assign PIPEData = data;
-	assign PIPEDataK = dataK;
+	assign PIPEData = data_next;
+	assign PIPEDataK = dataK_next;
 	assign PIPEWIDTH = pipeWidth;
-	assign PIPEDataValid = dataValid;
-	assign PIPESyncHeader = syncHeader;
+	assign PIPEDataValid = dataValid_next;
+	assign PIPESyncHeader = syncHeader_next;
 	assign PIPEElectricalIdle = RxElectricalIdle;
 
 endmodule

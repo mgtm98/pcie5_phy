@@ -107,7 +107,7 @@ genvar i;
 generate 
 for(i=0;i<LANESNUMBER;i=i+1)
 begin
-PIPE_Control PIPE_CTL(.generation(gen), .pclk(pclk), .reset_n(reset_n), .RxStatus(RxStatus[3*i+:3]),
+PIPE_Control PIPE_CTL(.substate(SetTXState),.generation(gen), .pclk(pclk), .reset_n(reset_n), .RxStatus(RxStatus[3*i+:3]),
  .ElecIdle_req(ElecIdleReq[i]), .Detect_req(DetectReq[i]), .PhyStatus(PhyStatus[i]), .TxDetectRx_Loopback(TxDetectRx_Loopback[i]),
  .PowerDown(PowerDown[4*i+:4]), .Detect_status(DetectStatus[i]), .TxElecIdle(TxElecIdle[i]));
 end

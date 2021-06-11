@@ -66,7 +66,10 @@ module Descrambler(input wire clk, input wire reset, input wire turnOff, input w
 		end
 			
 
-	assign descramblerData =  (turnOff == 1)? PIPEData :  data;
+	assign descramblerData =  (turnOff == 1)? PIPEData :  
+							  (PIPEWIDTH == 8)? {24'b0, data[7:0]} : 
+							  (PIPEWIDTH == 16)? {16'b0, data[15:0]} :
+							  (PIPEWIDTH == 32)? data : 32'b0;
 	assign descramblerDataK = PIPEDataK;	
 	assign descramblerDataValid = PIPEDataValid;
 	assign descramblerSyncHeader = PIPESyncHeader;

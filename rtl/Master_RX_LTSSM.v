@@ -37,7 +37,8 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
     configurationLanenumWait = 4'd6,
     configurationLanenumAccept = 4'd7,
     configurationComplete =4'd8,
-    configurationIdle = 4'd9;
+    configurationIdle = 4'd9,
+	L0 = 4'd10;
     
 
 //local states
@@ -56,6 +57,7 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
 	        finish <= 1'b0;
 		    lastState<=4'hF;
             lastState_next<=4'hF;
+			disableDescrambler = 1'b1;
 		    //forcedetectflag<=1'b0;
         end
         else
@@ -67,7 +69,7 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
 
     always @(*)
     begin
-        disableDescrambler = 1'b1;
+        //disableDescrambler = 1'b1;
         case(currentState)
         start:
         begin
@@ -138,6 +140,10 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
                 enableTimer = 1'b1;
 		
             end
+		else if (substate == L0) begin
+			disableDescrambler = 1'b0;
+			nextState = start;
+			end
 		
         end
         
@@ -160,7 +166,7 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
         resetTimer  = 1'b1;
         resetOsCheckers = {16{1'b1}};
         startTimer = 1'b0;
-	finish = 1'b0;
+		finish = 1'b0;
         if((!timeOut && countersComparators >= comparatorsCondition) || (substate == detectQuiet && rxElectricalIdle) || (substate == detectQuiet && timeOut)|| (substate == detectActive && timeOut))
         begin
             enableTimer = 1'b0;
