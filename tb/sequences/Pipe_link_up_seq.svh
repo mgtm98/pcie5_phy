@@ -101,12 +101,12 @@ endtask
 
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
-  //check it s okay to be in task receiving
   wait(pipe_agent_config_h.DUT_start_polling_e.triggered);
   while (rec_8_ts1 < 8) begin
     wait(pipe_agent_config_h.detected_tses_e.triggered)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
         rec_8_ts1++;
+        `uvm_info("pipe_link_up_seq", "receiving ts1s", UVM_MEDIUM)
       end
     end
 endtask
@@ -116,6 +116,7 @@ task pipe_link_up_seq::sending_1024_ts1;
   int send_1024_ts1; 
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   for (send_1024_ts1 = 0; send_1024_ts1 < 1024; send_1024_ts1++) begin
+  `uvm_info("Pipe_link_up_seq", "sending 1024 ts1", UVM_LOW)
   start_item (pipe_seq_item_h);
     if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS1;})
     begin
@@ -131,10 +132,11 @@ task pipe_link_up_seq::polling_active_state;
   end
   fork
     begin
-      receiving_8_ts1;
+      sending_1024_ts1;
+      `uvm_info("Pipe_link_up_seq", "1024 ts1 sent", UVM_LOW)
     end
     begin
-      sending_1024_ts1;
+      receiving_8_ts1;
     end
   join
 endtask

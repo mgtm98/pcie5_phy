@@ -11,6 +11,12 @@ add wave -noupdate /hdl_top/PIPE/RxStatus
 add wave -noupdate /hdl_top/PIPE/PowerDown
 add wave -noupdate /hdl_top/LPIF/reset
 add wave -noupdate /hdl_top/PIPE/TxElecIdle
+add wave -noupdate /hdl_top/PIPE/RxData
+add wave -noupdate /hdl_top/PIPE/RxDataValid
+add wave -noupdate /hdl_top/PIPE/RxDataK
+add wave -noupdate /hdl_top/PIPE/TxData
+add wave -noupdate /hdl_top/PIPE/TxDataValid
+add wave -noupdate /hdl_top/PIPE/TxDataK
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {33 ns} 0}
 quietly wave cursor active 1

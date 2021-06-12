@@ -214,16 +214,18 @@ end
       `uvm_info ("pipe_monitor_bfm", "Reset scenario started in PIPE", UVM_LOW)
       wait(Reset==0);
       `uvm_info ("pipe_monitor_bfm", "Received Reset = 0", UVM_LOW)
-      // @(posedge PCLK);
+       @(posedge PCLK);
       reset_lfsr(monitor_tx_scrambler,current_gen);
       //check on default values
+      
       foreach(TxDetectRxLoopback[i])
-       assert (TxDetectRxLoopback[i]==0) else `uvm_error ("pipe_monitor_bfm", "TxDetectRxLoopback isn't set by default value during Reset");
+       assert (TxDetectRxLoopback[i]==0) else `uvm_error ("pipe_monitor_bfm", $sformatf("TxDetectRxLoopback is set by %x Reset",TxDetectRxLoopback[i]));
       foreach(TxElecIdle[i])
        assert (TxElecIdle[i]==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't set by default value during Reset");
-      foreach(PowerDown[i])      
-       assert (PowerDown[i]==4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
-      //check that PCLK is operational
+      for (int i = 0; i < `NUM_OF_LANES; i++) begin     
+       assert (PowerDown[(i*4) +:4] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
+      end
+       //check that PCLK is operational
       // temp=PclkRate;   //shared or per lane?
       // @(posedge PCLK);
       // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
