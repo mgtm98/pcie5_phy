@@ -12,7 +12,7 @@ class pipe_seq_item extends uvm_sequence_item;
   rand pclk_rate_t pclk_rate;
   rand gen_t gen;
   rand ts_s ts_sent;
-  rand ts_s tses_sent [`NUM_OF_LANES];
+  ts_s tses_sent [];
   rand int tlp_gen_1_2_no_of_bytes;
 
   bit [5:0] lf_to_be_informed;                    // used to inform the BFM values from the seq

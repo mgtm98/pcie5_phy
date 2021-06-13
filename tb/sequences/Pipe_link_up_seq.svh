@@ -13,7 +13,7 @@ class pipe_link_up_seq extends pipe_base_seq;
   rand int             random_start_polling;
   rand int             delay_clocks;
 
-  constraint random_start_polling_c {random_start_polling inside {0};}
+  constraint random_start_polling_c {random_start_polling inside {0,1,2};}
   constraint delay_clocks_c {delay_clocks inside {[1:5]};}
   // Methods
   extern local task detect_state;
@@ -145,6 +145,7 @@ endtask
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   wait(pipe_agent_config_h.detected_tses_e.triggered)
+  `uvm_info("pipe_link_up_seq", $sformatf("print tsemad: %p",pipe_agent_config_h.tses_received), UVM_MEDIUM)
   while (pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
     start_item (pipe_seq_item_h);
         if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
@@ -159,6 +160,7 @@ task pipe_link_up_seq::polling_configuration_state;
       int rec_8_ts2 = 0;
       while(rec_8_ts2 < 8) begin
       wait(pipe_agent_config_h.detected_tses_e.triggered)
+      `uvm_info("pipe_link_up_seq", $sformatf("print ts2 received"), UVM_MEDIUM)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS2) begin
         rec_8_ts2++;
       end
@@ -168,10 +170,12 @@ task pipe_link_up_seq::polling_configuration_state;
     begin
       for (int i = 0; i < 16; i++) begin
       start_item (pipe_seq_item_h);
-      if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
-      begin
-        `uvm_error(get_name(), "Can't randomize sequence item and send TS2s")
-      end
+      pipe_seq_item_h.pipe_operation = SEND_TS;
+      pipe_seq_item_h.ts_sent.ts_type = TS2;
+      // if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
+      // begin
+      //   `uvm_error(get_name(), "Can't randomize sequence item and send TS2s")
+      // end
       finish_item (pipe_seq_item_h);
       end
     end
@@ -179,6 +183,7 @@ task pipe_link_up_seq::polling_configuration_state;
 endtask
 
 task pipe_link_up_seq::config_state;
+  `uvm_info("pipe_link_up_seq", $sformatf("env type: %b",IS_ENV_UPSTREAM), UVM_MEDIUM)
   if (IS_ENV_UPSTREAM) begin
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
@@ -202,22 +207,27 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
   // Initialize the num_of_ts2_received array with zeros
+  `uvm_info("pipe_link_up_seq", "print1 config_linkwidth_start_state_upstream", UVM_MEDIUM)
   foreach(num_of_ts1s_with_non_pad_link_number[i])
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
+  `uvm_info("pipe_link_up_seq", "print2 config_linkwidth_start_state_upstream", UVM_MEDIUM)
   two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
   fork
     begin
+      `uvm_info("pipe_link_up_seq", $sformatf("print2 two_consecutive_ts1s_with_non_pad_link_number_detected=%d",two_consecutive_ts1s_with_non_pad_link_number_detected), UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "print3 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       end
     end
 
     begin
+      `uvm_info("pipe_link_up_seq", "print4 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
         @(pipe_agent_config_h.detected_tses_e);
