@@ -405,9 +405,10 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
 endfunction: ts_symbols_maker 
 
 
-task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
-  logic [pipe_max_width:0] Data;
-  logic [pipe_max_width/8 -1:0] Character;
+task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  int width = get_width();
+  bit [pipe_max_width-1:0] Data;
+  bit [pipe_max_width/8 -1:0] Character;
   byte temp;
   byte RxData_Q[$]; //the actual symbols will be here (each symbol is a byte)
   // bit RxDataValid_Q[$];
@@ -427,23 +428,24 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
 
   ts_symbols_maker(ts,RxData_Q,RxDataK_Q);
 
+
   if(current_gen <=GEN2)
   begin
     while(RxData_Q.size())
     begin
       @(posedge PCLK);
       
+      
+        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+      for(int j=0;j<width/8;j++)
+      begin
+        Data[j*8 +:8] = RxData_Q.pop_front();
+        Character[j] = RxDataK_Q.pop_front();
+          //RxData_Q = RxData_Q[1:$];
+          //RxDataK_Q = RxDataK_Q[1:$];  
+      end
       for(int i = start_lane;i<end_lane;i++)
       begin
-        // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-        for(int j=0;j<pipe_max_width/8;j++)
-        begin
-          Data[j*8 +:8] = RxData_Q[0];
-          Character[j] = RxDataK_Q[0];
-          RxData_Q = RxData_Q[1:$];
-          RxDataK_Q = RxDataK_Q[1:$];  
-        end
-
         //duplicating the Data and Characters to each lane in the driver
         RxData[i* pipe_max_width +: pipe_max_width] <=Data ;
         RxDataK[i* pipe_max_width/8 +:pipe_max_width/8] <= Character;
@@ -466,7 +468,7 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
       begin
 
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-        for(int j=0;j<pipe_max_width/8;j++)
+        for(int j=0;j<width/8;j++)
         begin
           Data[j*8 +:8] = RxData_Q[0];
           RxData_Q = RxData_Q[1:$];
@@ -479,7 +481,7 @@ task send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_lanes);
   end
 endtask
 
-task send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
+task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
   byte RxData_Q [][$];
   bit RxDataK_Q [][$];
   logic [pipe_max_width:0] Data [];
