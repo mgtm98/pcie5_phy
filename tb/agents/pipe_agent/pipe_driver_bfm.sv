@@ -153,10 +153,12 @@ end
 
 //starting polling state
 initial begin
+  logic [4*pipe_num_of_lanes - 1:0] previous_PowerDown;
   forever begin
     for (int i = 0; i < `NUM_OF_LANES; i++) begin
-      wait(PowerDown[(i*4) +:4] == 4'b0000);
+      wait(PowerDown[(i*4) +:4] == 4'b0000 && PowerDown !== previous_PowerDown);
     end
+    previous_PowerDown = PowerDown;
     `uvm_info("pipe_driver_bfm", "Powerdown= P0 detected", UVM_LOW)
     @(posedge PCLK);
     for (int i = 0; i < `NUM_OF_LANES ; i++) begin
