@@ -99,8 +99,9 @@ end
 // reciveing TS
 //-----------------------------------------------------------
 initial begin
+  ts_s tses_received_temp [];
+  tses_received_temp = new[pipe_num_of_lanes];
   forever begin
-    ts_s tses_received_temp [`NUM_OF_LANES];
     receive_tses(tses_received_temp);
     proxy.notify_tses_received(tses_received_temp);
   end
@@ -289,12 +290,15 @@ end
 /******************************* Receive TSes *******************************/
 
   task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
+    `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
       if(Width==2'b01) // 16 bit pipe parallel interface
       begin
           for (int i=start_lane;i<=end_lane;i++)
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
           end
+
+          
 
           reset_lfsr(monitor_tx_scrambler,current_gen);
 
@@ -386,10 +390,17 @@ end
       end
       else //8 bit pipe paraleel interface 
       begin
-          for (int i=start_lane;i<=end_lane;i++)
+        `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+          for (int i = start_lane; i < end_lane;i++)
           begin
+              `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
+              
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+
+              `uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
           end
+
+          `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
           
           reset_lfsr(monitor_tx_scrambler,current_gen);
 

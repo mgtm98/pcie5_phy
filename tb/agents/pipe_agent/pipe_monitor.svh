@@ -30,7 +30,7 @@ class pipe_monitor extends uvm_monitor;
   // extern function void notify_link_up_sent();
   // extern function void notify_link_up_received();
   extern task          detect_link_up();
-  extern function void notify_tses_received(ts_s tses [`NUM_OF_LANES]);
+  extern function void notify_tses_received(ts_s tses []);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -90,16 +90,16 @@ task pipe_monitor::detect_link_up();
 endtask
 
 task pipe_monitor:: exit_electricle_idle();
-  -> pipe_agent_config_h.detected_exit_electricle_idle_e;
   pipe_monitor_bfm_h.detected_exit_electricle_idle_e = pipe_agent_config_h.detected_exit_electricle_idle_e;
+  -> pipe_agent_config_h.detected_exit_electricle_idle_e;
 endtask
 
 task pipe_monitor:: power_down_change();
-  -> pipe_agent_config_h.power_down_change_e;
   pipe_monitor_bfm_h.detected_power_down_change_e = pipe_agent_config_h.power_down_change_e;
+  -> pipe_agent_config_h.power_down_change_e;
 endtask
 
-function void pipe_monitor::notify_tses_received(ts_s tses [`NUM_OF_LANES]);
+function void pipe_monitor::notify_tses_received(ts_s tses []);
   pipe_agent_config_h.tses_received = tses;
   -> pipe_agent_config_h.detected_tses_e;
 endfunction
