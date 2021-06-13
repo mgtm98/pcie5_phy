@@ -482,10 +482,11 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
 endtask
 
 task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
+  int width = get_width();
   byte RxData_Q [][$];
   bit RxDataK_Q [][$];
-  logic [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
-  logic [pipe_max_width/8 -1:0] Character [];
+  bit [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
+  bit [pipe_max_width/8 -1:0] Character [];
   `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
   RxData_Q = new[ts.size()];
   `uvm_info("pipe_driver_bfm", "print haha 2", UVM_NONE)
@@ -508,7 +509,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   if(current_gen <=GEN2)
   begin
     `uvm_info("pipe_driver_bfm", "print haha 9", UVM_NONE)
-    foreach(RxData_Q[count])
+    while(RxData_Q[0].size())
     begin
       `uvm_info("pipe_driver_bfm", "print haha 10", UVM_NONE)
       @(posedge PCLK);
@@ -518,8 +519,8 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
         for(int j=0;j<pipe_max_width/8;j++)
         begin
-          Data[i][j*8 +:8] = RxData_Q[i][count];
-          Character[i][j] = RxDataK_Q[i][count];
+          Data[i][j*8 +:8] = RxData_Q[i].pop_front();
+          Character[i][j] = RxDataK_Q[i].pop_front();
         end
         `uvm_info("pipe_driver_bfm", "print haha 11", UVM_NONE)
 
