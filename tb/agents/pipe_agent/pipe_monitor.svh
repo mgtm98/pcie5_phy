@@ -90,13 +90,16 @@ task pipe_monitor::detect_link_up();
 endtask
 
 task pipe_monitor:: exit_electricle_idle();
-  pipe_monitor_bfm_h.detected_exit_electricle_idle_e = pipe_agent_config_h.detected_exit_electricle_idle_e;
-  -> pipe_agent_config_h.detected_exit_electricle_idle_e;
+ //pipe_monitor_bfm_h.detected_exit_electricle_idle_e = pipe_agent_config_h.detected_exit_electricle_idle_e;
+ //-> pipe_agent_config_h.detected_exit_electricle_idle_e;
+  //-> pipe_monitor_bfm_h.detected_exit_electricle_idle_e;
 endtask
 
 task pipe_monitor:: power_down_change();
-  pipe_monitor_bfm_h.detected_power_down_change_e = pipe_agent_config_h.power_down_change_e;
-  -> pipe_agent_config_h.power_down_change_e;
+  //pipe_monitor_bfm_h.detected_power_down_change_e = pipe_agent_config_h.power_down_change_e;
+ //-> pipe_agent_config_h.power_down_change_e;
+  //-> pipe_monitor_bfm_h.detected_power_down_change_e;
+  //`uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected in monitor ", UVM_LOW)
 endtask
 
 function void pipe_monitor::notify_tses_received(ts_s tses []);

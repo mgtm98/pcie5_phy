@@ -18,8 +18,8 @@ add wave -noupdate /hdl_top/PIPE/TxData
 add wave -noupdate /hdl_top/PIPE/TxDataValid
 add wave -noupdate /hdl_top/PIPE/TxDataK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {33 ns} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {100 ns} 0} {{Cursor 2} {57 ns} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 149
 configure wave -valuecolwidth 109
 configure wave -justifyvalue left
@@ -34,4 +34,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {57 ns}
+WaveRestoreZoom {46 ns} {103 ns}

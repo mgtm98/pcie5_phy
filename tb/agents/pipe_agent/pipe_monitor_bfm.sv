@@ -452,9 +452,11 @@ end
   initial begin
     forever begin
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        @ (TxElecIdle[i] == 0);
+        wait (TxElecIdle[i] == 0);
       end
-      proxy.exit_electricle_idle();
+      //`uvm_info("pipe_monitor_bfm", $sformatf("elecidle= %b detected in monitor bfm",TxElecIdle), UVM_LOW)
+      //proxy.exit_electricle_idle();
+      -> detected_exit_electricle_idle_e;
     end
   end
 
@@ -462,18 +464,20 @@ end
   initial begin
     forever begin
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        @ (PowerDown[(i*4) +:4]);
+        wait(PowerDown[(i*4) +:4] == 4'b0000);
       end
-      
+      `uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        @ (PhyStatus[i] == 1);
+        wait(PhyStatus[i] == 1);
       end
 
       @(posedge PCLK);
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        @ (PhyStatus[i] == 0);
+        wait(PhyStatus[i] == 0);
       end
-      proxy.power_down_change();
+      `uvm_info("pipe_monitor_bfm", "Phystatus asserted one clk cycle monitor bfm", UVM_LOW)
+      -> detected_power_down_change_e;
+      //proxy.power_down_change();
     end
   end
 
@@ -481,14 +485,18 @@ end
   initial begin
     forever begin
         wait(detected_power_down_change_e.triggered);
+        `uvm_info("pipe_monitor_bfm", $sformatf("Powerdown= %b detected in monitor bfm",PowerDown), UVM_LOW)
         for (int i = 0; i < pipe_num_of_lanes; i++) begin
           assert (PowerDown[(i*4) +:4] == 4'b0000) 
           else begin
+            `uvm_info("pipe_monitor_bfm", "Powerdown not p0 detected in monitor bfm", UVM_LOW)
             wait(detected_power_down_change_e.triggered);
             i = 0;
           end
         end
+        `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
         wait(detected_exit_electricle_idle_e.triggered);
+        `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
         proxy.DUT_polling_state_start();
     end
   end  
