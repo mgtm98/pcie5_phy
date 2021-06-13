@@ -290,6 +290,7 @@ end
 /******************************* Receive TSes *******************************/
 
   task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
+  ts = new[pipe_num_of_lanes];
     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
       if(Width==2'b01) // 16 bit pipe parallel interface
       begin
@@ -393,11 +394,11 @@ end
         `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
           for (int i = start_lane; i < end_lane;i++)
           begin
-              `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
+             // `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
               
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
 
-              `uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
+              //`uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
           end
 
           `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
@@ -449,18 +450,39 @@ end
   endtask
   
   //wait for exit electricle idle
-  initial begin
-    forever begin
-      for (int i = 0; i < pipe_num_of_lanes; i++) begin
-        wait (TxElecIdle[i] == 0);
-      end
-      //`uvm_info("pipe_monitor_bfm", $sformatf("elecidle= %b detected in monitor bfm",TxElecIdle), UVM_LOW)
-      //proxy.exit_electricle_idle();
-      -> detected_exit_electricle_idle_e;
-    end
-  end
+  // initial begin
+  //   forever begin
+  //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
+  //       wait (TxElecIdle[i] == 0);
+  //     end
+  //     //`uvm_info("pipe_monitor_bfm", $sformatf("elecidle= %b detected in monitor bfm",TxElecIdle), UVM_LOW)
+  //     //proxy.exit_electricle_idle();
+  //     -> detected_exit_electricle_idle_e;
+  //   end
+  // end
 
-  //wait for powerdown change
+  // //wait for powerdown change
+  // initial begin
+  //   forever begin
+  //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
+  //       wait(PowerDown[(i*4) +:4] == 4'b0000);
+  //     end
+  //     `uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
+  //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
+  //       wait(PhyStatus[i] == 1);
+  //     end
+
+  //     @(posedge PCLK);
+  //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
+  //       wait(PhyStatus[i] == 0);
+  //     end
+  //     `uvm_info("pipe_monitor_bfm", "Phystatus asserted one clk cycle monitor bfm", UVM_LOW)
+  //     -> detected_power_down_change_e;
+  //     //proxy.power_down_change();
+  //   end
+  // end
+
+  //waiting on power down to be P0
   initial begin
     forever begin
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
@@ -475,32 +497,34 @@ end
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
         wait(PhyStatus[i] == 0);
       end
-      `uvm_info("pipe_monitor_bfm", "Phystatus asserted one clk cycle monitor bfm", UVM_LOW)
-      -> detected_power_down_change_e;
-      //proxy.power_down_change();
-    end
-  end
 
-  //waiting on power down to be P0
-  initial begin
-    forever begin
-        wait(detected_power_down_change_e.triggered);
-        `uvm_info("pipe_monitor_bfm", $sformatf("Powerdown= %b detected in monitor bfm",PowerDown), UVM_LOW)
-        for (int i = 0; i < pipe_num_of_lanes; i++) begin
-          assert (PowerDown[(i*4) +:4] == 4'b0000) 
-          else begin
-            `uvm_info("pipe_monitor_bfm", "Powerdown not p0 detected in monitor bfm", UVM_LOW)
-            wait(detected_power_down_change_e.triggered);
-            i = 0;
-          end
-        end
-        `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
-        wait(detected_exit_electricle_idle_e.triggered);
-        `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
-        proxy.DUT_polling_state_start();
+      `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
+      for (int i = 0; i < pipe_num_of_lanes; i++) begin
+        wait (TxElecIdle[i] == 0);
+      end
+      `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
+      proxy.DUT_polling_state_start();
     end
   end  
   
+  // initial begin
+  //   forever begin
+  //       wait(detected_power_down_change_e.triggered);
+  //       `uvm_info("pipe_monitor_bfm", $sformatf("Powerdown= %b detected in monitor bfm",PowerDown), UVM_LOW)
+  //       for (int i = 0; i < pipe_num_of_lanes; i++) begin
+  //         assert (PowerDown[(i*4) +:4] == 4'b0000) 
+  //         else begin
+  //           `uvm_info("pipe_monitor_bfm", "Powerdown not p0 detected in monitor bfm", UVM_LOW)
+  //           wait(detected_power_down_change_e.triggered);
+  //           i = 0;
+  //         end
+  //       end
+  //       `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
+  //       wait(detected_exit_electricle_idle_e.triggered);
+  //       `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
+  //       proxy.DUT_polling_state_start();
+  //   end
+  // end  
 /******************************* Normal Data Operation *******************************/
 
   function int get_width ();

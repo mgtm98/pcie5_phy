@@ -102,13 +102,14 @@ endtask
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   wait(pipe_agent_config_h.DUT_start_polling_e.triggered);
+  `uvm_info("pipe_link_up_seq", "print 1", UVM_MEDIUM)
   while (rec_8_ts1 < 8) begin
     wait(pipe_agent_config_h.detected_tses_e.triggered)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
         rec_8_ts1++;
         `uvm_info("pipe_link_up_seq", "receiving ts1s", UVM_MEDIUM)
       end
-    end
+  end
 endtask
 
 //check variable option compliance or loopback in ts1?
@@ -148,7 +149,7 @@ task pipe_link_up_seq::polling_configuration_state;
     start_item (pipe_seq_item_h);
         if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
         begin
-          `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
+          `uvm_error(get_name(), "Can't randomize sequence item and send TS2s")
         end
     finish_item (pipe_seq_item_h);
     wait(pipe_agent_config_h.detected_tses_e.triggered);
@@ -169,7 +170,7 @@ task pipe_link_up_seq::polling_configuration_state;
       start_item (pipe_seq_item_h);
       if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
       begin
-        `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
+        `uvm_error(get_name(), "Can't randomize sequence item and send TS2s")
       end
       finish_item (pipe_seq_item_h);
       end
