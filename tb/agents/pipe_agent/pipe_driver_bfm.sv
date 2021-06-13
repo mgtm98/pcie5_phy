@@ -484,23 +484,33 @@ endtask
 task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
   byte RxData_Q [][$];
   bit RxDataK_Q [][$];
-  logic [pipe_max_width:0] Data [];
+  logic [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
   logic [pipe_max_width/8 -1:0] Character [];
-  RxData_Q = new[$size(ts)];
-  RxDataK_Q = new[$size(ts)];
-  Data = new[$size(ts)];
-  Character = new[$size(ts)];
+  `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
+  RxData_Q = new[ts.size()];
+  `uvm_info("pipe_driver_bfm", "print haha 2", UVM_NONE)
+  RxDataK_Q = new[ts.size()];
+  `uvm_info("pipe_driver_bfm", "print haha 3", UVM_NONE)
+  Data = new[ts.size()];
+  `uvm_info("pipe_driver_bfm", "print haha 4", UVM_NONE)
+  Character = new[ts.size()];
+  `uvm_info("pipe_driver_bfm", "print haha 5", UVM_NONE)
   foreach(ts[i])
   begin
+    `uvm_info("pipe_driver_bfm", "print haha 6", UVM_NONE)
     ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
   end
+  `uvm_info("pipe_driver_bfm", "print haha 7", UVM_NONE)
 
   reset_lfsr(driver_scrambler, current_gen);
 
+  `uvm_info("pipe_driver_bfm", "print haha 8", UVM_NONE)
   if(current_gen <=GEN2)
   begin
+    `uvm_info("pipe_driver_bfm", "print haha 9", UVM_NONE)
     foreach(RxData_Q[count])
     begin
+      `uvm_info("pipe_driver_bfm", "print haha 10", UVM_NONE)
       @(posedge PCLK);
       
       for(int i = start_lane;i<end_lane;i++)
@@ -511,13 +521,16 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
           Data[i][j*8 +:8] = RxData_Q[i][count];
           Character[i][j] = RxDataK_Q[i][count];
         end
+        `uvm_info("pipe_driver_bfm", "print haha 11", UVM_NONE)
 
         //duplicating the Data and Characters to each lane in the driver
         RxData[i*pipe_max_width+:pipe_max_width] <=Data[i] ;
         RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character[i];
+        `uvm_info("pipe_driver_bfm", "print haha 12", UVM_NONE)
       end
     end 
   end
+  `uvm_info("pipe_driver_bfm", "print haha 13", UVM_NONE)
 endtask
 
 

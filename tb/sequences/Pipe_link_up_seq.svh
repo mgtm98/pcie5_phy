@@ -3,9 +3,9 @@ class pipe_link_up_seq extends pipe_base_seq;
   `uvm_object_utils(pipe_link_up_seq)
 
   ts_s ts_sent;
-  ts_s tses_sent [`NUM_OF_LANES];
-  ts_s tses_received [`NUM_OF_LANES];
-  int idle_data_received [`NUM_OF_LANES];
+  ts_s tses_sent [];
+  ts_s tses_received [];
+  int idle_data_received [];
 
   rand gen_t           max_gen_supported;
   rand bit   [7:0]     link_number;
@@ -58,6 +58,7 @@ task pipe_link_up_seq::body;
   ts_sent.max_gen_supported = this.max_gen_supported;
   ts_sent.ts_type          = TS1;
 
+  tses_sent = new[`NUM_OF_LANES];
   for (int i = 0; i < `NUM_OF_LANES; i++) begin
     tses_sent[i].n_fts            = this.n_fts;
     tses_sent[i].lane_number      = i;
@@ -217,17 +218,19 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
   fork
     begin
-      `uvm_info("pipe_link_up_seq", $sformatf("print2 two_consecutive_ts1s_with_non_pad_link_number_detected=%d",two_consecutive_ts1s_with_non_pad_link_number_detected), UVM_MEDIUM)
+      `uvm_info("pipe_link_up_seq", $sformatf("print3 two_consecutive_ts1s_with_non_pad_link_number_detected=%d",two_consecutive_ts1s_with_non_pad_link_number_detected), UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
+        `uvm_info("pipe_link_up_seq", "Print e1", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "Print e2", UVM_MEDIUM)
         finish_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "print3 config_linkwidth_start_state_upstream", UVM_MEDIUM)
+        `uvm_info("pipe_link_up_seq", "print4 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       end
     end
 
     begin
-      `uvm_info("pipe_link_up_seq", "print4 config_linkwidth_start_state_upstream", UVM_MEDIUM)
+      `uvm_info("pipe_link_up_seq", "print5 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
         @(pipe_agent_config_h.detected_tses_e);
