@@ -14,7 +14,6 @@ input [63:0]DK,
 input valid_pd,
 input [2:0]gen,
 input linkup,
-input clk,
 input [4:0]numberOfDetectedLanes,
 output [511:0] data_out,
 
@@ -45,7 +44,7 @@ Gen1_2_DataPath gen1_2_db(
     .DK(DK),
     .valid(valid),
     .Data_out(data_sel1),
-    .clk(clk),
+
     .dlpstart(bytetype_sel1[63:0]),
     .dlpend(bytetype_sel1[127:64]),
     .tlpstart(bytetype_sel1[191:128]),

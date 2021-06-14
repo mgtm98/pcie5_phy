@@ -71,6 +71,59 @@ module LPIF_RX_Control_DataFlow(input clk, input reset, input [63:0]tlpstart, in
 				pl_tlpedb_next[i/8] = register[3][i/8] | pl_tlpedb_next[i/8];
 				pl_dllpstart_next[i/8] = register[4][i/8] | pl_dllpstart_next[i/8];
 				pl_dllpend_next[i/8] = register[5][i/8] | pl_dllpend_next[i/8];
+				register[1] = register[1]>>1;	//tlpstart
+				register[2] = register[2]>>1;	//tlpend
+				register[3] = register[3]>>1;	//edb
+				register[4] = register[4]>>1;	//dllpstart
+				register[5] = register[5]>>1;	//dllpend
+				end
+				
+			if(register[0][i/8] == 0)
+				begin
+				data = data>>8;
+				register[0] = register[0]>>1;	//valid
+				pl_tlpstart_next[i/8] = register[1][i/8] | pl_tlpstart_next[i/8];
+				pl_tlpend_next[i/8] = register[2][i/8] | pl_tlpend_next[i/8];
+				pl_tlpedb_next[i/8] = register[3][i/8] | pl_tlpedb_next[i/8];
+				pl_dllpstart_next[i/8] = register[4][i/8] | pl_dllpstart_next[i/8];
+				pl_dllpend_next[i/8] = register[5][i/8] | pl_dllpend_next[i/8];
+				register[1] = register[1]>>1;	//tlpstart
+				register[2] = register[2]>>1;	//tlpend
+				register[3] = register[3]>>1;	//edb
+				register[4] = register[4]>>1;	//dllpstart
+				register[5] = register[5]>>1;	//dllpend
+				end
+				
+			if(register[0][i/8] == 0)
+				begin
+				data = data>>8;
+				register[0] = register[0]>>1;	//valid
+				pl_tlpstart_next[i/8] = register[1][i/8] | pl_tlpstart_next[i/8];
+				pl_tlpend_next[i/8] = register[2][i/8] | pl_tlpend_next[i/8];
+				pl_tlpedb_next[i/8] = register[3][i/8] | pl_tlpedb_next[i/8];
+				pl_dllpstart_next[i/8] = register[4][i/8] | pl_dllpstart_next[i/8];
+				pl_dllpend_next[i/8] = register[5][i/8] | pl_dllpend_next[i/8];
+				register[1] = register[1]>>1;	//tlpstart
+				register[2] = register[2]>>1;	//tlpend
+				register[3] = register[3]>>1;	//edb
+				register[4] = register[4]>>1;	//dllpstart
+				register[5] = register[5]>>1;	//dllpend
+				end
+				
+			if(register[0][i/8] == 0)
+				begin
+				data = data>>8;
+				register[0] = register[0]>>1;	//valid
+				pl_tlpstart_next[i/8] = register[1][i/8] | pl_tlpstart_next[i/8];
+				pl_tlpend_next[i/8] = register[2][i/8] | pl_tlpend_next[i/8];
+				pl_tlpedb_next[i/8] = register[3][i/8] | pl_tlpedb_next[i/8];
+				pl_dllpstart_next[i/8] = register[4][i/8] | pl_dllpstart_next[i/8];
+				pl_dllpend_next[i/8] = register[5][i/8] | pl_dllpend_next[i/8];
+				register[1] = register[1]>>1;	//tlpstart
+				register[2] = register[2]>>1;	//tlpend
+				register[3] = register[3]>>1;	//edb
+				register[4] = register[4]>>1;	//dllpstart
+				register[5] = register[5]>>1;	//dllpend
 				end
 
 			pl_data_next[i+:8] = data[i+:8];
@@ -101,9 +154,9 @@ module LPIF_RX_Control_DataFlow(input clk, input reset, input [63:0]tlpstart, in
 		
 	assign pl_tlpstart = tlpStartReg;
 	assign pl_dllpstart = dllpStartReg;
-	assign pl_tlpedb = (packetValid == 64'b0)? edb : tlpEdbReg;
-	assign pl_tlpend = (packetValid == 64'b0)? tlpend : tlpEndReg;
-	assign pl_dllpend = (packetValid == 64'b0)? dllpend : dllpEndReg;
+	assign pl_tlpedb = (packetValid == 64'b0)? edb | tlpEdbReg: tlpEdbReg;
+	assign pl_tlpend = (packetValid == 64'b0)? tlpend | tlpEndReg: tlpEndReg;
+	assign pl_dllpend = (packetValid == 64'b0)? dllpend | dllpEndReg: dllpEndReg;
 		
 		
 endmodule

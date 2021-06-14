@@ -34,7 +34,7 @@ module check_byte(
 
     always @*
     begin
-       tlp_or_dllp_out_reg=tlp_or_dllp_in;
+        tlp_or_dllp_out_reg=tlp_or_dllp_in;
         type_reg=not_valid;  
         if(valid)begin
             if(DK)
@@ -69,7 +69,7 @@ module check_byte(
                 tlp_or_dllp_out_reg = not_valid_data;
                 end             
         
-            PAD:type_reg = not_valid; 
+            default:type_reg = not_valid; 
               endcase  
             end
             else 
@@ -77,15 +77,8 @@ module check_byte(
               if(tlp_or_dllp_in != not_valid_data)begin 
                type_reg=data;
               end 
-              else
-               begin
-                   type_reg=not_valid;
-              end  
+              
             end
-        end
-        else 
-        begin
-            type_reg=not_valid;    
         end
     end
 

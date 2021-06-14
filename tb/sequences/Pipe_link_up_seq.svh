@@ -214,7 +214,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
   // Initialize the num_of_ts2_received array with zeros
-  `uvm_info("pipe_link_up_seq", "print1 config_linkwidth_start_state_upstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Entered config_linkwidth_start_state_upstream", UVM_MEDIUM)
   foreach(num_of_ts1s_with_non_pad_link_number[i])
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
@@ -270,6 +270,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
   bit [7:0] used_link_num;
   bit ts1_with_non_pad_lane_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
+  `uvm_info("pipe_link_up_seq", "Entered config_linkwidth_accept_state_upstream", UVM_MEDIUM)
   // Use the link number of the ts1s on the first lane to be transmitted
   used_link_num = tses_received[0].link_number;
   foreach(tses_sent[i])
@@ -325,6 +326,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
   bit two_consecutive_ts2s_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
+  `uvm_info("pipe_link_up_seq", "Entered config_lanenum_wait_state_upstream", UVM_MEDIUM)
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts2_received[i])
   begin
@@ -375,6 +377,7 @@ task pipe_link_up_seq::config_complete_state_upstream;
   int num_of_ts2_received [`NUM_OF_LANES];
   bit eight_consecutive_ts2s_detected;
   int i;
+  `uvm_info("pipe_link_up_seq", "Entered config_complete_state_upstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
 
   // Initialize the num_of_ts2_received array with zeros
@@ -444,6 +447,7 @@ task pipe_link_up_seq::config_idle_state_upstream;
   int num_of_idle_data_received [`NUM_OF_LANES];
   bit eight_consecutive_idle_data_detected;
   int i;
+  `uvm_info("pipe_link_up_seq", "Entered config_idle_state_upstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
@@ -498,6 +502,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
   int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];
   bit two_ts1s_with_same_link_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
+  `uvm_info("pipe_link_up_seq", "Entered config_linkwidth_start_state_downstream", UVM_MEDIUM)
   foreach(tses_sent[i])
   begin
     tses_sent[i].link_number = link_number;
@@ -551,6 +556,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
+  `uvm_info("pipe_link_up_seq", "Entered config_linkwidth_accept_state_downstream", UVM_MEDIUM)
   // Update the lane numbers to start with zero and increase sequentially
   foreach(tses_sent[i])
   begin
@@ -564,6 +570,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
   int unsigned num_of_detected_ts1s_with_same_lane_numbers;
   bit two_ts1s_with_same_lane_numbers_detected;
   bit all_lane_numbers_are_correct;
+  `uvm_info("pipe_link_up_seq", "Entered config_lanenum_wait_state_downstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
   // Send ts1s with the generated lane numbers until two ts1s are received with the same link numbers
@@ -615,6 +622,7 @@ task pipe_link_up_seq::config_complete_state_downstream;
   int num_of_ts2_received [`NUM_OF_LANES];
   bit eight_consecutive_ts2s_detected;
   int i;
+  `uvm_info("pipe_link_up_seq", "Entered config_complete_state_downstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
 
   // Initialize the num_of_ts2_received array with zeros
@@ -684,6 +692,7 @@ task pipe_link_up_seq::config_idle_state_downstream;
   int num_of_idle_data_received [`NUM_OF_LANES];
   bit eight_consecutive_idle_data_detected;
   int i;
+  `uvm_info("pipe_link_up_seq", "Entered config_idle_state_downstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
