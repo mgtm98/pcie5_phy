@@ -13,8 +13,8 @@ class pipe_link_up_seq extends pipe_base_seq;
   rand int             random_start_polling;
   rand int             delay_clocks;
 
-  constraint random_start_polling_c {random_start_polling inside {0,1,2};}
-  constraint delay_clocks_c {delay_clocks inside {[1:5]};}
+  constraint random_start_polling_c {random_start_polling inside {1};}
+  constraint delay_clocks_c {delay_clocks inside {[15:20]};}
   // Methods
   extern local task detect_state;
   extern local task polling_state;
@@ -117,6 +117,13 @@ endtask
 task pipe_link_up_seq::sending_1024_ts1;
   int send_1024_ts1; 
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
+  if (random_start_polling == 1) begin
+    repeat(delay_clocks) begin
+      wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
+      //#3;
+      `uvm_info("Pipe_link_up_seq", "posedge clk came", UVM_LOW)
+    end
+  end
   for (send_1024_ts1 = 0; send_1024_ts1 < 1024; send_1024_ts1++) begin
   `uvm_info("Pipe_link_up_seq", "sending 1024 ts1", UVM_LOW)
   start_item (pipe_seq_item_h);
@@ -129,9 +136,8 @@ task pipe_link_up_seq::sending_1024_ts1;
 endtask
 
 task pipe_link_up_seq::polling_active_state;
-  if (random_start_polling == 1) begin
-    repeat(delay_clocks) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
-  end
+  `uvm_info("Pipe_link_up_seq", $sformatf("delay_clocks = %d",delay_clocks), UVM_LOW)
+  `uvm_info("Pipe_link_up_seq", $sformatf("random_start_polling = %d",random_start_polling), UVM_LOW)
   fork
     begin
       sending_1024_ts1;

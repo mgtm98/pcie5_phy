@@ -91,7 +91,7 @@ interface pipe_monitor_bfm
   //clock wait
 initial begin
   forever begin
-    @(posedge PCLK)
+    @(posedge PCLK);
     proxy.detect_posedge_clk;
   end
 end
