@@ -129,6 +129,7 @@ packet_identifier#(.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH), .GEN2_PIPEWIDTH(GEN2_PIPEWID
     .data_in(LMCData),
     .valid_pd(LMCValid),
     .gen(GEN),
+	.clk(clk),
     .linkup(linkUp),
     .DK(LMCDataK),
     .numberOfDetectedLanes(numberOfDetectedLanes),
