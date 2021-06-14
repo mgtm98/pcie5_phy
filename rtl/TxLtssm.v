@@ -444,6 +444,15 @@ begin
 	end
 end
 
-assign turnOff = (NextState == L0)? 1'b0 : 1'b1;
+always @ * begin
+
+if(NextState == L0)begin
+turnOff=1'b0;
+end
+else begin
+turnOff =1'b1;
+end
+end
+//assign turnOff = (NextState == L0)? 1'b0 : 1'b1;
 
 endmodule
