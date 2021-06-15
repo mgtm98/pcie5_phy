@@ -289,7 +289,7 @@ end
 
 /******************************* Receive TSes *******************************/
 
-  task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes );
+  task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts = new[pipe_num_of_lanes];
     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
       if(Width==2'b01) // 16 bit pipe parallel interface
@@ -392,7 +392,7 @@ end
       else //8 bit pipe paraleel interface 
       begin
         `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-          for (int i = start_lane; i < end_lane;i++)
+        for (int i = start_lane; i <= end_lane;i++)
           begin
              // `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
               
