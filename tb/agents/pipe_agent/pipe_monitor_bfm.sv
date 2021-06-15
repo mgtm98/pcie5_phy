@@ -412,13 +412,21 @@ end
                   1:begin //link number
                           for(int i=start_lane;i<=end_lane;i++)
                           begin
+
                               ts[i].link_number=TxData[(i*32+0)+:8]; 
+                              // link number is pad set use link number to zero
+                              if ((ts[i].link_number==8'b11110111 )&&(TxDataK[0]==1))  ts[i].use_link_number=0;
+                              else ts[i].use_link_number=1;
+
                           end
                       end
                   2:begin //lanes numbers
                           for(int i=start_lane;i<=end_lane;i++)
                           begin
                               ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'b11110111 )&&(TxDataK[0]==1))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;
                           end
                       end
                   3:begin // number of fast training sequnces
