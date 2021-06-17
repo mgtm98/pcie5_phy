@@ -13,8 +13,8 @@ class pipe_link_up_seq extends pipe_base_seq;
   rand int             random_start_polling;
   rand int             delay_clocks;
 
-  constraint random_start_polling_c {random_start_polling inside {1};}
-  constraint delay_clocks_c {delay_clocks inside {[15:20]};}
+  constraint random_start_polling_c {random_start_polling inside {0,1,2};}
+  constraint delay_clocks_c {delay_clocks inside {[10:15]};}
   // Methods
   extern local task detect_state;
   extern local task polling_state;
@@ -74,7 +74,7 @@ task pipe_link_up_seq::body;
     fork
       detect_state;
       begin
-        repeat(delay_clocks) wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
+        repeat(delay_clocks) @(pipe_agent_config_h.detected_posedge_clk_e);
         polling_state;
       end
     join
@@ -119,7 +119,7 @@ task pipe_link_up_seq::sending_1024_ts1;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   if (random_start_polling == 1) begin
     repeat(delay_clocks) begin
-      wait(pipe_agent_config_h.detected_posedge_clk_e.triggered);
+      @(pipe_agent_config_h.detected_posedge_clk_e);
       //#3;
       `uvm_info("Pipe_link_up_seq", "posedge clk came", UVM_LOW)
     end

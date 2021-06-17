@@ -87,13 +87,13 @@ interface pipe_monitor_bfm
   endproperty
 
   property receiver_detection_assertion(int i);
-    @(posedge PCLK) $fell(TxDetectRxLoopback[i]) |-> ( PowerDown[(i*4) +:4] == 4'b0000);
+    @(posedge PCLK) $fell(TxDetectRxLoopback[i]) |-> ##[0:$] (PowerDown[(i*4) +:4] == 4'b0000);
   endproperty
   
   genvar i;
   generate
     for (i=0; i<8; i++) begin
-      assert property (reset_assertion(i));
+      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Assertion", UVM_LOW);
       assert property (receiver_detection_assertion(i)) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P0 after receiver detection");
     end
  endgenerate
@@ -249,6 +249,7 @@ end
       // @(posedge PCLK);
       // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
       */
+
       wait(Reset==1);
       // @(posedge PCLK);
       `uvm_info ("pipe_monitor_bfm", "Received Reset = 1", UVM_LOW)
