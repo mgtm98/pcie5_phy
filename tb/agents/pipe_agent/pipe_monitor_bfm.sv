@@ -85,16 +85,11 @@ interface pipe_monitor_bfm
   property reset_assertion(int i);
     @(posedge PCLK) !Reset |-> ( PowerDown[(i*4) +:4] == 4'b0010 && TxElecIdle[i]==1 && TxDetectRxLoopback[i]==0 && $stable(PclkRate));
   endproperty
-
-  property receiver_detection_assertion(int i);
-    @(posedge PCLK) $fell(TxDetectRxLoopback[i]) |-> ##[0:$] (PowerDown[(i*4) +:4] == 4'b0000);
-  endproperty
   
   genvar i;
   generate
     for (i=0; i<8; i++) begin
-      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Assertion", UVM_LOW);
-      assert property (receiver_detection_assertion(i)) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P0 after receiver detection");
+      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Assertion done", UVM_LOW);
     end
  endgenerate
  /************************************************************************/
@@ -235,23 +230,9 @@ end
       `uvm_info ("pipe_monitor_bfm", "Received Reset = 0", UVM_LOW)
        @(posedge PCLK);
       reset_lfsr(monitor_tx_scrambler,current_gen);
-      //check on default values
-      /*
-      foreach(TxDetectRxLoopback[i])
-       assert (TxDetectRxLoopback[i]==0) else `uvm_error ("pipe_monitor_bfm", $sformatf("TxDetectRxLoopback is set by %x Reset",TxDetectRxLoopback[i]));
-      foreach(TxElecIdle[i])
-       assert (TxElecIdle[i]==1) else `uvm_error ("pipe_monitor_bfm", "TxElecIdle isn't set by default value during Reset");
-      for (int i = 0; i < `NUM_OF_LANES; i++) begin     
-       assert (PowerDown[(i*4) +:4] == 4'b0010) else `uvm_error ("pipe_monitor_bfm", "PowerDown isn't in P1 during Reset");
-      end
-       //check that PCLK is operational
-      // temp=PclkRate;   //shared or per lane?
-      // @(posedge PCLK);
-      // assert (temp==PclkRate) else `uvm_error ("pipe_monitor_bfm", "PCLK is not stable");
-      */
 
       wait(Reset==1);
-      // @(posedge PCLK);
+      @(posedge PCLK);
       `uvm_info ("pipe_monitor_bfm", "Received Reset = 1", UVM_LOW)
 
       foreach(PhyStatus[i]) begin 
@@ -259,18 +240,10 @@ end
       end
       `uvm_info ("pipe_monitor_bfm", "Received PhyStatus = 0", UVM_LOW)
 
-      // @(posedge PCLK);
       proxy.notify_reset_detected();
      `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW)
     end
   end
-
-  // initial begin
-  //   forever begin
-  //     `uvm_info("pipe_monitor_bfm", $sformatf("TxDetectRxLoopback = %b", TxDetectRxLoopback), UVM_LOW)
-  //     @(posedge PCLK);
-  //   end
-  // end
 
 /******************************* Receiver detection Scenario *******************************/
   initial begin
