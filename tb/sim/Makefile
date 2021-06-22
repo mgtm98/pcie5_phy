@@ -33,8 +33,7 @@ include ../utility/utility.mk
 
 #################################### Run Configurations #####################################
 TEST								= pcie_test
-# SEQ									= reset_vseq,link_up_vseq
-SEQ									= dummy_vseq
+SEQ									= reset_vseq,link_up_vseq
 
 #################################### Rules #####################################
 build_pipe: 			COMMON_BUILD PIPE_BUILD_PACKAGE PIPE_BUILD_INTERFACES
