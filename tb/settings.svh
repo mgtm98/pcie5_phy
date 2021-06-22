@@ -2,17 +2,29 @@
 `define __SETTINGS_SVH
 
   /********************** Verbosity Level Settings *************************************/
-  `define COMPONENT_STRUCTURE_VERBOSITY UVM_MEDIUM
-  `define UVM_REPORT_DISABLE_FILE_LINE  1
+  `ifndef COMPONENT_STRUCTURE_VERBOSITY
+    `define COMPONENT_STRUCTURE_VERBOSITY UVM_MEDIUM
+  `endif
+
+  `ifndef UVM_REPORT_DISABLE_FILE_LINE
+    `define UVM_REPORT_DISABLE_FILE_LINE  1
+  `endif
   /*************************************************************************************/
   
   /**************************** PIPE Agent Settings ************************************/
-  `define PIPE_MAX_WIDTH                32
-  `define NUM_OF_LANES                  16
+  `ifndef PIPE_MAX_WIDTH
+    `define PIPE_MAX_WIDTH                32
+  `endif
+
+  `ifndef NUM_OF_LANES
+    `define NUM_OF_LANES                  16
+  `endif
   /*************************************************************************************/
 
   /**************************** LPIF Agent Settings ************************************/
-  `define LPIF_BUS_WIDTH                512
+  `ifndef LPIF_BUS_WIDTH
+    `define LPIF_BUS_WIDTH                512
+  `endif
   /************************************************************************************/
 
   /****************************** Packet settings ************************************/

@@ -10,6 +10,9 @@ TOP_ROOT_PATH       	= ../top
 
 ################################ Build Configurations ################################
 IS_ENV_UPSTREAM   		= 1
+PIPE_MAX_WIDTH 				= 32
+NUM_OF_LANES 					= 16
+LPIF_BUS_WIDTH 				= 512
 
 ###################################### Includes ######################################
 include ../common.mk
@@ -30,7 +33,8 @@ include ../utility/utility.mk
 
 #################################### Run Configurations #####################################
 TEST								= pcie_test
-SEQ									= reset_vseq,link_up_vseq
+# SEQ									= reset_vseq,link_up_vseq
+SEQ									= dummy_vseq
 
 #################################### Rules #####################################
 build_pipe: 			COMMON_BUILD PIPE_BUILD_PACKAGE PIPE_BUILD_INTERFACES
