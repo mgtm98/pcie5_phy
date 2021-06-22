@@ -12,7 +12,7 @@ class pipe_seq_item extends uvm_sequence_item;
   rand pclk_rate_t pclk_rate;
   rand gen_t gen;
   rand ts_s ts_sent;
-  ts_s tses_sent [];
+  rand ts_s tses_sent [];
   rand int tlp_gen_1_2_no_of_bytes;
 
   bit [5:0] lf_to_be_informed;                    // used to inform the BFM values from the seq
@@ -33,6 +33,10 @@ class pipe_seq_item extends uvm_sequence_item;
     tlp.size() <= TLP_MAX_SIZE;
     tlp.size() == 4*tlp_gen_1_2_no_of_bytes -2;
   };
+
+  constraint tses_sent_c {
+    tses_sent.size() == `NUM_OF_LANES;
+  }
 
 
   extern function new(string name = "pipe_seq_item");

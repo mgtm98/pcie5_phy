@@ -16,13 +16,13 @@ task dummy_vseq::body();
   lpif_dummy_seq lpif_dummy_seq_h = lpif_dummy_seq::type_id::create("lpif_dummy_seq_h");
   pipe_dummy_seq pipe_dummy_seq_h = pipe_dummy_seq::type_id::create("pipe_dummy_seq_h");
 
-  // lpif_enter_recovery_seq_h.start (lpif_sequencer_h,this);
+  // lpif_dummy_seq_h.start (lpif_sequencer_h,this);
 
-  // pipe_enter_recovery_seq_h.start (pipe_sequencer_h,this);
+  pipe_dummy_seq_h.start (pipe_sequencer_h,this);
 
   // fork
-  //   lpif_enter_recovery_seq_h.start (lpif_sequencer_h,this);
-  //   pipe_enter_recovery_seq_h.start (pipe_sequencer_h,this); 
+  //   lpif_dummy_seq_h.start (lpif_sequencer_h,this);
+  //   pipe_dummy_seq_h.start (pipe_sequencer_h,this); 
   // join	
 endtask
 
