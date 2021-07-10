@@ -130,6 +130,11 @@ initial begin
     receive_eieos ();
   end
 end
+initial begin
+  forever begin
+    receive_eieos_gen3 ();
+  end
+end
 
 initial begin 
   forever begin
@@ -256,7 +261,8 @@ end
     end
   end
 
-/******************************* Receiver detection Scenario *******************************/
+
+  /******************************* Receiver detection Scenario *******************************/
   initial begin
     forever begin  
       `uvm_info("pipe_driver_bfm", "Entered receiver detection", UVM_LOW)
@@ -292,8 +298,9 @@ end
     end
   end
 
-/******************************* Receive TSes *******************************/
 
+
+/******************************* Receive TSes *******************************/
 task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts_s ts [];
   ts = new[pipe_num_of_lanes];
@@ -537,9 +544,6 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
       end   
     proxy.notify_tses_received(ts);  
 endtask
-
-
-
 
 task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts_s ts [];
@@ -983,6 +987,86 @@ task automatic receive_eieos ();
 
   proxy.notify_eieos_received();
 endtask
+
+task automatic receive_eieos_gen3 ();
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'hFF))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h00))
+          return; 
+        if((TxData[(i*32+8)+:8]!=8'hFF))
+          return; 
+      end  
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
+
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if(TxData[(i*32+8)+:8]!=8'hFF)
+        return; 
+      if(TxData[(i*32+16)+:8]!=8'h00)
+        return; 
+      if(TxData[(i*32+24)+:8]!=8'hFF)
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
+
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h00)
+          return; 
+        if(TxData[(i*32+8)+:8]!=8'hFF)
+          return; 
+        if(TxData[(i*32+16)+:8]!=8'h00)
+          return; 
+        if(TxData[(i*32+24)+:8]!=8'hFF)
+          return; 
+      end  
+
+    end
+  end
+  else
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
+    for(int sympol_count =1;sympol_count<16;sympol_count++)
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h00)&&(sympol_count%2==0))
+          return; 
+        if((TxData[(i*32+0)+:8]!=8'hFF)&&(sympol_count%2==1))
+          return; 
+      end
+    end
+  end
+  proxy.notify_eieos_received();
+endtask
+/*******************************************EIOS********************************/
 
 
 
