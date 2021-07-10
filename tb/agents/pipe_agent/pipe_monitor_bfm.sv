@@ -744,6 +744,7 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
               endcase
           end
       end
+    end
       else //8 bit pipe paraleel interface 
       begin
         `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
@@ -855,6 +856,10 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
         ts[i].TS_gen=1;
       end      
 endtask
+
+
+
+
   //wait for exit electricle idle
   // initial begin
   //   forever begin
