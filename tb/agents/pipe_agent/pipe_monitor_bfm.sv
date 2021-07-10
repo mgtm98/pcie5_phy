@@ -120,6 +120,15 @@ initial begin
   end
 end
 
+initial begin
+  ts_s tses_received_temp_gen3 [];
+  tses_received_temp_gen3 = new[pipe_num_of_lanes];
+  forever begin
+    receive_tses_gen3(tses_received_temp_gen3);
+    proxy.notify_tses_received(tses_received_temp_gen3);
+  end
+end
+
 initial begin 
   forever begin
     for (int i = 0; i < `NUM_OF_LANES ; i++) begin
@@ -283,24 +292,39 @@ end
 
 /******************************* Receive TSes *******************************/
 
-  task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts = new[pipe_num_of_lanes];
     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
-      if(Width==2'b01) // 16 bit pipe parallel interface
+    if(Width==2'b01) // 16 bit pipe parallel interface
       begin
+         `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE) 
           for (int i=start_lane;i<=end_lane;i++)
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+              // asserting that com char is K
+              assert(TxDataK[4*i+0]==1) else 
+              `uvm_fatal(" COM charecter is K sympol ", "");              
           end
 
-          
+         
+
+          `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
 
           reset_lfsr(monitor_tx_scrambler,current_gen);
+          
 
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'b11110111 )&&(TxDataK[4*i+1]==1))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
           end
+
+
+
+
+
           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -309,6 +333,9 @@ end
                           for(int i=start_lane;i<=end_lane;i++) //lanes numbers
                           begin
                               ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'b11110111 )&&(TxDataK[4*i+0]==1))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;                              
                           end
                           for (int i=start_lane;i<=end_lane;i++)
                           begin
@@ -324,9 +351,23 @@ end
                               else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
                               else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;                              
                           end
                       end
-      
+                  6:begin
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            // if EQ TS then take TXpreset and rx hints
+                              if(TxData[i*32+7]==1'b1) begin
+                              ts[i].rx_preset_hint=TxData[(i*32+0)+:3];   
+                              ts[i].tx_preset=TxData[(i*32+3)+:4]; 
+                              ts[i].equalization_command=1;     
+                              end                     
+
+ 
+                          end
+                    end      
                   10:begin // ts1 or ts2 determine
                           for(int i=start_lane;i<=end_lane;i++)
                           begin
@@ -342,6 +383,9 @@ end
           for (int i=start_lane;i<=end_lane;i++)
           begin
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+              // asserting that com char is K
+              assert(TxDataK[4*i+0]==1) else 
+              `uvm_fatal(" COM charecter is K sympol ", "");              
           end
 
           reset_lfsr(monitor_tx_scrambler,current_gen);
@@ -349,10 +393,17 @@ end
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'b11110111 )&&(TxDataK[4*i+1]==1))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
           end
+
           for(int i=start_lane;i<=end_lane;i++) // lane numbers
           begin 
               ts[i].lane_number=TxData[(i*32+16)+:8];
+              // lane number is pad set use lane number to zero
+              if ((ts[i].lane_number==8'b11110111 )&&(TxDataK[4*i+2]==1))  ts[i].use_lane_number=0;
+              else ts[i].use_lane_number=1;              
           end
           for(int i=start_lane;i<=end_lane;i++)
           begin
@@ -371,6 +422,18 @@ end
                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
                               else ts[i].max_gen_supported=GEN1;	
                           end
+                            for(int i=start_lane;i<=end_lane;i++)
+                            begin
+                              // if EQ TS then take TXpreset and rx hints(sumbol 6)
+                                if(TxData[i*32+16+7]==1'b1) begin
+                                 ts[i].rx_preset_hint=TxData[(i*32+16+0)+:3];   
+                                 ts[i].tx_preset=TxData[(i*32+16+3)+:4];
+                                 ts[i].equalization_command=1;      
+                                end                     
+  
+  
+                            end
+  
                       end
       
                   8:begin // ts1 or ts2 determine
@@ -391,7 +454,9 @@ end
              // `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
               
               wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-
+              // asserting that com char is K
+              assert(TxDataK[4*i+0]==1) else 
+              `uvm_fatal(" COM charecter is K sympol ", "");
               //`uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
           end
 
@@ -409,17 +474,17 @@ end
 
                               ts[i].link_number=TxData[(i*32+0)+:8]; 
                               // link number is pad set use link number to zero
-                              if ((ts[i].link_number==8'b11110111 )&&(TxDataK[0]==1))  ts[i].use_link_number=0;
+                              if ((ts[i].link_number==8'b11110111 )&&(TxDataK[4*i+0]==1))  ts[i].use_link_number=0;
                               else ts[i].use_link_number=1;
 
                           end
-                      end
+                    end
                   2:begin //lanes numbers
                           for(int i=start_lane;i<=end_lane;i++)
                           begin
                               ts[i].lane_number=TxData[(i*32+0)+:8];
                               // lane number is pad set use lane number to zero
-                              if ((ts[i].lane_number==8'b11110111 )&&(TxDataK[0]==1))  ts[i].use_lane_number=0;
+                              if ((ts[i].lane_number==8'b11110111 )&&(TxDataK[4*i+0]==1))  ts[i].use_lane_number=0;
                               else ts[i].use_lane_number=1;
                           end
                       end
@@ -437,6 +502,21 @@ end
                               else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
                               else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;
+                          end
+                      end
+                  6:begin
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            // if EQ TS then take TXpreset and rx hints
+                              if(TxData[i*32+7]==1'b1) begin
+                               ts[i].rx_preset_hint=TxData[(i*32+0)+:3];   
+                               ts[i].tx_preset=TxData[(i*32+3)+:4];   
+                               ts[i].equalization_command=1;   
+                              end                     
+
+
                           end
                       end
                   10:begin // ts1 or ts2 determine
@@ -448,9 +528,333 @@ end
                       end
               endcase
           end
-      end    
-  endtask
+      end 
+      for(int i=start_lane;i<=end_lane;i++)
+      begin
+        ts[i].TS_gen=0;
+      end     
+endtask
+
+
+
+
+task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+  ts = new[pipe_num_of_lanes];
+    `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
+      if(Width==2'b01) // 16 bit pipe parallel interface
+      begin
+        `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+
+        //wait to see start of OS block
+        for (int i = start_lane; i <= end_lane;i++)
+          begin
   
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+
+          end
+
+
+          for (int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'hF7))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
+          end
+
+
+
+
+
+          for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  2:begin 
+                          for(int i=start_lane;i<=end_lane;i++) //lanes numbers
+                          begin
+                              ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;                              
+                          end
+                          for (int i=start_lane;i<=end_lane;i++)
+                          begin
+                          ts[i].n_fts=TxData[(i*32+8)+:8]; // number of fast training sequnces
+                          end
+                      end
+      
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;                              
+                          end
+                      end
+                  6:begin
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            // if EQ TS then take TXpreset and rx hints
+    
+                            ts[i].ec=TxData[(i*32+0)+:2];   
+                            ts[i].tx_preset=TxData[(i*32+3)+:4];
+                            ts[i].use_preset=TxData[(i*32+7)+:1];                 
+
+                          end
+
+                          for(int i=start_lane;i<=end_lane;i++)
+                          // FS ,C1
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+8)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+8)+:6];   
+                            end
+                  
+                          end                              
+
+                    end      
+                  8:begin
+                          // LF ,C0
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                            ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                            ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
+                  
+                          end   
+                          // c-1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            ts[i].post_cursor=TxData[(i*32+8)+:6];
+                            ts[i].rcv=TxData[(i*32+8+6)+:1];    
+                  
+                          end                               
+
+                       end                        
+                    
+                  
+                  10:begin // ts1 or ts2 determine
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                          end
+                      end
+              endcase
+          end
+      end
+      else if(Width==2'b10) // 32 pipe parallel interface  
+      begin
+          `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+
+          //wait to see start of OS block
+          for (int i = start_lane; i <= end_lane;i++)
+            begin
+    
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+
+            end
+
+          for (int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
+          end
+
+          for(int i=start_lane;i<=end_lane;i++) // lane numbers
+          begin 
+              ts[i].lane_number=TxData[(i*32+16)+:8];
+              // lane number is pad set use lane number to zero
+              if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
+              else ts[i].use_lane_number=1;              
+          end
+          for(int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].n_fts=TxData[(i*32+24)+:8]; // number of fast training sequnces
+          end
+          for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 symbol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                          end
+                          //EC,Txpresets, use_preset (symbol 6)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                                ts[i].ec=TxData[(i*32+16)+:2];                                  
+                                ts[i].tx_preset=TxData[(i*32+16+3)+:4];
+                                ts[i].use_preset=TxData[(i*32+16+7)+:1];     
+                          end
+                          // FS ,C1 (symbol 7)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+24)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+24)+:6];   
+                            end
+                  
+                          end                                     
+  
+                      end
+      
+                  8:begin 
+                          // LF ,C0 (symbol 8)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                              ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
+                          // c-1 (symbol 9)
+                          for(int i=start_lane;i<=end_lane;i++)
+                            begin
+                              ts[i].post_cursor=TxData[(i*32+24)+:6];
+                              ts[i].rcv=TxData[(i*32+24+6)+:1];    
+                            end                                                 
+                          // ts1 or ts2 determine (symbol 10)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+16)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+16)+:8]==8'h45) ts[i].ts_type=TS2;
+                          end
+                      end
+              endcase
+          end
+      end
+      else //8 bit pipe paraleel interface 
+      begin
+        `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+
+        //wait to see start of OS block
+        for (int i = start_lane; i <= end_lane;i++)
+          begin
+  
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+
+          end
+
+          for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  1:begin //link number
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+
+                              ts[i].link_number=TxData[(i*32+0)+:8]; 
+                              // link number is pad set use link number to zero
+                              if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
+                              else ts[i].use_link_number=1;
+
+                          end
+                    end
+                  2:begin //lanes numbers
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'hF7 ))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;
+                          end
+                      end
+                  3:begin // number of fast training sequnces
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              ts[i].n_fts=TxData[(i*32+0)+:8]; 
+                          end
+                      end
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;
+                          end
+                      end
+                  6:begin  //EC,Txpresets, use_preset
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+
+                            ts[i].ec=TxData[(i*32+0)+:2];   
+                            ts[i].tx_preset=TxData[(i*32+3)+:4];
+                            ts[i].use_preset=TxData[(i*32+7)+:1];      
+                
+                          end
+                      end
+                  7:begin// FS ,C1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+0)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+0)+:6];   
+                            end
+                  
+                          end                      
+                        end
+                  8:begin// LF ,C0
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                            ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                            ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
+                  
+                          end                      
+                        end       
+                  9:begin// c-1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            ts[i].post_cursor=TxData[(i*32+0)+:6];
+                            ts[i].rcv=TxData[(i*32+6)+:1];    
+                  
+                          end                      
+                        end                                            
+                  10:begin // ts1 or ts2 determine
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                          end
+                      end
+              endcase
+          end
+      end 
+      for(int i=start_lane;i<=end_lane;i++)
+      begin
+        ts[i].TS_gen=1;
+      end      
+endtask
   //wait for exit electricle idle
   // initial begin
   //   forever begin
