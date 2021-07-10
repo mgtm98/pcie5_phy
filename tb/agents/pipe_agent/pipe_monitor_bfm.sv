@@ -112,20 +112,22 @@ end
 // reciveing TS
 //-----------------------------------------------------------
 initial begin
-  ts_s tses_received_temp [];
-  tses_received_temp = new[pipe_num_of_lanes];
   forever begin
-    receive_tses(tses_received_temp);
-    proxy.notify_tses_received(tses_received_temp);
+    receive_tses();
   end
 end
 
 initial begin
-  ts_s tses_received_temp_gen3 [];
-  tses_received_temp_gen3 = new[pipe_num_of_lanes];
   forever begin
-    receive_tses_gen3(tses_received_temp_gen3);
-    proxy.notify_tses_received(tses_received_temp_gen3);
+    receive_tses_gen3();
+  end
+end
+//-----------------------------------------------------------
+// reciveing EIEOS
+//-----------------------------------------------------------
+initial begin
+  forever begin
+    receive_eieos ();
   end
 end
 
@@ -292,7 +294,8 @@ end
 
 /******************************* Receive TSes *******************************/
 
-task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+  ts_s ts [];
   ts = new[pipe_num_of_lanes];
     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
     if(Width==2'b01) // 16 bit pipe parallel interface
@@ -320,10 +323,6 @@ task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input i
               if ((ts[i].link_number==8'b11110111 )&&(TxDataK[4*i+1]==1))  ts[i].use_link_number=0;
               else ts[i].use_link_number=1;
           end
-
-
-
-
 
           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
           begin
@@ -373,6 +372,7 @@ task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input i
                           begin
                               if(TxData[(i*32+0)+:8]==8'b010_01010) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+0)+:8]==8'b010_00101) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
@@ -441,6 +441,7 @@ task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input i
                           begin
                               if(TxData[(i*32+16)+:8]==8'b010_01010) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+16)+:8]==8'b010_00101) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
@@ -524,6 +525,7 @@ task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input i
                           begin
                               if(TxData[(i*32+0)+:8]==8'b010_01010) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+0)+:8]==8'b010_00101) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
@@ -532,13 +534,15 @@ task automatic receive_tses (output ts_s ts [] ,input int start_lane = 0,input i
       for(int i=start_lane;i<=end_lane;i++)
       begin
         ts[i].TS_gen=0;
-      end     
+      end   
+    proxy.notify_tses_received(ts);  
 endtask
 
 
 
 
-task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+  ts_s ts [];
   ts = new[pipe_num_of_lanes];
     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
       if(Width==2'b01) // 16 bit pipe parallel interface
@@ -546,14 +550,12 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
         `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
         //wait to see start of OS block
-        for (int i = start_lane; i <= end_lane;i++)
+          for (int i = start_lane; i <= end_lane;i++)
           begin
   
               wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
 
           end
-
-
           for (int i=start_lane;i<=end_lane;i++)
           begin
               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
@@ -561,11 +563,6 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
               if ((ts[i].link_number==8'hF7))  ts[i].use_link_number=0;
               else ts[i].use_link_number=1;
           end
-
-
-
-
-
           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -648,6 +645,7 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
                           begin
                               if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
@@ -739,13 +737,14 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
                           begin
                               if(TxData[(i*32+16)+:8]==8'h4A) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+16)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
           end
       end
     end
-      else //8 bit pipe paraleel interface 
+    else //8 bit pipe paraleel interface 
       begin
         `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
@@ -846,6 +845,7 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
                           begin
                               if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
                               else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
                           end
                       end
               endcase
@@ -855,8 +855,134 @@ task automatic receive_tses_gen3 (output ts_s ts [] ,input int start_lane = 0,in
       begin
         ts[i].TS_gen=1;
       end      
+      proxy.notify_tses_received(ts);
 endtask
+/*******************************************EIEOS*****************************************/
+task automatic receive_eieos ();
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      if(sympol_count==14) //symbols 14 and 15 
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b010_01010)||(TxDataK[4*i+1]!=0))
+            return; 
+        end  
+      end
+      else // other symbols
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+        end
+      end
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+      if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+        return; 
+      if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
+      if(sympol_count==14) //symbols 12,13,14 and 15 
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+          if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+            return; 
+          if((TxData[(i*32+24)+:8]!=8'b010_01010)||(TxDataK[4*i+3]!=0))
+            return; 
+        end  
+      end
+      else // other symbols
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+          if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+            return; 
+          if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
+            return; 
+        end
+      end
+    end
+  end
+  else
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end    
+    for(int sympol_count =1;sympol_count<15;sympol_count++) //looping on the 16 sympol of TS
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+          return; 
+      end
+    end
+    @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      if((TxData[(i*32+0)+:8]!=8'b010_01010)||(TxDataK[4*i+0]!=0))
+        return; 
+    end
+  end
 
+  proxy.notify_eieos_received();
+endtask
 
 
 
