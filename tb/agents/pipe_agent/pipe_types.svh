@@ -40,12 +40,9 @@ typedef struct {
   bit [5:0]             pre_cursor;
   bit [5:0]             cursor;
   bit [5:0]             post_cursor;
-  bit                   reject_coeficient;
   bit                   rcv;
-  bit                   use_preset_value;
-
-  // fields for TS2 only
-  bit                   equalization_command;         
+  bit                   equalization_command; 
+  bit                   TS_gen;                           // equals zero in gen1,2 and one in gen3,4,5         
 
 
 
