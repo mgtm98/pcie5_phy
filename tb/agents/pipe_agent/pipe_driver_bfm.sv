@@ -481,6 +481,7 @@ endtask
 
 task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
   int width = get_width();
+
   byte RxData_Q [][$];
   bit RxDataK_Q [][$];
   bit [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
@@ -490,6 +491,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
     RxDataValid[i] <= 1;
     RxValid[i] <= 1;
   end
+
 
 
   `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
@@ -508,6 +510,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   end
 
   reset_lfsr(driver_scrambler, current_gen);
+  `uvm_info("pipe_driver_bfm", $sformatf("%d", width), UVM_NONE)
 
   if(current_gen <=GEN2)
   begin
