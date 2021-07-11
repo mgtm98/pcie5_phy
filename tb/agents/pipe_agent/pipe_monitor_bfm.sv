@@ -558,679 +558,679 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
     proxy.notify_tses_received(ts);  
 endtask
 
-// task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
-//   ts_s ts [];
-//   ts = new[pipe_num_of_lanes];
-//     `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
-//       if(Width==2'b01) // 16 bit pipe parallel interface
-//       begin
-//         `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
+  ts_s ts [];
+  ts = new[pipe_num_of_lanes];
+    `uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
+      if(Width==2'b01) // 16 bit pipe parallel interface
+      begin
+        `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
-//         //wait to see start of OS block
-//           for (int i = start_lane; i <= end_lane;i++)
-//           begin
+        //wait to see start of OS block
+          for (int i = start_lane; i <= end_lane;i++)
+          begin
   
-//               wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
 
-//           end
-//           for (int i=start_lane;i<=end_lane;i++)
-//           begin
-//               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
-//               // link number is pad set use link number to zero
-//               if ((ts[i].link_number==8'hF7))  ts[i].use_link_number=0;
-//               else ts[i].use_link_number=1;
-//           end
-//           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
-//           begin
-//               @(posedge PCLK);
-//               case(sympol_count)
-//                   2:begin 
-//                           for(int i=start_lane;i<=end_lane;i++) //lanes numbers
-//                           begin
-//                               ts[i].lane_number=TxData[(i*32+0)+:8];
-//                               // lane number is pad set use lane number to zero
-//                               if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
-//                               else ts[i].use_lane_number=1;                              
-//                           end
-//                           for (int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                           ts[i].n_fts=TxData[(i*32+8)+:8]; // number of fast training sequnces
-//                           end
-//                       end
+          end
+          for (int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'hF7))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
+          end
+          for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  2:begin 
+                          for(int i=start_lane;i<=end_lane;i++) //lanes numbers
+                          begin
+                              ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;                              
+                          end
+                          for (int i=start_lane;i<=end_lane;i++)
+                          begin
+                          ts[i].n_fts=TxData[(i*32+8)+:8]; // number of fast training sequnces
+                          end
+                      end
       
-//                   4:begin  //supported sppeds
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
-//                               else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
-//                               else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
-//                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
-//                               else ts[i].max_gen_supported=GEN1;	
-//                               if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
-//                               if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;                              
-//                           end
-//                       end
-//                   6:begin
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             // if EQ TS then take TXpreset and rx hints
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;                              
+                          end
+                      end
+                  6:begin
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            // if EQ TS then take TXpreset and rx hints
     
-//                             ts[i].ec=TxData[(i*32+0)+:2];   
-//                             ts[i].tx_preset=TxData[(i*32+3)+:4];
-//                             ts[i].use_preset=TxData[(i*32+7)+:1];                 
+                            ts[i].ec=TxData[(i*32+0)+:2];   
+                            ts[i].tx_preset=TxData[(i*32+3)+:4];
+                            ts[i].use_preset=TxData[(i*32+7)+:1];                 
 
-//                           end
+                          end
 
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           // FS ,C1
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                               ts[i].fs_value=TxData[(i*32+8)+:6];                               
-//                             end
-//                             else begin
-//                               ts[i].pre_cursor=TxData[(i*32+8)+:6];   
-//                             end
+                          for(int i=start_lane;i<=end_lane;i++)
+                          // FS ,C1
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+8)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+8)+:6];   
+                            end
                   
-//                           end                              
+                          end                              
 
-//                     end      
-//                   8:begin
-//                           // LF ,C0
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                             ts[i].lf_value=TxData[(i*32+0)+:6]; 
-//                             end
-//                             else begin  
-//                             ts[i].cursor=TxData[(i*32+0)+:6];   
-//                             end
+                    end      
+                  8:begin
+                          // LF ,C0
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                            ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                            ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
                   
-//                           end   
-//                           // c-1
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             ts[i].post_cursor=TxData[(i*32+8)+:6];
-//                             ts[i].rcv=TxData[(i*32+8+6)+:1];    
+                          end   
+                          // c-1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            ts[i].post_cursor=TxData[(i*32+8)+:6];
+                            ts[i].rcv=TxData[(i*32+8+6)+:1];    
                   
-//                           end                               
+                          end                               
 
-//                        end                        
+                       end                        
                     
                   
-//                   10:begin // ts1 or ts2 determine
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
-//                               else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
-//                               else return;
-//                           end
-//                       end
-//               endcase
-//           end
-//       end
-//       else if(Width==2'b10) // 32 pipe parallel interface  
-//       begin
-//           `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+                  10:begin // ts1 or ts2 determine
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
+                          end
+                      end
+              endcase
+          end
+      end
+      else if(Width==2'b10) // 32 pipe parallel interface  
+      begin
+          `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
-//           //wait to see start of OS block
-//           for (int i = start_lane; i <= end_lane;i++)
-//             begin
+          //wait to see start of OS block
+          for (int i = start_lane; i <= end_lane;i++)
+            begin
     
-//               wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
 
-//             end
+            end
 
-//           for (int i=start_lane;i<=end_lane;i++)
-//           begin
-//               ts[i].link_number=TxData[(i*32+8)+:8]; // link number
-//               // link number is pad set use link number to zero
-//               if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
-//               else ts[i].use_link_number=1;
-//           end
+          for (int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].link_number=TxData[(i*32+8)+:8]; // link number
+              // link number is pad set use link number to zero
+              if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
+              else ts[i].use_link_number=1;
+          end
 
-//           for(int i=start_lane;i<=end_lane;i++) // lane numbers
-//           begin 
-//               ts[i].lane_number=TxData[(i*32+16)+:8];
-//               // lane number is pad set use lane number to zero
-//               if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
-//               else ts[i].use_lane_number=1;              
-//           end
-//           for(int i=start_lane;i<=end_lane;i++)
-//           begin
-//               ts[i].n_fts=TxData[(i*32+24)+:8]; // number of fast training sequnces
-//           end
-//           for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 symbol of TS
-//           begin
-//               @(posedge PCLK);
-//               case(sympol_count)
-//                   4:begin  //supported sppeds
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
-//                               else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
-//                               else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
-//                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
-//                               else ts[i].max_gen_supported=GEN1;	
-//                           end
-//                           //EC,Txpresets, use_preset (symbol 6)
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                                 ts[i].ec=TxData[(i*32+16)+:2];                                  
-//                                 ts[i].tx_preset=TxData[(i*32+16+3)+:4];
-//                                 ts[i].use_preset=TxData[(i*32+16+7)+:1];     
-//                           end
-//                           // FS ,C1 (symbol 7)
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                               ts[i].fs_value=TxData[(i*32+24)+:6];                               
-//                             end
-//                             else begin
-//                               ts[i].pre_cursor=TxData[(i*32+24)+:6];   
-//                             end
+          for(int i=start_lane;i<=end_lane;i++) // lane numbers
+          begin 
+              ts[i].lane_number=TxData[(i*32+16)+:8];
+              // lane number is pad set use lane number to zero
+              if ((ts[i].lane_number==8'hF7))  ts[i].use_lane_number=0;
+              else ts[i].use_lane_number=1;              
+          end
+          for(int i=start_lane;i<=end_lane;i++)
+          begin
+              ts[i].n_fts=TxData[(i*32+24)+:8]; // number of fast training sequnces
+          end
+          for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 symbol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                          end
+                          //EC,Txpresets, use_preset (symbol 6)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                                ts[i].ec=TxData[(i*32+16)+:2];                                  
+                                ts[i].tx_preset=TxData[(i*32+16+3)+:4];
+                                ts[i].use_preset=TxData[(i*32+16+7)+:1];     
+                          end
+                          // FS ,C1 (symbol 7)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+24)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+24)+:6];   
+                            end
                   
-//                           end                                     
+                          end                                     
   
-//                       end
+                      end
       
-//                   8:begin 
-//                           // LF ,C0 (symbol 8)
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                               ts[i].lf_value=TxData[(i*32+0)+:6]; 
-//                             end
-//                             else begin  
-//                               ts[i].cursor=TxData[(i*32+0)+:6];   
-//                             end
-//                           end
-//                           // c-1 (symbol 9)
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                             begin
-//                               ts[i].post_cursor=TxData[(i*32+24)+:6];
-//                               ts[i].rcv=TxData[(i*32+24+6)+:1];    
-//                             end                                                 
-//                           // ts1 or ts2 determine (symbol 10)
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[(i*32+16)+:8]==8'h4A) ts[i].ts_type=TS1;
-//                               else if(TxData[(i*32+16)+:8]==8'h45) ts[i].ts_type=TS2;
-//                               else return;
-//                           end
-//                       end
-//               endcase
-//           end
-//       end
-//     end
-//     else //8 bit pipe paraleel interface 
-//       begin
-//         `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+                  8:begin 
+                          // LF ,C0 (symbol 8)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                              ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
+                          end
+                          // c-1 (symbol 9)
+                          for(int i=start_lane;i<=end_lane;i++)
+                            begin
+                              ts[i].post_cursor=TxData[(i*32+24)+:6];
+                              ts[i].rcv=TxData[(i*32+24+6)+:1];    
+                            end                                                 
+                          // ts1 or ts2 determine (symbol 10)
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+16)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+16)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
+                          end
+                      end
+              endcase
+          end
+      end
+    
+    else //8 bit pipe paraleel interface 
+      begin
+        `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
-//         //wait to see start of OS block
-//         for (int i = start_lane; i <= end_lane;i++)
-//           begin
+        //wait to see start of OS block
+        for (int i = start_lane; i <= end_lane;i++)
+          begin
   
-//               wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
+              wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
 
-//           end
+          end
 
-//           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
-//           begin
-//               @(posedge PCLK);
-//               case(sympol_count)
-//                   1:begin //link number
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
+          for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
+          begin
+              @(posedge PCLK);
+              case(sympol_count)
+                  1:begin //link number
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
 
-//                               ts[i].link_number=TxData[(i*32+0)+:8]; 
-//                               // link number is pad set use link number to zero
-//                               if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
-//                               else ts[i].use_link_number=1;
+                              ts[i].link_number=TxData[(i*32+0)+:8]; 
+                              // link number is pad set use link number to zero
+                              if ((ts[i].link_number==8'hF7 ))  ts[i].use_link_number=0;
+                              else ts[i].use_link_number=1;
 
-//                           end
-//                     end
-//                   2:begin //lanes numbers
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               ts[i].lane_number=TxData[(i*32+0)+:8];
-//                               // lane number is pad set use lane number to zero
-//                               if ((ts[i].lane_number==8'hF7 ))  ts[i].use_lane_number=0;
-//                               else ts[i].use_lane_number=1;
-//                           end
-//                       end
-//                   3:begin // number of fast training sequnces
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               ts[i].n_fts=TxData[(i*32+0)+:8]; 
-//                           end
-//                       end
-//                   4:begin  //supported sppeds
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
-//                               else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
-//                               else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
-//                               else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
-//                               else ts[i].max_gen_supported=GEN1;	
-//                               if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
-//                               if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;
-//                           end
-//                       end
-//                   6:begin  //EC,Txpresets, use_preset
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
+                          end
+                    end
+                  2:begin //lanes numbers
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              ts[i].lane_number=TxData[(i*32+0)+:8];
+                              // lane number is pad set use lane number to zero
+                              if ((ts[i].lane_number==8'hF7 ))  ts[i].use_lane_number=0;
+                              else ts[i].use_lane_number=1;
+                          end
+                      end
+                  3:begin // number of fast training sequnces
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              ts[i].n_fts=TxData[(i*32+0)+:8]; 
+                          end
+                      end
+                  4:begin  //supported sppeds
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[i*32+5]==1'b1) ts[i].max_gen_supported=GEN5;
+                              else if(TxData[i*32+4]==1'b1) ts[i].max_gen_supported=GEN4;
+                              else if(TxData[i*32+3]==1'b1) ts[i].max_gen_supported=GEN3;
+                              else if(TxData[i*32+2]==1'b1) ts[i].max_gen_supported=GEN2;
+                              else ts[i].max_gen_supported=GEN1;	
+                              if(TxData[i*32+6]==1'b1) ts[i].auto_speed_change=1;
+                              if(TxData[i*32+7]==1'b1) ts[i].speed_change=1;
+                          end
+                      end
+                  6:begin  //EC,Txpresets, use_preset
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
 
-//                             ts[i].ec=TxData[(i*32+0)+:2];   
-//                             ts[i].tx_preset=TxData[(i*32+3)+:4];
-//                             ts[i].use_preset=TxData[(i*32+7)+:1];      
+                            ts[i].ec=TxData[(i*32+0)+:2];   
+                            ts[i].tx_preset=TxData[(i*32+3)+:4];
+                            ts[i].use_preset=TxData[(i*32+7)+:1];      
                 
-//                           end
-//                       end
-//                   7:begin// FS ,C1
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                               ts[i].fs_value=TxData[(i*32+0)+:6];                               
-//                             end
-//                             else begin
-//                               ts[i].pre_cursor=TxData[(i*32+0)+:6];   
-//                             end
+                          end
+                      end
+                  7:begin// FS ,C1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                              ts[i].fs_value=TxData[(i*32+0)+:6];                               
+                            end
+                            else begin
+                              ts[i].pre_cursor=TxData[(i*32+0)+:6];   
+                            end
                   
-//                           end                      
-//                         end
-//                   8:begin// LF ,C0
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             if(ts[i].ec==2'b01)begin
-//                             ts[i].lf_value=TxData[(i*32+0)+:6]; 
-//                             end
-//                             else begin  
-//                             ts[i].cursor=TxData[(i*32+0)+:6];   
-//                             end
+                          end                      
+                        end
+                  8:begin// LF ,C0
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            if(ts[i].ec==2'b01)begin
+                            ts[i].lf_value=TxData[(i*32+0)+:6]; 
+                            end
+                            else begin  
+                            ts[i].cursor=TxData[(i*32+0)+:6];   
+                            end
                   
-//                           end                      
-//                         end       
-//                   9:begin// c-1
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                             ts[i].post_cursor=TxData[(i*32+0)+:6];
-//                             ts[i].rcv=TxData[(i*32+6)+:1];    
+                          end                      
+                        end       
+                  9:begin// c-1
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                            ts[i].post_cursor=TxData[(i*32+0)+:6];
+                            ts[i].rcv=TxData[(i*32+6)+:1];    
                   
-//                           end                      
-//                         end                                            
-//                   10:begin // ts1 or ts2 determine
-//                           for(int i=start_lane;i<=end_lane;i++)
-//                           begin
-//                               if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
-//                               else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
-//                               else return;
-//                           end
-//                       end
-//               endcase
-//           end
-//       end 
-//       for(int i=start_lane;i<=end_lane;i++)
-//       begin
-//         ts[i].TS_gen=1;
-//       end      
-//       proxy.notify_tses_received(ts);
-// endtask
+                          end                      
+                        end                                            
+                  10:begin // ts1 or ts2 determine
+                          for(int i=start_lane;i<=end_lane;i++)
+                          begin
+                              if(TxData[(i*32+0)+:8]==8'h4A) ts[i].ts_type=TS1;
+                              else if(TxData[(i*32+0)+:8]==8'h45) ts[i].ts_type=TS2;
+                              else return;
+                          end
+                      end
+              endcase
+          end
+      end 
+      for(int i=start_lane;i<=end_lane;i++)
+      begin
+        ts[i].TS_gen=1;
+      end      
+      proxy.notify_tses_received(ts);
+endtask
 /*******************************************EIEOS*****************************************/
-// task automatic receive_eieos ();
-//   if(Width==2'b01) // 16 bit pipe parallel interface
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end  
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
-//         return; 
-//     end  
-//     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
-//     begin
-//       @(posedge PCLK);
-//       if(sympol_count==14) //symbols 14 and 15 
-//       begin
-//         for (int i = start_lane; i <= end_lane;i++)
-//         begin
-//           if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
-//             return; 
-//           if((TxData[(i*32+8)+:8]!=8'b010_01010)||(TxDataK[4*i+1]!=0))
-//             return; 
-//         end  
-//       end
-//       else // other symbols
-//       begin
-//         for (int i = start_lane; i <= end_lane;i++)
-//         begin
-//           if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
-//             return; 
-//           if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
-//             return; 
-//         end
-//       end
-//     end
-//   end
-//   else if(Width==2'b10) // 32 bit pipe parallel interface
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end  
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
-//         return; 
-//       if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
-//         return; 
-//       if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
-//         return; 
-//     end  
-//     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
-//     begin
-//       @(posedge PCLK);
-//       if(sympol_count==14) //symbols 12,13,14 and 15 
-//       begin
-//         for (int i = start_lane; i <= end_lane;i++)
-//         begin
-//           if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
-//             return; 
-//           if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
-//             return; 
-//           if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
-//             return; 
-//           if((TxData[(i*32+24)+:8]!=8'b010_01010)||(TxDataK[4*i+3]!=0))
-//             return; 
-//         end  
-//       end
-//       else // other symbols
-//       begin
-//         for (int i = start_lane; i <= end_lane;i++)
-//         begin
-//           if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
-//             return; 
-//           if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
-//             return; 
-//           if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
-//             return; 
-//           if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
-//             return; 
-//         end
-//       end
-//     end
-//   end
-//   else
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end    
-//     for(int sympol_count =1;sympol_count<15;sympol_count++) //looping on the 16 sympol of TS
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
-//           return; 
-//       end
-//     end
-//     @(posedge PCLK);
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       if((TxData[(i*32+0)+:8]!=8'b010_01010)||(TxDataK[4*i+0]!=0))
-//         return; 
-//     end
-//   end
+task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      if(sympol_count==14) //symbols 14 and 15 
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b010_01010)||(TxDataK[4*i+1]!=0))
+            return; 
+        end  
+      end
+      else // other symbols
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+        end
+      end
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+      if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+        return; 
+      if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
+      if(sympol_count==14) //symbols 12,13,14 and 15 
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+          if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+            return; 
+          if((TxData[(i*32+24)+:8]!=8'b010_01010)||(TxDataK[4*i+3]!=0))
+            return; 
+        end  
+      end
+      else // other symbols
+      begin
+        for (int i = start_lane; i <= end_lane;i++)
+        begin
+          if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+            return; 
+          if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
+            return; 
+          if((TxData[(i*32+16)+:8]!=8'b111_11100)||(TxDataK[4*i+2]!=1))
+            return; 
+          if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
+            return; 
+        end
+      end
+    end
+  end
+  else
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end    
+    for(int sympol_count =1;sympol_count<15;sympol_count++) //looping on the 16 sympol of TS
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'b111_11100)||(TxDataK[4*i+0]!=1))
+          return; 
+      end
+    end
+    @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      if((TxData[(i*32+0)+:8]!=8'b010_01010)||(TxDataK[4*i+0]!=0))
+        return; 
+    end
+  end
 
-//   proxy.notify_eieos_received();
-// endtask
+  proxy.notify_eieos_received();
+endtask
 
-// task automatic receive_eieos_gen3 ();
-//   if(Width==2'b01) // 16 bit pipe parallel interface
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
-//     end
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'hFF))
-//         return; 
-//     end  
-//     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if((TxData[(i*32+0)+:8]!=8'h00))
-//           return; 
-//         if((TxData[(i*32+8)+:8]!=8'hFF))
-//           return; 
-//       end  
-//     end
-//   end
-//   else if(Width==2'b10) // 32 bit pipe parallel interface
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
-//     end
+task automatic receive_eieos_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'hFF))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h00))
+          return; 
+        if((TxData[(i*32+8)+:8]!=8'hFF))
+          return; 
+      end  
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
 
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
-//     begin
-//       if(TxData[(i*32+8)+:8]!=8'hFF)
-//         return; 
-//       if(TxData[(i*32+16)+:8]!=8'h00)
-//         return; 
-//       if(TxData[(i*32+24)+:8]!=8'hFF)
-//         return; 
-//     end  
-//     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
-//     begin
-//       @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if(TxData[(i*32+8)+:8]!=8'hFF)
+        return; 
+      if(TxData[(i*32+16)+:8]!=8'h00)
+        return; 
+      if(TxData[(i*32+24)+:8]!=8'hFF)
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
 
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if(TxData[(i*32+0)+:8]!=8'h00)
-//           return; 
-//         if(TxData[(i*32+8)+:8]!=8'hFF)
-//           return; 
-//         if(TxData[(i*32+16)+:8]!=8'h00)
-//           return; 
-//         if(TxData[(i*32+24)+:8]!=8'hFF)
-//           return; 
-//       end  
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h00)
+          return; 
+        if(TxData[(i*32+8)+:8]!=8'hFF)
+          return; 
+        if(TxData[(i*32+16)+:8]!=8'h00)
+          return; 
+        if(TxData[(i*32+24)+:8]!=8'hFF)
+          return; 
+      end  
 
-//     end
-//   end
-//   else
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
-//     end
-//     for(int sympol_count =1;sympol_count<16;sympol_count++)
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if((TxData[(i*32+0)+:8]!=8'h00)&&(sympol_count%2==0))
-//           return; 
-//         if((TxData[(i*32+0)+:8]!=8'hFF)&&(sympol_count%2==1))
-//           return; 
-//       end
-//     end
-//   end
-//   proxy.notify_eieos_received();
-// endtask
+    end
+  end
+  else
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
+    end
+    for(int sympol_count =1;sympol_count<16;sympol_count++)
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h00)&&(sympol_count%2==0))
+          return; 
+        if((TxData[(i*32+0)+:8]!=8'hFF)&&(sympol_count%2==1))
+          return; 
+      end
+    end
+  end
+  proxy.notify_eieos_received();
+endtask
 /*******************************************EIOS********************************/
-// task automatic receive_eios();
-//   if(Width==2'b01) // 16 bit pipe parallel interface
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end  
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 idl sumbol
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'b011_11100||(TxDataK[4*i+1]!=1))
-//         return; 
-//     end  
-//     @(posedge PCLK);
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 2,3 idl symbols
-//     begin
-//       if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1))
-//         return;       
-//       if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
-//         return; 
-//     end 
-//   end
+task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 idl sumbol
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+    end  
+    @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 2,3 idl symbols
+    begin
+      if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1))
+        return;       
+      if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+    end 
+  end
 
-//   else if(Width==2'b10) // 32 bit pipe parallel interface
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end  
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3 idl symbols
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
-//         return; 
-//       if((TxData[(i*32+16)+:8]!=8'b011_11100)||(TxDataK[4*i+2]!=1))
-//         return; 
-//       if((TxData[(i*32+24)+:8]!=8'b011_11100)||(TxDataK[4*i+3]!=1))
-//         return; 
-//     end  
-//   end
-//   else//8 bit width
-//   begin
-//     `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       //com   
-//       wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-//       // asserting that com char is K
-//       assert(TxDataK[4*i+0]==1) else 
-//         `uvm_fatal(" COM charecter is K sympol ", ""); 
-//     end    
-//     for(int sympol_count =1;sympol_count<4;sympol_count++) 
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1)) //idle symbols
-//           return; 
-//       end
-//     end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3 idl symbols
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+      if((TxData[(i*32+16)+:8]!=8'b011_11100)||(TxDataK[4*i+2]!=1))
+        return; 
+      if((TxData[(i*32+24)+:8]!=8'b011_11100)||(TxDataK[4*i+3]!=1))
+        return; 
+    end  
+  end
+  else//8 bit width
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end    
+    for(int sympol_count =1;sympol_count<4;sympol_count++) 
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1)) //idle symbols
+          return; 
+      end
+    end
 
-//   end
+  end
 
-//   proxy.notify_eios_received();
-// endtask
+  proxy.notify_eios_received();
+endtask
 
-// task automatic receive_eieos_gen3 ();
-//   if(Width==2'b01) // 16 bit pipe parallel interface
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
-//     end
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1
-//     begin
-//       if((TxData[(i*32+8)+:8]!=8'h66))
-//         return; 
-//     end  
-//     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if((TxData[(i*32+0)+:8]!=8'h66))
-//           return; 
-//         if((TxData[(i*32+8)+:8]!=8'h66))
-//           return; 
-//       end  
-//     end
-//   end
-//   else if(Width==2'b10) // 32 bit pipe parallel interface
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
-//     end
+task automatic receive_eios_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'h66))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h66))
+          return; 
+        if((TxData[(i*32+8)+:8]!=8'h66))
+          return; 
+      end  
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
 
-//     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
-//     begin
-//       if(TxData[(i*32+8)+:8]!=8'h66)
-//         return; 
-//       if(TxData[(i*32+16)+:8]!=8'h66)
-//         return; 
-//       if(TxData[(i*32+24)+:8]!=8'h66)
-//         return; 
-//     end  
-//     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
-//     begin
-//       @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if(TxData[(i*32+8)+:8]!=8'h66)
+        return; 
+      if(TxData[(i*32+16)+:8]!=8'h66)
+        return; 
+      if(TxData[(i*32+24)+:8]!=8'h66)
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
 
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if(TxData[(i*32+0)+:8]!=8'h66)
-//           return; 
-//         if(TxData[(i*32+8)+:8]!=8'h66)
-//           return; 
-//         if(TxData[(i*32+16)+:8]!=8'h66)
-//           return; 
-//         if(TxData[(i*32+24)+:8]!=8'h66)
-//           return; 
-//       end  
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+8)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+16)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+24)+:8]!=8'h66)
+          return; 
+      end  
 
-//     end
-//   end
-//   else//8 bit width
-//   begin
-//     for (int i = start_lane; i <= end_lane;i++)
-//     begin
-//       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
-//     end
-//     for(int sympol_count =1;sympol_count<16;sympol_count++)
-//     begin
-//       @(posedge PCLK);
-//       for (int i = start_lane; i <= end_lane;i++)
-//       begin
-//         if(TxData[(i*32+0)+:8]!=8'h66)
-//           return; 
-//       end
-//     end
-//   end
-//   proxy.notify_eios_received();
-// endtask
+    end
+  end
+  else//8 bit width
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
+    for(int sympol_count =1;sympol_count<16;sympol_count++)
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h66)
+          return; 
+      end
+    end
+  end
+  proxy.notify_eios_received();
+endtask
 /*********************************************************************************************************************************/
   //wait for exit electricle idle
   // initial begin
