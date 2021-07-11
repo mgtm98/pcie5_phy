@@ -13,4 +13,5 @@ endfunction
 
 task lpif_dummy_seq::body();
   lpif_seq_item lpif_seq_item_h = lpif_seq_item::type_id::create("lpif_seq_item_h");
+  `uvm_info(get_name(), "lpif_seq_item started", UVM_NONE)
 endtask

@@ -13,6 +13,7 @@ endfunction
 
 task pipe_dummy_seq::body();
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
+  `uvm_info(get_name(), "pipe_dummy_seq started", UVM_NONE)
   start_item(pipe_seq_item_h);
   if(!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TSES;}) begin
     `uvm_fatal(get_name(), "Can't randomize pipe_seq_item")
