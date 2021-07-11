@@ -135,6 +135,19 @@ initial begin
     receive_eieos_gen3 ();
   end
 end
+//-----------------------------------------------------------
+// reciveing EIOS
+//-----------------------------------------------------------
+initial begin
+  forever begin
+    receive_eios ();
+  end
+end
+initial begin
+  forever begin
+    receive_eios_gen3 ();
+  end
+end
 
 initial begin 
   forever begin
@@ -1067,9 +1080,157 @@ task automatic receive_eieos_gen3 ();
   proxy.notify_eieos_received();
 endtask
 /*******************************************EIOS********************************/
+task automatic receive_eios();
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 idl sumbol
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b011_11100||(TxDataK[4*i+1]!=1))
+        return; 
+    end  
+    @(posedge PCLK);
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 2,3 idl symbols
+    begin
+      if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1))
+        return;       
+      if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+    end 
+  end
 
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end  
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3 idl symbols
+    begin
+      if((TxData[(i*32+8)+:8]!=8'b011_11100)||(TxDataK[4*i+1]!=1))
+        return; 
+      if((TxData[(i*32+16)+:8]!=8'b011_11100)||(TxDataK[4*i+2]!=1))
+        return; 
+      if((TxData[(i*32+24)+:8]!=8'b011_11100)||(TxDataK[4*i+3]!=1))
+        return; 
+    end  
+  end
+  else//8 bit width
+  begin
+    `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      //com   
+      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
+      // asserting that com char is K
+      assert(TxDataK[4*i+0]==1) else 
+        `uvm_fatal(" COM charecter is K sympol ", ""); 
+    end    
+    for(int sympol_count =1;sympol_count<4;sympol_count++) 
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1)) //idle symbols
+          return; 
+      end
+    end
 
+  end
 
+  proxy.notify_eios_received();
+endtask
+
+task automatic receive_eieos_gen3 ();
+  if(Width==2'b01) // 16 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1
+    begin
+      if((TxData[(i*32+8)+:8]!=8'h66))
+        return; 
+    end  
+    for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if((TxData[(i*32+0)+:8]!=8'h66))
+          return; 
+        if((TxData[(i*32+8)+:8]!=8'h66))
+          return; 
+      end  
+    end
+  end
+  else if(Width==2'b10) // 32 bit pipe parallel interface
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
+
+    for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
+    begin
+      if(TxData[(i*32+8)+:8]!=8'h66)
+        return; 
+      if(TxData[(i*32+16)+:8]!=8'h66)
+        return; 
+      if(TxData[(i*32+24)+:8]!=8'h66)
+        return; 
+    end  
+    for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
+    begin
+      @(posedge PCLK);
+
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+8)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+16)+:8]!=8'h66)
+          return; 
+        if(TxData[(i*32+24)+:8]!=8'h66)
+          return; 
+      end  
+
+    end
+  end
+  else//8 bit width
+  begin
+    for (int i = start_lane; i <= end_lane;i++)
+    begin
+      wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
+    end
+    for(int sympol_count =1;sympol_count<16;sympol_count++)
+    begin
+      @(posedge PCLK);
+      for (int i = start_lane; i <= end_lane;i++)
+      begin
+        if(TxData[(i*32+0)+:8]!=8'h66)
+          return; 
+      end
+    end
+  end
+  proxy.notify_eios_received();
+endtask
+/*********************************************************************************************************************************/
   //wait for exit electricle idle
   // initial begin
   //   forever begin

@@ -15,6 +15,7 @@ class pipe_agent_config extends uvm_object;
   // Events
   event detected_tses_e;
   event detected_eieos_e;
+  event detected_eios_e;
   event reset_detected_e;
   event receiver_detected_e;
   event link_up_finished_e;

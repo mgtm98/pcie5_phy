@@ -32,6 +32,7 @@ class pipe_monitor extends uvm_monitor;
   extern task          detect_link_up();
   extern function void notify_tses_received(ts_s tses []);
   extern function void notify_eieos_received();
+  extern function void notify_eios_received();
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -110,6 +111,10 @@ endfunction
 function void pipe_monitor::notify_eieos_received();
   -> pipe_agent_config_h.detected_eieos_e;
 endfunction
+function void pipe_monitor::notify_eios_received();
+  -> pipe_agent_config_h.detected_eios_e;
+endfunction
+
 
 // function void pipe_monitor::notify_link_up_sent();
 //   // Creating the sequnce item
