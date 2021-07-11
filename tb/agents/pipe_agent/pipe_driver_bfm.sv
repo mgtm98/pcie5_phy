@@ -458,8 +458,6 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
   if(current_gen > GEN2)
   begin
     
-
-
     while(RxData_Q.size())
     begin
       @(posedge PCLK);
@@ -487,6 +485,13 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   bit RxDataK_Q [][$];
   bit [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
   bit [pipe_max_width/8 -1:0] Character [];
+
+  for(int i = start_lane; i < end_lane; i++) begin
+    RxDataValid[i] <= 1;
+    RxValid[i] <= 1;
+  end
+
+
   `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
   RxData_Q = new[ts.size()];
   `uvm_info("pipe_driver_bfm", "print haha 2", UVM_NONE)
@@ -498,14 +503,12 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   `uvm_info("pipe_driver_bfm", "print haha 5", UVM_NONE)
   foreach(ts[i])
   begin
-    `uvm_info("pipe_driver_bfm", "print haha 6", UVM_NONE)
     ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
+    
   end
-  `uvm_info("pipe_driver_bfm", "print haha 7", UVM_NONE)
 
   reset_lfsr(driver_scrambler, current_gen);
 
-  `uvm_info("pipe_driver_bfm", "print haha 8", UVM_NONE)
   if(current_gen <=GEN2)
   begin
     `uvm_info("pipe_driver_bfm", "print haha 9", UVM_NONE)
@@ -517,10 +520,11 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
       for(int i = start_lane;i<end_lane;i++)
       begin
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-        for(int j=0;j<pipe_max_width/8;j++)
+        for(int j=0;j<width/8;j++)
         begin
           Data[i][j*8 +:8] = RxData_Q[i].pop_front();
           Character[i][j] = RxDataK_Q[i].pop_front();
+          `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
         end
         `uvm_info("pipe_driver_bfm", "print haha 11", UVM_NONE)
 

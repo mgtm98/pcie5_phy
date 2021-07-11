@@ -17,5 +17,15 @@ task pipe_dummy_seq::body();
   if(!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TSES;}) begin
     `uvm_fatal(get_name(), "Can't randomize pipe_seq_item")
   end
+  for (int i = 0; i < `NUM_OF_LANES; i++) begin
+    pipe_seq_item_h.tses_sent[i].n_fts            = 0;
+    pipe_seq_item_h.tses_sent[i].lane_number      = i;
+    pipe_seq_item_h.tses_sent[i].link_number      = 8;
+    pipe_seq_item_h.tses_sent[i].use_n_fts        = 0;
+    pipe_seq_item_h.tses_sent[i].use_link_number  = 0;
+    pipe_seq_item_h.tses_sent[i].use_lane_number  = 0;
+    pipe_seq_item_h.tses_sent[i].max_gen_supported = GEN1;
+    pipe_seq_item_h.tses_sent[i].ts_type          = TS1;
+  end
   finish_item(pipe_seq_item_h);
 endtask
