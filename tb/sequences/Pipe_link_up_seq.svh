@@ -106,10 +106,12 @@ task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   `uvm_info("pipe_link_up_seq", "print 1", UVM_MEDIUM)
   while (rec_8_ts1 < 8) begin
     @(pipe_agent_config_h.detected_tses_e);
-      if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
+      if(pipe_agent_config_h.tses_received[0].ts_type == TS1 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
         rec_8_ts1++;
         `uvm_info("pipe_link_up_seq", "receiving ts1s", UVM_MEDIUM)
       end
+      else
+      `uvm_error(get_name(), "training sequences of polling active state received is not correct")
   end
 endtask
 
@@ -120,7 +122,6 @@ task pipe_link_up_seq::sending_1024_ts1;
   if (random_start_polling == 1) begin
     repeat(delay_clocks) begin
       @(pipe_agent_config_h.detected_posedge_clk_e);
-      //#3;
       `uvm_info("Pipe_link_up_seq", "posedge clk came", UVM_LOW)
     end
   end
@@ -168,9 +169,11 @@ task pipe_link_up_seq::polling_configuration_state;
       while(rec_8_ts2 < 8) begin
       wait(pipe_agent_config_h.detected_tses_e.triggered)
       `uvm_info("pipe_link_up_seq", $sformatf("print ts2 received"), UVM_MEDIUM)
-      if(pipe_agent_config_h.tses_received[0].ts_type == TS2) begin
+      if(pipe_agent_config_h.tses_received[0].ts_type == TS2 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
         rec_8_ts2++;
       end
+      else       
+      `uvm_error(get_name(), "training sequences of polling config state received is not correct")
       end
     end
   

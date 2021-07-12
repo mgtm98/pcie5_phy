@@ -521,7 +521,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         begin
           Data[i][j*8 +:8] = RxData_Q[i].pop_front();
           Character[i][j] = RxDataK_Q[i].pop_front();
-          `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+          //`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
         end
 
         //duplicating the Data and Characters to each lane in the driver
@@ -567,7 +567,7 @@ task automatic send_eios();
       begin
         Data[j*8 +:8] = RxData_Q.pop_front();
         Character[j] = RxDataK_Q.pop_front();
-        `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+        //`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
       end
       
       //duplicating the Data and Characters to each lane in the driver
