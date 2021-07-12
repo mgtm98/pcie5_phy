@@ -9,10 +9,10 @@ UTILITY_ROOT_PATH    	= ../utility
 TOP_ROOT_PATH       	= ../top
 
 ################################ Build Configurations ################################
-IS_ENV_UPSTREAM   		= 1
-PIPE_MAX_WIDTH 				= 32
-NUM_OF_LANES 					= 16
-LPIF_BUS_WIDTH 				= 512
+IS_ENV_UPSTREAM   		= 0
+PIPE_MAX_WIDTH 		    = 32
+NUM_OF_LANES 			= 16
+LPIF_BUS_WIDTH 			= 512
 
 ###################################### Includes ######################################
 include ../common.mk

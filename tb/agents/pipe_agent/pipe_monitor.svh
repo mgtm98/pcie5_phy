@@ -106,6 +106,7 @@ endtask
 
 function void pipe_monitor::notify_tses_received(ts_s tses []);
   pipe_agent_config_h.tses_received = tses;
+  `uvm_info("pipe_monitor", $sformatf("tses_manal=%p",tses), UVM_MEDIUM);
   -> pipe_agent_config_h.detected_tses_e;
 endfunction
 function void pipe_monitor::notify_eieos_received();
