@@ -153,6 +153,7 @@ end
 // -----------------------------------------------------------
 initial begin
   logic[1:0] new_width ;
+  @(build_connect_finished_e);
   forever begin
     @(Width);
     new_width=Width;
@@ -164,6 +165,7 @@ end
 // -----------------------------------------------------------
 initial begin
   logic[2:0] new_PCLKRate ;
+  @(build_connect_finished_e);
   forever begin
     @(PCLKRate);
     new_PCLKRate=PCLKRate;

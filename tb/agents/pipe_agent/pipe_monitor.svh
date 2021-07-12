@@ -121,10 +121,11 @@ function void pipe_monitor::notify_width_changed(logic[1:0] new_width);
   pipe_agent_config_h.new_width = new_width;
   -> pipe_agent_config_h.detected_width_change_e;
 endfunction 
+
 function void pipe_monitor::notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
   //$display("flag",new_PCLKRate);
-  //pipe_agent_config_h.new_PCLKRate=new_PCLKRate;
-  //-> pipe_agent_config_h.detected_PCLKRate_change_e;
+  pipe_agent_config_h.new_PCLKRate=new_PCLKRate;
+  -> pipe_agent_config_h.detected_PCLKRate_change_e;
 endfunction 
 
 
