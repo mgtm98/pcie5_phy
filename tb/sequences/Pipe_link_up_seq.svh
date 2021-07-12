@@ -102,10 +102,10 @@ endtask
 
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
-  wait(pipe_agent_config_h.DUT_start_polling_e.triggered);
+  @(pipe_agent_config_h.DUT_start_polling_e);
   `uvm_info("pipe_link_up_seq", "print 1", UVM_MEDIUM)
   while (rec_8_ts1 < 8) begin
-    wait(pipe_agent_config_h.detected_tses_e.triggered)
+    @(pipe_agent_config_h.detected_tses_e);
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
         rec_8_ts1++;
         `uvm_info("pipe_link_up_seq", "receiving ts1s", UVM_MEDIUM)

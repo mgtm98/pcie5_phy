@@ -487,11 +487,6 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   bit [pipe_max_width-1:0] Data []; // Data [i]-> dynamic array(size=ts.size()) [j]-> fixed array(size=pipe_max_width)
   bit [pipe_max_width/8 -1:0] Character [];
 
-  for(int i = start_lane; i < end_lane; i++) begin
-    RxDataValid[i] <= 1;
-    RxValid[i] <= 1;
-  end
-
 
 
   `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
@@ -519,6 +514,11 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
     begin
       `uvm_info("pipe_driver_bfm", "print haha 10", UVM_NONE)
       @(posedge PCLK);
+
+      for(int i = start_lane; i < end_lane; i++) begin
+        RxDataValid[i] <= 1;
+        RxValid[i] <= 1;
+      end
       
       for(int i = start_lane;i<end_lane;i++)
       begin
@@ -537,6 +537,11 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         `uvm_info("pipe_driver_bfm", "print haha 12", UVM_NONE)
       end
     end 
+  end
+  @(posedge PCLK);
+  for(int i = start_lane; i < end_lane; i++) begin
+    RxDataValid[i] <= 0;
+    RxValid[i] <= 0;
   end
   `uvm_info("pipe_driver_bfm", "print haha 13", UVM_NONE)
 endtask
