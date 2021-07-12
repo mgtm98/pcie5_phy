@@ -11,11 +11,15 @@ class pipe_agent_config extends uvm_object;
   bit has_coverage_monitor = 1;
   
   ts_s tses_received [];
+  logic[1:0] new_width;
+  logic[2:0] new_PCLKRate;
 
   // Events
   event detected_tses_e;
   event detected_eieos_e;
   event detected_eios_e;
+  event detected_width_change_e;
+  event detected_PCLKRate_change_e;
   event reset_detected_e;
   event receiver_detected_e;
   event link_up_finished_e;
