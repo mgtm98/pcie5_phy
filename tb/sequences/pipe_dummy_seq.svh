@@ -29,4 +29,5 @@ task pipe_dummy_seq::body();
     pipe_seq_item_h.tses_sent[i].ts_type          = TS1;
   end
   finish_item(pipe_seq_item_h);
+  #20;
 endtask

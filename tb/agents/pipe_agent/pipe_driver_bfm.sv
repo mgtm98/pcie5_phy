@@ -537,58 +537,112 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   end
 endtask
 
-task automatic send_eios();
-  int width = get_width();
+// task automatic send_eios();
+//   int width = get_width();
 
-  bit [pipe_max_width-1:0] Data; 
-  bit [pipe_max_width/8 -1:0] Character;
-  bit [7:0] RxData_Q[$];
-  bit RxDataK_Q[$];
+//   bit [pipe_max_width-1:0] Data; 
+//   bit [pipe_max_width/8 -1:0] Character;
+//   bit [7:0] RxData_Q[$];
+//   bit RxDataK_Q[$];
 
-  bit [7:0] com = 8'b10111100;
-  bit [7:0] idl = 8'b01111100;
-  RxData_Q = {com,idl,idl,idl};
-  RxDataK_Q = {1,1,1,1};
+//   bit [7:0] com = 8'b10111100;
+//   bit [7:0] idl = 8'b01111100;
+//   RxData_Q = {com,idl,idl,idl};
+//   RxDataK_Q = {1,1,1,1};
 
-  if(current_gen <=GEN2)
-  begin
-    while(RxData_Q.size())
-    begin
-      @(posedge PCLK);
+//   if(current_gen <=GEN2)
+//   begin
+//     while(RxData_Q.size())
+//     begin
+//       @(posedge PCLK);
 
-      // for(int i = start_lane; i < end_lane; i++) begin
-      //   RxDataValid[i] <= 1;
-      //   RxValid[i] <= 1;
-      // end
+//       // for(int i = start_lane; i < end_lane; i++) begin
+//       //   RxDataValid[i] <= 1;
+//       //   RxValid[i] <= 1;
+//       // end
       
       
-      // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
-      for(int j=0;j<width/8;j++)
-      begin
-        Data[j*8 +:8] = RxData_Q.pop_front();
-        Character[j] = RxDataK_Q.pop_front();
-        //`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
-      end
+//       // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+//       for(int j=0;j<width/8;j++)
+//       begin
+//         Data[j*8 +:8] = RxData_Q.pop_front();
+//         Character[j] = RxDataK_Q.pop_front();
+//         `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+//       end
       
-      //duplicating the Data and Characters to each lane in the driver
-      for(int i = 0;i<pipe_num_of_lanes;i++)
-      begin
-        RxData[i*pipe_max_width+:pipe_max_width] <= Data;
-        RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character;  
-      end
-    end 
-    @(posedge PCLK);
-    RxElecIdle <= 1;  
-  end
-  else
-  begin
+//       //duplicating the Data and Characters to each lane in the driver
+//       for(int i = 0;i<pipe_num_of_lanes;i++)
+//       begin
+//         RxData[i*pipe_max_width+:pipe_max_width] <= Data;
+//         RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character;  
+//       end
+//     end 
+//     @(posedge PCLK);
+//     RxElecIdle <= 1;  
+//   end
+//   else
+//   begin
 
-  end
-  // for(int i = start_lane; i < end_lane; i++) begin
-  //   RxDataValid[i] <= 0;
-  //   RxValid[i] <= 0;
-  // end
-endtask
+//   end
+//   // for(int i = start_lane; i < end_lane; i++) begin
+//   //   RxDataValid[i] <= 0;
+//   //   RxValid[i] <= 0;
+//   // end
+// endtask
+
+// task automatic send_eieos();
+//   int width = get_width();
+
+//   bit [pipe_max_width-1:0] Data; 
+//   bit [pipe_max_width/8 -1:0] Character;
+//   bit [7:0] RxData_Q[$];
+//   bit RxDataK_Q[$];
+
+//   bit [7:0] com = 8'b10111100;
+//   bit [7:0] eie = 8'b11111100;
+//   bit [7:0] ts1_ident = 8'b01001010;
+//   RxData_Q = {com,eie,eie,eie,eie,eie,eie,eie,eie,eie,eie,eie,eie,eie,eie,ts1_ident};
+//   RxDataK_Q = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0};
+
+//   if(current_gen <=GEN2)
+//   begin
+//     while(RxData_Q.size())
+//     begin
+//       @(posedge PCLK);
+
+//       // for(int i = start_lane; i < end_lane; i++) begin
+//       //   RxDataValid[i] <= 1;
+//       //   RxValid[i] <= 1;
+//       // end
+      
+      
+//       // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+//       for(int j=0;j<width/8;j++)
+//       begin
+//         Data[j*8 +:8] = RxData_Q.pop_front();
+//         Character[j] = RxDataK_Q.pop_front();
+//         `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+//       end
+      
+//       //duplicating the Data and Characters to each lane in the driver
+//       for(int i = 0;i<pipe_num_of_lanes;i++)
+//       begin
+//         RxData[i*pipe_max_width+:pipe_max_width] <= Data;
+//         RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character;  
+//       end
+//     end 
+//     @(posedge PCLK);
+//     RxElecIdle <= 0;  
+//   end
+//   else
+//   begin
+
+//   end
+//   // for(int i = start_lane; i < end_lane; i++) begin
+//   //   RxDataValid[i] <= 0;
+//   //   RxValid[i] <= 0;
+//   // end
+// endtask
 
 /***********************************************signal toggle for speed change***************************************************/
 // initial begin
