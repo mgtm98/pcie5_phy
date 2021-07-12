@@ -479,6 +479,7 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
   end
 endtask
 
+
 task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num_of_lanes);
   int width = get_width();
 
@@ -489,15 +490,10 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
 
 
 
-  `uvm_info("pipe_driver_bfm", "print haha 1", UVM_NONE)
   RxData_Q = new[ts.size()];
-  `uvm_info("pipe_driver_bfm", "print haha 2", UVM_NONE)
   RxDataK_Q = new[ts.size()];
-  `uvm_info("pipe_driver_bfm", "print haha 3", UVM_NONE)
   Data = new[ts.size()];
-  `uvm_info("pipe_driver_bfm", "print haha 4", UVM_NONE)
   Character = new[ts.size()];
-  `uvm_info("pipe_driver_bfm", "print haha 5", UVM_NONE)
   foreach(ts[i])
   begin
     ts_symbols_maker(ts[i],RxData_Q[i],RxDataK_Q[i]);
@@ -509,10 +505,8 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
 
   if(current_gen <=GEN2)
   begin
-    `uvm_info("pipe_driver_bfm", "print haha 9", UVM_NONE)
     while(RxData_Q[0].size())
     begin
-      `uvm_info("pipe_driver_bfm", "print haha 10", UVM_NONE)
       @(posedge PCLK);
 
       for(int i = start_lane; i < end_lane; i++) begin
@@ -529,12 +523,10 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
           Character[i][j] = RxDataK_Q[i].pop_front();
           `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
         end
-        `uvm_info("pipe_driver_bfm", "print haha 11", UVM_NONE)
 
         //duplicating the Data and Characters to each lane in the driver
         RxData[i*pipe_max_width+:pipe_max_width] <=Data[i] ;
         RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character[i];
-        `uvm_info("pipe_driver_bfm", "print haha 12", UVM_NONE)
       end
     end 
   end
@@ -543,9 +535,60 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
     RxDataValid[i] <= 0;
     RxValid[i] <= 0;
   end
-  `uvm_info("pipe_driver_bfm", "print haha 13", UVM_NONE)
 endtask
 
+task automatic send_eios();
+  int width = get_width();
+
+  bit [pipe_max_width-1:0] Data; 
+  bit [pipe_max_width/8 -1:0] Character;
+  bit [7:0] RxData_Q[$];
+  bit RxDataK_Q[$];
+
+  bit [7:0] com = 8'b10111100;
+  bit [7:0] idl = 8'b01111100;
+  RxData_Q = {com,idl,idl,idl};
+  RxDataK_Q = {1,1,1,1};
+
+  if(current_gen <=GEN2)
+  begin
+    while(RxData_Q.size())
+    begin
+      @(posedge PCLK);
+
+      // for(int i = start_lane; i < end_lane; i++) begin
+      //   RxDataValid[i] <= 1;
+      //   RxValid[i] <= 1;
+      // end
+      
+      
+      // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
+      for(int j=0;j<width/8;j++)
+      begin
+        Data[j*8 +:8] = RxData_Q.pop_front();
+        Character[j] = RxDataK_Q.pop_front();
+        `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+      end
+      
+      //duplicating the Data and Characters to each lane in the driver
+      for(int i = 0;i<pipe_num_of_lanes;i++)
+      begin
+        RxData[i*pipe_max_width+:pipe_max_width] <= Data;
+        RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character;  
+      end
+    end 
+    @(posedge PCLK);
+    RxElecIdle <= 1;  
+  end
+  else
+  begin
+
+  end
+  // for(int i = start_lane; i < end_lane; i++) begin
+  //   RxDataValid[i] <= 0;
+  //   RxValid[i] <= 0;
+  // end
+endtask
 
 // initial begin
 //   forever begin
