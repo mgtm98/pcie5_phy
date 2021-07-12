@@ -343,7 +343,7 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
               if ((ts[i].link_number==8'b11110111 )&&(TxDataK[4*i+1]==1))  ts[i].use_link_number=0;
               else ts[i].use_link_number=1;
           end
-
+          @(posedge PCLK);
           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -429,6 +429,7 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
           begin
               ts[i].n_fts=TxData[(i*32+24)+:8]; // number of fast training sequnces
           end
+          @(posedge PCLK);          
           for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -580,6 +581,7 @@ task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = 
               if ((ts[i].link_number==8'hF7))  ts[i].use_link_number=0;
               else ts[i].use_link_number=1;
           end
+          @(posedge PCLK);          
           for(int sympol_count =2;sympol_count<16;sympol_count=sympol_count+2) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -699,6 +701,7 @@ task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = 
           begin
               ts[i].n_fts=TxData[(i*32+24)+:8]; // number of fast training sequnces
           end
+          @(posedge PCLK);          
           for(int sympol_count =4;sympol_count<16;sympol_count=sympol_count+4) //looping on the 16 symbol of TS
           begin
               @(posedge PCLK);
@@ -773,7 +776,7 @@ task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = 
               wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&((TxData[(i*32+0)+:8]==8'h4A)||(TxData[(i*32+0)+:8]==8'h45))&&(TxDataValid[i]==1)); 
 
           end
-
+          @(posedge PCLK);
           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);
@@ -893,6 +896,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
       if((TxData[(i*32+8)+:8]!=8'b111_11100)||(TxDataK[4*i+1]!=1))
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
     begin
       @(posedge PCLK);
@@ -938,6 +942,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
       if((TxData[(i*32+24)+:8]!=8'b111_11100)||(TxDataK[4*i+3]!=1))
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
     begin
       @(posedge PCLK);
@@ -982,6 +987,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
       assert(TxDataK[4*i+0]==1) else 
         `uvm_fatal(" COM charecter is K sympol ", ""); 
     end    
+    @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<15;sympol_count++) //looping on the 16 sympol of TS
     begin
       @(posedge PCLK);
@@ -1014,6 +1020,7 @@ task automatic receive_eieos_gen3 (input int start_lane = 0,input int end_lane =
       if((TxData[(i*32+8)+:8]!=8'hFF))
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
     begin
       @(posedge PCLK);
@@ -1042,6 +1049,7 @@ task automatic receive_eieos_gen3 (input int start_lane = 0,input int end_lane =
       if(TxData[(i*32+24)+:8]!=8'hFF)
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
     begin
       @(posedge PCLK);
@@ -1066,6 +1074,7 @@ task automatic receive_eieos_gen3 (input int start_lane = 0,input int end_lane =
     begin
       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h00)&&(TxDataValid[i]==1)); 
     end
+    @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<16;sympol_count++)
     begin
       @(posedge PCLK);
@@ -1099,6 +1108,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
         return; 
     end  
     @(posedge PCLK);
+    @(posedge PCLK);    
     for (int i = start_lane; i <= end_lane;i++)//sumbol 2,3 idl symbols
     begin
       if((TxData[(i*32+0)+:8]!=8'b011_11100)||(TxDataK[4*i+0]!=1))
@@ -1140,6 +1150,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
       assert(TxDataK[4*i+0]==1) else 
         `uvm_fatal(" COM charecter is K sympol ", ""); 
     end    
+    @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<4;sympol_count++) 
     begin
       @(posedge PCLK);
@@ -1167,6 +1178,7 @@ task automatic receive_eios_gen3 (input int start_lane = 0,input int end_lane = 
       if((TxData[(i*32+8)+:8]!=8'h66))
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =2;sympol_count<15;sympol_count=sympol_count+2) //symbols 2 ->15
     begin
       @(posedge PCLK);
@@ -1195,6 +1207,7 @@ task automatic receive_eios_gen3 (input int start_lane = 0,input int end_lane = 
       if(TxData[(i*32+24)+:8]!=8'h66)
         return; 
     end  
+    @(posedge PCLK);    
     for(int sympol_count =4;sympol_count<15;sympol_count=sympol_count+4) //symbols 4 ->15
     begin
       @(posedge PCLK);
@@ -1219,6 +1232,7 @@ task automatic receive_eios_gen3 (input int start_lane = 0,input int end_lane = 
     begin
       wait((TxStartBlock[i]==1)&&(TxSyncHeader[(i*2)+:2]==2'b01)&&(TxData[(i*32+0)+:8]==8'h66)&&(TxDataValid[i]==1)); 
     end
+    @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<16;sympol_count++)
     begin
       @(posedge PCLK);
