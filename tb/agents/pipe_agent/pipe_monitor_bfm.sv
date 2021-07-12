@@ -484,7 +484,7 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
           `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
           
           reset_lfsr(monitor_tx_scrambler,current_gen);
-
+          @(posedge PCLK);
           for(int sympol_count =1;sympol_count<16;sympol_count++) //looping on the 16 sympol of TS
           begin
               @(posedge PCLK);

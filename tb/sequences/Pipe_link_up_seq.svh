@@ -333,6 +333,8 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
     num_of_ts2_received[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
+  `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream1", UVM_MEDIUM)
+
   two_consecutive_ts2s_detected = 0;
   fork
     begin
@@ -350,6 +352,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
         tses_received = pipe_agent_config_h.tses_received;
         foreach(tses_received[i])
         begin
+          `uvm_info("pipe_link_up_seq", $sformatf("ts_type_adel=%s",tses_received[i].ts_type.name), UVM_MEDIUM)
           if(tses_received[i].ts_type == TS2)
           begin
             num_of_ts2_received[i] += 1;
@@ -359,6 +362,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
             num_of_ts2_received[i] = 0;
           end
         end
+        `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream2", UVM_MEDIUM)
         // Check if any lane detected 2 consecutive ts2s
         foreach(num_of_ts2_received[i])
         begin
@@ -370,6 +374,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream3", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_complete_state_upstream;
