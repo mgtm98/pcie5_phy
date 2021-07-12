@@ -33,6 +33,8 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_tses_received(ts_s tses []);
   extern function void notify_eieos_received();
   extern function void notify_eios_received();
+  extern function void notify_width_changed(logic[1:0] new_width);
+  extern function void notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -115,6 +117,16 @@ endfunction
 function void pipe_monitor::notify_eios_received();
   -> pipe_agent_config_h.detected_eios_e;
 endfunction
+function void pipe_monitor::notify_width_changed(logic[1:0] new_width);
+  pipe_agent_config_h.new_width = new_width;
+  -> pipe_agent_config_h.detected_width_change_e;
+endfunction 
+
+function void pipe_monitor::notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
+  //$display("flag",new_PCLKRate);
+  pipe_agent_config_h.new_PCLKRate=new_PCLKRate;
+  -> pipe_agent_config_h.detected_PCLKRate_change_e;
+endfunction 
 
 
 // function void pipe_monitor::notify_link_up_sent();
