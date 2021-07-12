@@ -590,6 +590,7 @@ task automatic send_eios();
   // end
 endtask
 
+/***********************************************signal toggle for speed change***************************************************/
 // initial begin
 //   forever begin
 //     @(PclkRate);

@@ -19,7 +19,7 @@ output reg [31:0] TxData;
 output reg TxDataValid; 
 output reg [3:0] TxDataK;
 
-always @* begin
+always @(posedge pclk or negedge reset_n) begin
   if (~reset_n) begin
   	TxData=0;
   	TxDataK=0;
