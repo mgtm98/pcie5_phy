@@ -36,6 +36,7 @@ interface pipe_monitor_bfm
   input logic [3:0]                         Rate,
   input logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input logic [1:0]                         Width,
+  input logic [2:0]                         PCLKRate,
   input logic                               PclkChangeAck,
   input logic                               PclkChangeOk,
   /*************************************************************************************/
@@ -57,11 +58,10 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  input logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  // input logic                               PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                         PclkRate     //TODO: This signal is removed 
+
 );
 
   `include "uvm_macros.svh"
@@ -83,7 +83,7 @@ interface pipe_monitor_bfm
 
   /******************************* Assertions *******************************/
   property reset_assertion(int i);
-    @(posedge PCLK) !Reset |-> ( PowerDown[(i*4) +:4] == 4'b0010 && TxElecIdle[i]==1 && TxDetectRxLoopback[i]==0 && $stable(PclkRate));
+    @(posedge PCLK) !Reset |-> ( PowerDown[(i*4) +:4] == 4'b0010 && TxElecIdle[i]==1 && TxDetectRxLoopback[i]==0 && $stable(PCLKRate));
   endproperty
   
   genvar i;
@@ -117,37 +117,61 @@ initial begin
   end
 end
 
-// initial begin
-//   forever begin
-//     receive_tses_gen3();
-//   end
-// end
-//-----------------------------------------------------------
+initial begin
+  forever begin
+    receive_tses_gen3();
+  end
+end
+// -----------------------------------------------------------
 // reciveing EIEOS
-//-----------------------------------------------------------
-// initial begin
-//   forever begin
-//     receive_eieos ();
-//   end
-// end
-// initial begin
-//   forever begin
-//     receive_eieos_gen3 ();
-//   end
-// end
-//-----------------------------------------------------------
+// -----------------------------------------------------------
+initial begin
+  forever begin
+    receive_eieos ();
+  end
+end
+initial begin
+  forever begin
+    receive_eieos_gen3 ();
+  end
+end
+// -----------------------------------------------------------
 // reciveing EIOS
-//-----------------------------------------------------------
-// initial begin
-//   forever begin
-//     receive_eios ();
-//   end
-// end
-// initial begin
-//   forever begin
-//     receive_eios_gen3 ();
-//   end
-// end
+// -----------------------------------------------------------
+initial begin
+  forever begin
+    receive_eios ();
+  end
+end
+initial begin
+  forever begin
+    receive_eios_gen3 ();
+  end
+end
+// -----------------------------------------------------------
+// width changed
+// -----------------------------------------------------------
+initial begin
+  logic[1:0] new_width ;
+  @(build_connect_finished_e);
+  forever begin
+    @(Width);
+    new_width=Width;
+    proxy.notify_width_changed(new_width);
+  end
+end
+// -----------------------------------------------------------
+// pclkRate changed
+// -----------------------------------------------------------
+initial begin
+  logic[2:0] new_PCLKRate ;
+  @(build_connect_finished_e);
+  forever begin
+    @(PCLKRate);
+    new_PCLKRate=PCLKRate;
+    proxy.notify_PCLKRate_changed(new_PCLKRate);
+  end
+end
 
 initial begin 
   forever begin

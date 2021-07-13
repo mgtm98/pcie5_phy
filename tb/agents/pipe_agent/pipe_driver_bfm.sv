@@ -36,6 +36,7 @@ interface pipe_driver_bfm
   input  logic [3:0]                         Rate,
   output logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input  logic [1:0]                         Width,
+  input  logic [2:0]                         PCLKRate,
   input  logic                               PclkChangeAck,
   output logic                               PclkChangeOk,
   /*************************************************************************************/
@@ -57,11 +58,9 @@ interface pipe_driver_bfm
   input  logic [pipe_num_of_lanes-1:0]       RxEqEval,
   input  logic [4*pipe_num_of_lanes-1:0]     LocalPresetIndex,
   input  logic [pipe_num_of_lanes-1:0]       InvalidRequest,  // TODO: this signal needs to be checked
-  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange,
+  output logic [6*pipe_num_of_lanes-1:0]     LinkEvaluationFeedbackDirectionChange
   /*************************************************************************************/
 
-  // input logic                                PCLK,     //TODO: This signal is removed 
-  input logic [4:0]                          PclkRate     //TODO: This signal is removed 
 );
 
 `include "uvm_macros.svh"
@@ -521,7 +520,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         begin
           Data[i][j*8 +:8] = RxData_Q[i].pop_front();
           Character[i][j] = RxDataK_Q[i].pop_front();
-          `uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+          //`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
         end
 
         //duplicating the Data and Characters to each lane in the driver
@@ -644,24 +643,6 @@ endtask
 //   // end
 // endtask
 
-/***********************************************signal toggle for speed change***************************************************/
-// initial begin
-//   forever begin
-//     @(PclkRate);
-//     @(posedge PCLK);
-//     PclkChangeOk <= 1;
-//   end
-// end
-
-  // task change_speed();
-  //   // @(TxElecIdle && RxStandby);
-  //   // wait random amount of time
-  //   @(posedge PCLK);
-  //   PhyStatus <= 1;
-  //   @(posedge PCLK);
-  //   PhyStatus <= 0;
-  //   PclkChangeOk <= 0;
-  // endtask : change_speed
 
 /******************************* Normal Data Operation *******************************/
 
