@@ -17,30 +17,11 @@ add wave -noupdate /hdl_top/PIPE/RxDataK
 add wave -noupdate /hdl_top/PIPE/TxData
 add wave -noupdate /hdl_top/PIPE/TxDataValid
 add wave -noupdate /hdl_top/PIPE/TxDataK
-add wave -noupdate /hdl_top/DUT/mainltssm/linkNumberInTx
-add wave -noupdate /hdl_top/DUT/mainltssm/linkNumberInRx
-add wave -noupdate /hdl_top/DUT/mainltssm/writeLinkNumberTx
-add wave -noupdate /hdl_top/DUT/mainltssm/writeLinkNumberRx
-add wave -noupdate /hdl_top/DUT/mainltssm/finishTx
-add wave -noupdate /hdl_top/DUT/mainltssm/finishRx
-add wave -noupdate /hdl_top/DUT/mainltssm/gotoTx
-add wave -noupdate /hdl_top/DUT/mainltssm/gotoRx
-add wave -noupdate /hdl_top/DUT/mainltssm/linkNumberOutTx
-add wave -noupdate /hdl_top/DUT/mainltssm/linkNumberOutRx
-add wave -noupdate /hdl_top/DUT/mainltssm/substateTx
-add wave -noupdate /hdl_top/DUT/mainltssm/substateRx
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/masterRxLTSSM/substate
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/masterRxLTSSM/lastState
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/masterRxLTSSM/currentState
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/orderedSets
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/countUp
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/resetCounters
-add wave -noupdate /hdl_top/DUT/rx/rxltssm/countersValues
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {33673 ns} 0} {{Cursor 2} {36479 ns} 0}
+WaveRestoreCursors {{Cursor 1} {34372 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 149
-configure wave -valuecolwidth 109
+configure wave -valuecolwidth 156
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -53,4 +34,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {32949 ns} {35509 ns}
+WaveRestoreZoom {34331 ns} {34441 ns}

@@ -157,7 +157,7 @@ ExitToFlag  = 0 ;
 		 end
 		end
 		ConfigrationLinkWidthAccept:begin
-		if(DEVICETYPE==DownStream && OSGeneratorFinish)begin
+		if(OSGeneratorFinish)begin
 			ExitToState = ConfigrationLaneNumWait;
 			ExitToFlag  = 1 ;
 		end

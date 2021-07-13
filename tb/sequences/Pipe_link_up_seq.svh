@@ -50,7 +50,9 @@ task pipe_link_up_seq::body;
     `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
   end
 
-    ts_sent.n_fts            = this.n_fts;
+  random_start_polling = 0;
+
+  ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = 0;
   ts_sent.link_number      = this.link_number;
   ts_sent.use_n_fts        = 0;
@@ -572,7 +574,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
   // Update the lane numbers to start with zero and increase sequentially
   foreach(tses_sent[i])
   begin
-    tses_sent[i].lane_number = i;
+    tses_sent[i].lane_number = `NUM_OF_LANES - i - 1;
     tses_sent[i].use_lane_number = 1;
   end
 endtask

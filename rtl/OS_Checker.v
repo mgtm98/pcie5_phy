@@ -16,7 +16,7 @@ module osChecker #(parameter DEVICETYPE = 0)(
     reg[4:0] currentState,nextState;
     reg[127:0] localorderedset;
     reg notEqual;
-    reg linkNumberReg;
+    reg [7:0] linkNumberReg;
     wire ts1CorrectStart,ts2CorrectStart;
     localparam [7:0]
     PAD = 8'hF7, 
