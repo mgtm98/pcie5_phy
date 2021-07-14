@@ -106,7 +106,6 @@ endtask
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   @(pipe_agent_config_h.DUT_start_polling_e);
-  `uvm_info("pipe_link_up_seq", "print 1", UVM_MEDIUM)
   while (rec_8_ts1 < 8) begin
     @(pipe_agent_config_h.detected_tses_e);
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
@@ -156,7 +155,6 @@ endtask
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   wait(pipe_agent_config_h.detected_tses_e.triggered)
-  `uvm_info("pipe_link_up_seq", $sformatf("print tsemad: %p",pipe_agent_config_h.tses_received), UVM_MEDIUM)
   while (pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
     start_item (pipe_seq_item_h);
         if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
@@ -171,7 +169,6 @@ task pipe_link_up_seq::polling_configuration_state;
       int rec_8_ts2 = 0;
       while(rec_8_ts2 < 8) begin
       wait(pipe_agent_config_h.detected_tses_e.triggered)
-      `uvm_info("pipe_link_up_seq", $sformatf("print ts2 received"), UVM_MEDIUM)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS2 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
         rec_8_ts2++;
       end
@@ -196,7 +193,6 @@ task pipe_link_up_seq::polling_configuration_state;
 endtask
 
 task pipe_link_up_seq::config_state;
-  `uvm_info("pipe_link_up_seq", $sformatf("env type: %b",IS_ENV_UPSTREAM), UVM_MEDIUM)
   if (IS_ENV_UPSTREAM) begin
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
@@ -226,23 +222,17 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
     num_of_ts1s_with_non_pad_link_number[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
-  `uvm_info("pipe_link_up_seq", "print2 config_linkwidth_start_state_upstream", UVM_MEDIUM)
   two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
   fork
     begin
-      `uvm_info("pipe_link_up_seq", $sformatf("print3 two_consecutive_ts1s_with_non_pad_link_number_detected=%d",two_consecutive_ts1s_with_non_pad_link_number_detected), UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
-        `uvm_info("pipe_link_up_seq", "Print e1", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "Print e2", UVM_MEDIUM)
         finish_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "print4 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       end
     end
 
     begin
-      `uvm_info("pipe_link_up_seq", "print5 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
         @(pipe_agent_config_h.detected_tses_e);
@@ -339,8 +329,6 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
     num_of_ts2_received[i] = 0;
   end
   // Transmit TS1s until 2 consecutive TS2s are received
-  `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream1", UVM_MEDIUM)
-
   two_consecutive_ts2s_detected = 0;
   fork
     begin
@@ -358,7 +346,6 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
         tses_received = pipe_agent_config_h.tses_received;
         foreach(tses_received[i])
         begin
-          `uvm_info("pipe_link_up_seq", $sformatf("ts_type_adel=%s",tses_received[i].ts_type.name), UVM_MEDIUM)
           if(tses_received[i].ts_type == TS2)
           begin
             num_of_ts2_received[i] += 1;
@@ -453,65 +440,6 @@ task pipe_link_up_seq::config_complete_state_upstream;
   join
 endtask
 
-<<<<<<< HEAD
-=======
-task pipe_link_up_seq::config_idle_state_upstream;
-  pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  int num_of_idle_data_received [`NUM_OF_LANES];
-  bit eight_consecutive_idle_data_detected;
-  int i;
-  `uvm_info("pipe_link_up_seq", "Entered config_idle_state_upstream", UVM_MEDIUM)
-  pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
-
-  // Initialize the num_of_idle_data_received array with zeros
-  foreach(num_of_idle_data_received[i])
-  begin
-    num_of_idle_data_received[i] = 0;
-  end
-
-  // Transmit 16 idle data until 8 consecutive idle data are received
-  eight_consecutive_idle_data_detected = 0;
-  fork
-    begin
-      @(pipe_agent_config_h.idle_data_detected_e);
-
-      for (i = 0; i < 16; i++)
-      begin
-        start_item(pipe_seq_item_h);
-        finish_item(pipe_seq_item_h);
-      end
-      start_item(pipe_seq_item_h);
-      pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
-      finish_item(pipe_seq_item_h);
-    end
-
-    begin
-      while (!eight_consecutive_idle_data_detected)
-      begin
-        @(pipe_agent_config_h.idle_data_detected_e);
-        
-        foreach(idle_data_received[i])
-        begin
-          begin
-            num_of_idle_data_received[i] += 1;
-          end
-        end
-
-        // Check if any lane detected 8 consecutive idle data
-        foreach(num_of_idle_data_received[i])
-        begin
-          if(num_of_idle_data_received[i] == 8)
-          begin
-            eight_consecutive_idle_data_detected = 1;
-          end
-        end
-      end
-    end
-  join
-  `uvm_info("pipe_link_up_seq", "Finished config_idle_state_upstream", UVM_MEDIUM)
-endtask
-
->>>>>>> origin/master
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
   int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];
@@ -721,6 +649,7 @@ task pipe_link_up_seq::config_idle_state;
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
       one_idle_data_received = 1;
+      `uvm_info("pipe_link_up_seq", "haha 1", UVM_MEDIUM)
     end
 
     begin 
@@ -729,38 +658,49 @@ task pipe_link_up_seq::config_idle_state;
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "haha 2", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "haha 3", UVM_MEDIUM)
       end
     end
 
     begin
       wait (one_idle_data_received);
-        for (i = 0; i < 16; i++)
-        begin
-          start_item(pipe_seq_item_h);
-          pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
-          finish_item(pipe_seq_item_h);
-        end
+      `uvm_info("pipe_link_up_seq", "haha 4", UVM_MEDIUM)
+      for (i = 0; i < 16; i++)
+      begin
+        `uvm_info("pipe_link_up_seq", "haha 5", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
-        pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
+        pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "haha 6", UVM_MEDIUM)
+      end
+      `uvm_info("pipe_link_up_seq", "haha 7", UVM_MEDIUM)
+      start_item(pipe_seq_item_h);
+      pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
+      finish_item(pipe_seq_item_h);
+      `uvm_info("pipe_link_up_seq", "haha 8", UVM_MEDIUM)
     end
  
     begin
       while (!eight_consecutive_idle_data_detected)
       begin
+        `uvm_info("pipe_link_up_seq", "haha 9", UVM_MEDIUM)
         @(pipe_agent_config_h.idle_data_detected_e);
+        `uvm_info("pipe_link_up_seq", "haha 10", UVM_MEDIUM)
         
         num_of_idle_data_received += 1;
 
         // Check if 8 consecutive idle data detected
         if(num_of_idle_data_received == 8) 
         begin
+          `uvm_info("pipe_link_up_seq", "haha 11", UVM_MEDIUM)
           eight_consecutive_idle_data_detected = 1;
         end
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_idle_state", UVM_MEDIUM)
 endtask
