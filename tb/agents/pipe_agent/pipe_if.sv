@@ -21,6 +21,7 @@ interface pipe_if
   logic [2*pipe_num_of_lanes-1:0]     RxSyncHeader;
   logic [pipe_num_of_lanes-1:0]       RxValid;
   logic [3*pipe_num_of_lanes-1:0]     RxStatus;
+  logic [pipe_num_of_lanes-1:0]       RxStandby;
   logic                               RxElecIdle;
   /*************************************************************************************/
   
@@ -38,6 +39,7 @@ interface pipe_if
   logic [3:0]                         Rate;
   logic [pipe_num_of_lanes-1:0]       PhyStatus;
   logic [1:0]                         Width;
+  logic [2:0]                         PCLKRate;
   logic                               PclkChangeAck;
   logic                               PclkChangeOk;
   /*************************************************************************************/
@@ -62,6 +64,5 @@ interface pipe_if
   logic [6*pipe_num_of_lanes-1:0]    LinkEvaluationFeedbackDirectionChange;
   /*************************************************************************************/
 
-  // logic                               PCLK;     //TODO: This signal is removed 
-  logic [4:0]                         PclkRate;     //TODO: This signal is removed 
+ 
 endinterface: pipe_if

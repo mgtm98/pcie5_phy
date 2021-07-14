@@ -60,7 +60,6 @@ output reg [ LANESNUMBER-1:0]DetectReq,
 output reg [ LANESNUMBER-1:0]ElecIdleReq,
 input  [ LANESNUMBER-1:0]DetectStatus,
 //scrambler
-output reg turnOff,
 output [23:0]seedValue
 
 );
@@ -157,7 +156,7 @@ ExitToFlag  = 0 ;
 		 end
 		end
 		ConfigrationLinkWidthAccept:begin
-		if(DEVICETYPE==DownStream && OSGeneratorFinish)begin
+		if(OSGeneratorFinish)begin
 			ExitToState = ConfigrationLaneNumWait;
 			ExitToFlag  = 1 ;
 		end
@@ -187,7 +186,6 @@ ElecIdleReq <= {LANESNUMBER{1'b0}};
 DetectReq<= {LANESNUMBER{1'b0}};
 OSGeneratorStart <=0;
 WriteLinkNumFlag <=0;
-turnOff<=1;
 	case(State)
 		DetectQuiet:begin
 			HoldFIFOData <= 1;
@@ -304,7 +302,6 @@ turnOff<=1;
 			end
 		end
 		L0:begin
-			turnOff <= 0;
 			HoldFIFOData<=0;
 			MuxSel <=1; //TODO : check is it 1 or 0 for orderset
 		end
@@ -409,8 +406,6 @@ TimerStart <= 0;
 			|| NextState == ConfigrationComplete )begin
 				OSCount<=0;		
 			end			
-			else if(NextState == L0)
-				turnOff <= 0;
 		end		
 		
 		default:begin
@@ -443,16 +438,5 @@ begin
 		WriteDetectLanesFlag<=WriteDetectLanesFlagReg;
 	end
 end
-
-always @ * begin
-
-if(NextState == L0)begin
-turnOff=1'b0;
-end
-else begin
-turnOff =1'b1;
-end
-end
-//assign turnOff = (NextState == L0)? 1'b0 : 1'b1;
 
 endmodule

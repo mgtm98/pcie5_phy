@@ -99,6 +99,7 @@ wire [3:0]RXexitTo;
 ///////////output linkUp,////////////
 wire witeUpconfigureCapability;
 wire writerateid;
+wire disableScrambler;
 
 mainLTSSM #(
 .Width(MAXPIPEWIDTH),
@@ -139,13 +140,14 @@ mainLTSSM #(
     .writeLinkNumberRx(WriteLinkNumFlagRx),
     .linkNumberOutTx(linkNumberTxInput),
     .linkNumberOutRx(linkNumberRxInput),
-    .width(width)
+    .width(width),
+    .disableScrambler(disableScrambler)
 );
 
  
 
 
-RX #(.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH),.GEN2_PIPEWIDTH(GEN2_PIPEWIDTH),.GEN3_PIPEWIDTH(GEN3_PIPEWIDTH),.GEN4_PIPEWIDTH(GEN4_PIPEWIDTH),.GEN5_PIPEWIDTH(GEN5_PIPEWIDTH))
+RX #(.DEVICETYPE(DEVICETYPE),.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH),.GEN2_PIPEWIDTH(GEN2_PIPEWIDTH),.GEN3_PIPEWIDTH(GEN3_PIPEWIDTH),.GEN4_PIPEWIDTH(GEN4_PIPEWIDTH),.GEN5_PIPEWIDTH(GEN5_PIPEWIDTH))
 rx
 ( .reset(lpreset), 
 .clk(CLK), 
@@ -179,7 +181,8 @@ rx
 .witeUpconfigureCapability(witeUpconfigureCapability),
 .writerateid(writerateid),
 .linkNumberOut(linkNumberRxOutput),
-.writeLinkNumber(WriteLinkNumFlagRx));
+.writeLinkNumber(WriteLinkNumFlagRx),
+.disableScrambler(disableScrambler));
 
 
 
@@ -270,7 +273,8 @@ TX
 .TxDataK4(TxDataK[51:48]),
 .TxDataK3(TxDataK[55:52]),
 .TxDataK2(TxDataK[59:56]),
-.TxDataK1(TxDataK[63:60]));
+.TxDataK1(TxDataK[63:60]),
+.turnOff(disableScrambler));
 
 assign phy_reset = lpreset;
 
