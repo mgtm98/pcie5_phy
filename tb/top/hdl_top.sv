@@ -204,7 +204,7 @@ module hdl_top;
   // DUT
   PCIe #(
     .MAXPIPEWIDTH (`PIPE_MAX_WIDTH),
-    .DEVICETYPE (~`IS_ENV_UPSTREAM), //0 for downstream 1 for upstream
+    .DEVICETYPE (!`IS_ENV_UPSTREAM), //0 for downstream 1 for upstream
     .LANESNUMBER (`NUM_OF_LANES),
     .GEN1_PIPEWIDTH (8) ,	
     .GEN2_PIPEWIDTH (8) ,	
@@ -299,6 +299,10 @@ module hdl_top;
 
   initial begin
     forever #50000 `uvm_info("hdl_top", $sformatf("Time: %t", $time), UVM_NONE)
+  end
+
+  initial begin
+    `uvm_info("hdl_top", $sformatf("DEVICETYPE (%b)", !`IS_ENV_UPSTREAM), UVM_NONE)
   end
 
 endmodule: hdl_top

@@ -45,6 +45,7 @@ function pipe_link_up_seq::new(string name = "pipe_link_up_seq");
 endfunction
   
 task pipe_link_up_seq::body;
+  `uvm_info("pipe_link_up_seq", "Started pipe_link_up_seq", UVM_MEDIUM)
   if(!this.randomize()) begin
     `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
   end
@@ -87,6 +88,7 @@ task pipe_link_up_seq::body;
   end
   config_state;
   -> pipe_agent_config_h.link_up_finished_e;
+  `uvm_info("pipe_link_up_seq", "Finished pipe_link_up_seq", UVM_MEDIUM)
 endtask: body
 
 task pipe_link_up_seq::detect_state;
@@ -505,6 +507,7 @@ task pipe_link_up_seq::config_idle_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_idle_state_upstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
@@ -563,6 +566,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_start_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
@@ -570,7 +574,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
   // Update the lane numbers to start with zero and increase sequentially
   foreach(tses_sent[i])
   begin
-    tses_sent[i].lane_number = i;
+    tses_sent[i].lane_number = `NUM_OF_LANES - i - 1;
     tses_sent[i].use_lane_number = 1;
   end
 endtask
