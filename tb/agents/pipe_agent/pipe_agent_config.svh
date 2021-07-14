@@ -13,13 +13,18 @@ class pipe_agent_config extends uvm_object;
   ts_s tses_received [];
   logic[1:0] new_width;
   logic[2:0] new_PCLKRate;
+  logic[3:0] new_Rate;
 
   // Events
   event detected_tses_e;
   event detected_eieos_e;
+  event detected_eieos_gen3_e;
   event detected_eios_e;
+  event detected_eios_gen3_e;
+  event detected_TxElecIdle_and_RxStandby_asserted_e;
   event detected_width_change_e;
   event detected_PCLKRate_change_e;
+  event detected_Rate_change_e;
   event reset_detected_e;
   event receiver_detected_e;
   event link_up_finished_e;

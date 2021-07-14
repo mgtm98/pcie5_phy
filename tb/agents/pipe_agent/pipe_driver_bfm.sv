@@ -536,7 +536,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   end
 endtask
 
-// task automatic send_eios();
+ task automatic send_eios();
 //   int width = get_width();
 
 //   bit [pipe_max_width-1:0] Data; 
@@ -587,9 +587,9 @@ endtask
 //   //   RxDataValid[i] <= 0;
 //   //   RxValid[i] <= 0;
 //   // end
-// endtask
+ endtask
 
-// task automatic send_eieos();
+task automatic send_eieos();
 //   int width = get_width();
 
 //   bit [pipe_max_width-1:0] Data; 
@@ -641,7 +641,7 @@ endtask
 //   //   RxDataValid[i] <= 0;
 //   //   RxValid[i] <= 0;
 //   // end
-// endtask
+ endtask
 
 
 /******************************* Normal Data Operation *******************************/

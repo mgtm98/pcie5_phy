@@ -169,6 +169,7 @@ module hdl_top;
     .RxStatus              (PIPE.RxStatus),
     .RxStartBlock          (PIPE.RxStartBlock),
     .RxSyncHeader          (PIPE.RxSyncHeader),
+    .RxStandby             (PIPE.RxStandby),
     .TxData                (PIPE.TxData),
     .TxDataK               (PIPE.TxDataK),
     .TxDataValid           (PIPE.TxDataValid),
@@ -228,6 +229,7 @@ module hdl_top;
   . RxDataK                               (PIPE.RxDataValid),
   . RxStartBlock                          (PIPE.RxStartBlock),
   . RxSyncHeader                          (PIPE.RxSyncHeader),
+  //. RxStandby                             (PIPE.RxStandby), // missing the design now 
   . RxStatus                              (PIPE.RxStatus),
   . RxElectricalIdle                      (PIPE.RxElecIdle),
   . PowerDown                             (PIPE.PowerDown),

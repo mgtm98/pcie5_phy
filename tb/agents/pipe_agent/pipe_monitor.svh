@@ -32,9 +32,13 @@ class pipe_monitor extends uvm_monitor;
   extern task          detect_link_up();
   extern function void notify_tses_received(ts_s tses []);
   extern function void notify_eieos_received();
+  extern function void notify_eieos_gen3_received();
   extern function void notify_eios_received();
+  extern function void notify_eios_gen3_received();
+  extern function void notify_TxElecIdle_and_RxStandby_asserted();
   extern function void notify_width_changed(logic[1:0] new_width);
   extern function void notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
+  extern function void notify_Rate_changed(logic[3:0] new_Rate);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -114,9 +118,19 @@ endfunction
 function void pipe_monitor::notify_eieos_received();
   -> pipe_agent_config_h.detected_eieos_e;
 endfunction
+function void pipe_monitor::notify_eieos_gen3_received();
+  -> pipe_agent_config_h.detected_eieos_gen3_e;
+endfunction
 function void pipe_monitor::notify_eios_received();
   -> pipe_agent_config_h.detected_eios_e;
 endfunction
+function void pipe_monitor::notify_eios_gen3_received();
+  -> pipe_agent_config_h.detected_eios_gen3_e;
+endfunction
+function void pipe_monitor::notify_TxElecIdle_and_RxStandby_asserted();
+  -> pipe_agent_config_h.detected_TxElecIdle_and_RxStandby_asserted_e;
+endfunction
+
 function void pipe_monitor::notify_width_changed(logic[1:0] new_width);
   pipe_agent_config_h.new_width = new_width;
   -> pipe_agent_config_h.detected_width_change_e;
@@ -127,7 +141,11 @@ function void pipe_monitor::notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
   pipe_agent_config_h.new_PCLKRate=new_PCLKRate;
   -> pipe_agent_config_h.detected_PCLKRate_change_e;
 endfunction 
-
+function void pipe_monitor::notify_Rate_changed(logic[3:0] new_Rate);
+  //$display("flag",new_PCLKRate);
+  pipe_agent_config_h.new_Rate=new_Rate;
+  -> pipe_agent_config_h.detected_Rate_change_e;
+endfunction 
 
 // function void pipe_monitor::notify_link_up_sent();
 //   // Creating the sequnce item

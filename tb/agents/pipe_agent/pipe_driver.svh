@@ -39,6 +39,9 @@ task pipe_driver::run_phase(uvm_phase phase);
     case(pipe_seq_item_h.pipe_operation)
       SEND_TS: pipe_driver_bfm_h.send_ts(pipe_seq_item_h.ts_sent);
       SEND_TSES: pipe_driver_bfm_h.send_tses(pipe_seq_item_h.tses_sent);
+      SEND_EIOS:pipe_driver_bfm_h.send_eios();
+      SEND_EIEOS:pipe_driver_bfm_h.send_eieos();
+      SET_GEN:pipe_driver_bfm_h.current_gen=pipe_seq_item_h.gen;
       SEND_DATA: pipe_driver_bfm_h.send_data ();
       IDLE_DATA_TRANSFER: pipe_driver_bfm_h.send_idle_data();
       TLP_TRANSFER: pipe_driver_bfm_h.send_tlp(pipe_seq_item_h.tlp);
