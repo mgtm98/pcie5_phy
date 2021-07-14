@@ -12,11 +12,11 @@ typedef enum{
 } D_K_character;
 
 typedef enum{
-  GEN1,
-  GEN2,
-  GEN3,
-  GEN4,
-  GEN5
+  GEN1=1,
+  GEN2=2,
+  GEN3=3,
+  GEN4=4,
+  GEN5=5
 } gen_t;
 
 typedef struct {

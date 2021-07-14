@@ -2,8 +2,9 @@ class pipe_speed_change_with_equalization_seq extends pipe_base_seq;
 
 	`uvm_object_utils(pipe_speed_change_with_equalization_seq)
 
-  rand gen_t max_supported_gen_by_dsp;
-  gen_t max_supported_by_usp;
+  int max_supported_gen_by_dsp=`MAX_GEN_FAR_PARTENER;
+  int max_supported_gen_by_usp=`MAX_GEN_DUT;
+  int negotaited_rate;
   logic [7:0] control_reg [`NUM_OF_LANES];
   rand bit [5:0] local_lf;
   rand bit [5:0] local_fs;
@@ -12,11 +13,16 @@ class pipe_speed_change_with_equalization_seq extends pipe_base_seq;
   rand bit [5:0] post_cursor;
   rand bit enter_phase_2_3;
 
-	// Standard UVM Methods:
-	extern function new(string name = "pipe_speed_change_with_equalization_seq");
-	extern task body;
 
-  `SEND_RECV_TS
+
+  // Standard UVM Methods:
+  extern function new(string name = "pipe_speed_change_with_equalization_seq");
+  extern function automatic int calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+  extern task body;
+
+  extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
+  extern task get_tses_recived(output ts_s tses [`NUM_OF_LANES] );
+
 endclass:pipe_speed_change_with_equalization_seq
 
 function pipe_speed_change_with_equalization_seq::new(string name = "pipe_speed_change_with_equalization_seq");
@@ -24,6 +30,7 @@ function pipe_speed_change_with_equalization_seq::new(string name = "pipe_speed_
 endfunction
 
 task automatic pipe_speed_change_with_equalization_seq::body();
+
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   ts_s tses_send [`NUM_OF_LANES];
   ts_s tses_recv [`NUM_OF_LANES];
@@ -65,7 +72,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
 	  		tses_send = super.tses;
 	  		foreach(tses_send[i]) begin
 	        tses_send[i].speed_change = 1'b1;
-	        tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
+	        $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
 	        tses_send[i].ts_type = TS1;
 	      end
 	      this.send_seq_item(tses_send);
@@ -97,7 +104,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
   		tses_send = super.tses;
   		foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b1;
-        tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
+        $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
         tses_send[i].ts_type = TS2;
         tses_send[i].rx_preset_hint = 0; 	// TODO: values from control register
         tses_send[i].tx_preset = 0;				// TODO: values from control register
@@ -123,17 +130,76 @@ task automatic pipe_speed_change_with_equalization_seq::body();
   	end
   join
 
-  // bfm will respond to the dut signals
-  pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
-  start_item (pipe_seq_item_h);
-    if (!pipe_seq_item_h.randomize() with {pipe_operation == SPEED_CHANGE;}) begin
-      `uvm_error(get_name(), "")
+
+  // receive and send EIOS before enter rec.speed
+  flag = 0;
+  fork
+    //send EIOS until receive EIOS
+    while(!flag) begin
+      pipe_seq_item_h.pipe_operation=SEND_EIOS;
+      start_item (pipe_seq_item_h);
+      finish_item (pipe_seq_item_h);
     end
+    // Wait to receive EIOS
+    begin
+      @(pipe_agent_config_h.detected_eios_e);
+      flag=1;
+    end
+  join
+
+  @(pipe_agent_config_h.detected_TxElecIdle_and_RxStandby_asserted_e);
+
+  if(max_supported_gen_by_dsp>max_supported_gen_by_usp)
+    negotaited_rate=max_supported_gen_by_usp;
+  else
+    negotaited_rate=max_supported_gen_by_dsp;
+
+  $cast(pipe_seq_item_h.gen , negotaited_rate);
+  pipe_seq_item_h.pipe_operation=SET_GEN;
+  start_item (pipe_seq_item_h);
   finish_item (pipe_seq_item_h);
 
-  // TODO must send EIOS
+  // receive and send EIEOS after changing speed to exit electic idle(gen?)
+  flag = 0;
+  fork
+    //send EIEOS until receive EIEOS
+    while(!flag) begin
+      pipe_seq_item_h.pipe_operation=SEND_EIEOS;
+      start_item (pipe_seq_item_h);
+      finish_item (pipe_seq_item_h);
+    end
+    // Wait to receive EIEOS
+    begin
+      if(negotaited_rate<=2)begin
+        @(pipe_agent_config_h.detected_eieos_e);
+        flag=1;
+      end
+      else begin
+        @(pipe_agent_config_h.detected_eieos_gen3_e);
+        flag=1;
+      end
+    end
+  join
 
-  // 
+//assert width
+  case (negotaited_rate)
+    1:begin assert(pipe_agent_config_h.new_width==`GEN1_PIPEWIDTH)else `uvm_error(get_name(), "width not right");end
+    2:begin assert(pipe_agent_config_h.new_width==`GEN2_PIPEWIDTH)else `uvm_error(get_name(), "width not right");end
+    3:begin assert(pipe_agent_config_h.new_width==`GEN3_PIPEWIDTH)else `uvm_error(get_name(), "width not right");end
+    4:begin assert(pipe_agent_config_h.new_width==`GEN4_PIPEWIDTH)else `uvm_error(get_name(), "width not right");end
+    5:begin assert(pipe_agent_config_h.new_width==`GEN5_PIPEWIDTH)else `uvm_error(get_name(), "width not right");end 
+    default: `uvm_error(get_name(), "width not right")
+  endcase
+  //assert Rate
+  assert(pipe_agent_config_h.new_Rate==negotaited_rate)else`uvm_error(get_name(), "Rate signal not right");
+  //assert PCLKRate
+ assert(negotaited_rate==calc_gen(pipe_agent_config_h.new_width,pipe_agent_config_h.new_PCLKRate))else`uvm_error(get_name(), "PCLKRate signal not right"); 
+
+
+
+  
+
+
   pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   start_item (pipe_seq_item_h);
     if (!pipe_seq_item_h.randomize() with {pipe_operation == CHECK_EQ_PRESET_APPLIED;}) begin
@@ -177,15 +243,11 @@ task automatic pipe_speed_change_with_equalization_seq::body();
 
   		// inform the BFM what values of LF, FS that will be used
   		pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
-		  start_item (pipe_seq_item_h);
-		    if (!pipe_seq_item_h.randomize() with {
-		    																					pipe_operation == INFORM_LF_FS;
-		    																					lf_to_be_informed	== 0;	// TODO: dummy numbers
-		    																					fs_to_be_informed == 0; // TODO: dummy numbers
-    																					}) begin
-		      `uvm_error(get_name(), "")
-		    end
-		  finish_item (pipe_seq_item_h);
+		start_item (pipe_seq_item_h);
+		if (!pipe_seq_item_h.randomize() with {pipe_operation == INFORM_LF_FS; lf_to_be_informed	== 0;	 fs_to_be_informed == 0; }) begin
+			`uvm_error(get_name(), "");
+		end
+		finish_item (pipe_seq_item_h);
 
 		  // send TS1s with LF, FS that was informed to the BFM
   		while(1) begin
@@ -358,7 +420,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
       tses_send  = super.tses;
       foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b0;
-        tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
+        $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
         tses_send[i].ts_type = TS1;
       end
       this.send_seq_item(tses_send);
@@ -386,7 +448,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
       tses_send  = super.tses;
       foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b0;
-        tses_send[i].max_gen_supported = this.max_supported_gen_by_dsp;
+        $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
         tses_send[i].ts_type = TS2;
       end
       this.send_seq_item(tses_send);
@@ -406,3 +468,68 @@ task automatic pipe_speed_change_with_equalization_seq::body();
   join
   
 endtask:body
+
+
+
+
+
+
+
+
+
+
+
+
+task pipe_speed_change_with_equalization_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
+	pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
+	pipe_seq_item_h.tses_sent = tses;
+	start_item (pipe_seq_item_h);
+	  if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TSES;}) begin
+		`uvm_error(get_name(), "")
+	  end
+	finish_item (pipe_seq_item_h);
+  endtask : send_seq_item
+  
+  task pipe_speed_change_with_equalization_seq::get_tses_recived(output ts_s tses [`NUM_OF_LANES]);
+	@(pipe_agent_config_h.detected_tses_e);
+	tses = pipe_agent_config_h.tses_received;
+  endtask
+  
+  function automatic int pipe_speed_change_with_equalization_seq::calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+	  
+  
+	real PCLKRate_value;
+  real width_value;
+  real freq;
+  int gen;
+	case(PCLKRate)
+		3'b000:PCLKRate_value=0.0625;
+		3'b001:PCLKRate_value=0.125;
+		3'b010:PCLKRate_value=0.25;
+		3'b011:PCLKRate_value=0.5;
+		3'b100:PCLKRate_value=1;
+	endcase
+  
+
+	case(width)
+		2'b00:width_value=8;
+		2'b01:width_value=16;
+		2'b10:width_value=32;
+	endcase
+
+	freq=PCLKRate_value*width_value;
+
+	case(freq)
+		2:gen=1;
+		4:gen=2;
+		8:gen=3;
+		16:gen=4;
+		32:gen=5;
+		default:gen=0;
+	endcase
+	return gen;
+  endfunction
+  // speed_change_bit            
+
+
+

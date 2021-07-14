@@ -11,6 +11,33 @@
   `endif
   /*************************************************************************************/
   
+  /********************************MAX_GEN_SUPPORTED*************************************/
+`ifndef MAX_GEN_FAR_PARTENER
+  `define MAX_GEN_FAR_PARTENER 2
+`endif
+`ifndef MAX_GEN_DUT
+  `define MAX_GEN_DUT 2
+`endif
+/*********************************PIPE_widths*******************************************/
+`ifndef GEN1_PIPEWIDTH
+  `define GEN1_PIPEWIDTH 8
+`endif
+`ifndef GEN2_PIPEWIDTH
+  `define GEN2_PIPEWIDTH 8
+`endif
+`ifndef GEN3_PIPEWIDTH
+  `define GEN3_PIPEWIDTH 8
+`endif
+`ifndef GEN4_PIPEWIDTH
+  `define GEN4_PIPEWIDTH 8
+`endif
+`ifndef GEN5_PIPEWIDTH
+  `define GEN5_PIPEWIDTH 8
+`endif
+
+
+
+  /*************************************************************************************/
   /**************************** PIPE Agent Settings ************************************/
   `ifndef PIPE_MAX_WIDTH
     `define PIPE_MAX_WIDTH                32
