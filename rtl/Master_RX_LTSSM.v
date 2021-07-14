@@ -10,7 +10,6 @@ module  masterRxLTSSM #(parameter MAXLANES = 16)(
     output reg finish,
     output reg [3:0]exitTo,
     output reg [15:0]resetOsCheckers,
-    output reg disableDescrambler,
     output [3:0]lpifStatus,
     output reg [2:0]timeToWait,
     output reg enableTimer,
@@ -57,7 +56,6 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
 	        finish <= 1'b0;
 		    lastState<=4'hF;
             lastState_next<=4'hF;
-			disableDescrambler = 1'b1;
 		    //forcedetectflag<=1'b0;
         end
         else
@@ -69,7 +67,6 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
 
     always @(*)
     begin
-        //disableDescrambler = 1'b1;
         case(currentState)
         start:
         begin
@@ -141,7 +138,6 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
 		
             end
 		else if (substate == L0) begin
-			disableDescrambler = 1'b0;
 			nextState = start;
 			end
 		
