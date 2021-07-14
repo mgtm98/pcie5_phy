@@ -21,6 +21,7 @@ interface pipe_if
   logic [2*pipe_num_of_lanes-1:0]     RxSyncHeader;
   logic [pipe_num_of_lanes-1:0]       RxValid;
   logic [3*pipe_num_of_lanes-1:0]     RxStatus;
+  logic [pipe_num_of_lanes-1:0]       RxStandby;
   logic                               RxElecIdle;
   /*************************************************************************************/
   

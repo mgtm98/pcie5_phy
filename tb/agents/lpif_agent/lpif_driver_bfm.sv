@@ -70,10 +70,8 @@ interface lpif_driver_bfm #(
   endtask
 
   task link_up ();
-    wait(pl_linkup == 1);
-  	@(posedge lclk);
     lp_state_req <= ACTIVE;
-    wait(pl_state_sts == ACTIVE);
+    wait(pl_linkup == 1 && pl_state_sts == ACTIVE);
   	@(posedge lclk);
   endtask
 

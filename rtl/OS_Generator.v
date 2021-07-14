@@ -423,7 +423,7 @@ always@(posedge pclk,negedge reset_n) begin
 		   end
 		   // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		 DataValid <= {no_of_lanes{1'b0}};
+		  //DataValid <= {no_of_lanes{1'b0}};
 		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
 		  DataK<= {no_of_lanes{1'b0}};
 		  send<=1'b0;
@@ -684,7 +684,7 @@ always@(posedge pclk,negedge reset_n) begin
 		 end
 		 // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		 DataValid <= {no_of_lanes{1'b0}};
+		 //DataValid <= {no_of_lanes{1'b1}};
 		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
 		  DataK<= {no_of_lanes{1'b0}};
 		  send<=1'b0;
@@ -989,7 +989,7 @@ always@(posedge pclk,negedge reset_n) begin
 		 end
 		 // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		 DataValid <= {no_of_lanes{1'b0}};
+		  //DataValid <= {no_of_lanes{1'b0}};
 		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
 		  DataK<= {no_of_lanes{1'b0}};
 		  send<=1'b0;

@@ -18,6 +18,7 @@ interface pipe_monitor_bfm
   input logic [pipe_num_of_lanes-1:0]       RxValid,
   input logic [3*pipe_num_of_lanes-1:0]     RxStatus,
   input logic                               RxElecIdle,
+  input logic [pipe_num_of_lanes-1:0]       RxStandby,
   //input logic [pipe_num_of_lanes-1:0]       RxElecIdle,
   
   /*************************************************************************************/
@@ -172,6 +173,39 @@ initial begin
     proxy.notify_PCLKRate_changed(new_PCLKRate);
   end
 end
+// -----------------------------------------------------------
+// Rate changed
+// -----------------------------------------------------------
+initial begin
+  logic[3:0] new_Rate ;
+  @(build_connect_finished_e);
+  forever begin
+    @(Rate);
+    new_Rate=Rate;
+    proxy.notify_Rate_changed(new_Rate);
+  end
+end
+// -----------------------------------------------------------
+// TxElecIdle and RxStandby asserted
+// -----------------------------------------------------------
+initial begin
+  @(build_connect_finished_e);
+  forever begin
+    for (int i=0;i<=pipe_num_of_lanes-1;i++)
+    begin
+      wait((TxElecIdle[i]==1'b1)&&(RxStandby[i]==1'b1));
+    end
+    proxy.notify_TxElecIdle_and_RxStandby_asserted();
+    for (int i=0;i<=pipe_num_of_lanes-1;i++)
+    begin
+      wait((TxElecIdle[i]==1'b0)||(RxStandby[i]==1'b0));
+    end
+
+  end
+end
+
+//**********************************************************
+//**********************************************************
 
 initial begin 
   forever begin
@@ -347,13 +381,8 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
          `uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE) 
           for (int i=start_lane;i<=end_lane;i++)
           begin
-              wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-              // asserting that com char is K
-              assert(TxDataK[4*i+0]==1) else 
-              `uvm_fatal(" COM charecter is K sympol ", "");              
+              wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1'b1)&&(TxDataValid[i]==1'b1)); //wait to see a COM charecter          
           end
-
-         
 
           `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
 
@@ -426,10 +455,7 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
       begin
           for (int i=start_lane;i<=end_lane;i++)
           begin
-              wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-              // asserting that com char is K
-              assert(TxDataK[4*i+0]==1) else 
-              `uvm_fatal(" COM charecter is K sympol ", "");              
+              wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter        
           end
 
           reset_lfsr(monitor_tx_scrambler,current_gen);
@@ -499,10 +525,8 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
           begin
              // `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
               
-              wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-              // asserting that com char is K
-              assert(TxDataK[4*i+0]==1) else 
-              `uvm_fatal(" COM charecter is K sympol ", "");
+              wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
+
               //`uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
           end
 
@@ -910,10 +934,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
     end  
     for (int i = start_lane; i <= end_lane;i++)//sumbol 1
     begin
@@ -952,10 +973,8 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
+
     end  
     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3
     begin
@@ -1006,10 +1025,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
     end    
     @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<15;sympol_count++) //looping on the 16 sympol of TS
@@ -1111,7 +1127,7 @@ task automatic receive_eieos_gen3 (input int start_lane = 0,input int end_lane =
       end
     end
   end
-  proxy.notify_eieos_received();
+  proxy.notify_eieos_gen3_received();
 endtask
 /*******************************************EIOS********************************/
 task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
@@ -1121,10 +1137,8 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
+
     end  
     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 idl sumbol
     begin
@@ -1148,10 +1162,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
     end  
     for (int i = start_lane; i <= end_lane;i++)//sumbol 1 ,2,3 idl symbols
     begin
@@ -1169,10 +1180,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
-      wait(TxData[(i*32+0)+:8]==8'b101_11100); //wait to see a COM charecter
-      // asserting that com char is K
-      assert(TxDataK[4*i+0]==1) else 
-        `uvm_fatal(" COM charecter is K sympol ", ""); 
+      wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
     end    
     @(posedge PCLK);    
     for(int sympol_count =1;sympol_count<4;sympol_count++) 
@@ -1267,7 +1275,7 @@ task automatic receive_eios_gen3 (input int start_lane = 0,input int end_lane = 
       end
     end
   end
-  proxy.notify_eios_received();
+  proxy.notify_eios_gen3_received();
 endtask
 /*********************************************************************************************************************************/
   //wait for exit electricle idle

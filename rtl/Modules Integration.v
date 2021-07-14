@@ -15,6 +15,7 @@ input [63:0]RxDataK,
 input [4:0]numberOfDetectedLanes,
 input [3:0]substate,
 input [7:0]linkNumber,
+input disableScrambler,
 //input lp_force_detect,
 output [63:0]pl_tlpstart, 
 output [63:0]pl_dllpstart, 
@@ -45,7 +46,6 @@ output writeLinkNumber);
 	//wire forceDetect;
 	wire [15:0]rxElectricalIdle;
 	wire validOrderedSets;
-	wire disableDescrambler;
 	wire [3:0]lpifStatus;	
 
 	/*Essaily signals*/
@@ -76,7 +76,7 @@ output writeLinkNumber);
 							.RxData(RxData[m+:32]), .RxDataK(RxDataK[l+:4]), .RxStartBlock(RxStartBlock[i]), .RxSyncHeader(RxSyncHeader[j+:2]), .PIPEWIDTH(PIPEWIDTH),
 							.PIPESyncHeader(PIPESyncHeader[j+:2]), .PIPEDataValid(PIPEDataValid[i]), .PIPEData(PIPEData[m+:32]), .PIPEDataK(PIPEDataK[l+:4]),.PIPEElectricalIdle(rxElectricalIdle[i]));
 							
-			Descrambler descrambler(.clk(clk), .reset(reset), .turnOff(disableDescrambler), .PIPEDataValid(PIPEDataValid[i]), .PIPEWIDTH(PIPEWIDTH), 
+			Descrambler descrambler(.clk(clk), .reset(reset), .turnOff(disableScrambler), .PIPEDataValid(PIPEDataValid[i]), .PIPEWIDTH(PIPEWIDTH), 
 								.PIPESyncHeader(PIPESyncHeader[j+:2]), .seedValue(24'b0), .PIPEData(PIPEData[m+:32]), .PIPEDataK(PIPEDataK[l+:4]), 
 								.descramblerDataValid(descramblerDataValid[i]), .descramblerData(descramblerData[m+:32]), .descramblerDataK(descramblerDataK[l+:4]), 
 								.descramblerSyncHeader(descramblerSyncHeader[j+:2]));	
@@ -120,7 +120,6 @@ output writeLinkNumber);
 	 witeUpconfigureCapability,
 	 writerateid,
 	 writeLinkNumber,
-	 disableDescrambler,
 	 lpifStatus
 	);
 

@@ -27,12 +27,11 @@ class pipe_link_up_seq extends pipe_base_seq;
   extern local task config_linkwidth_accept_state_upstream;
   extern local task config_lanenum_wait_state_upstream;
   extern local task config_complete_state_upstream;
-  extern local task config_idle_state_upstream;
   extern local task config_linkwidth_start_state_downstream;
   extern local task config_linkwidth_accept_state_downstream;
   extern local task config_lanenum_wait_state_downstream;
   extern local task config_complete_state_downstream;
-  extern local task config_idle_state_downstream;
+  extern local task config_idle_state;
   
   // Standard UVM Methods:
   extern function new(string name = "pipe_link_up_seq");
@@ -45,10 +44,16 @@ function pipe_link_up_seq::new(string name = "pipe_link_up_seq");
 endfunction
   
 task pipe_link_up_seq::body;
+  `uvm_info("pipe_link_up_seq", "Started pipe_link_up_seq", UVM_MEDIUM)
   if(!this.randomize()) begin
     `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
   end
 
+<<<<<<< HEAD
+=======
+  random_start_polling = 0;
+
+>>>>>>> 82ae31bf19ce426b628f8dad7e587c03e42aa526
   ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = 0;
   ts_sent.link_number      = this.link_number;
@@ -85,6 +90,7 @@ task pipe_link_up_seq::body;
   end
   config_state;
   -> pipe_agent_config_h.link_up_finished_e;
+  `uvm_info("pipe_link_up_seq", "Finished pipe_link_up_seq", UVM_MEDIUM)
 endtask: body
 
 task pipe_link_up_seq::detect_state;
@@ -199,14 +205,14 @@ task pipe_link_up_seq::config_state;
   config_linkwidth_accept_state_upstream;
   config_lanenum_wait_state_upstream;
   config_complete_state_upstream;
-  config_idle_state_upstream;
+  config_idle_state;
   end
   else begin
   config_linkwidth_start_state_downstream;
   config_linkwidth_accept_state_downstream;
   config_lanenum_wait_state_downstream;
   config_complete_state_downstream;
-  config_idle_state_downstream;
+  config_idle_state;
   end
 endtask
 
@@ -450,6 +456,8 @@ task pipe_link_up_seq::config_complete_state_upstream;
   join
 endtask
 
+<<<<<<< HEAD
+=======
 task pipe_link_up_seq::config_idle_state_upstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
   int num_of_idle_data_received [`NUM_OF_LANES];
@@ -503,8 +511,10 @@ task pipe_link_up_seq::config_idle_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_idle_state_upstream", UVM_MEDIUM)
 endtask
 
+>>>>>>> origin/master
 task pipe_link_up_seq::config_linkwidth_start_state_downstream;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
   int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];
@@ -561,6 +571,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_start_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
@@ -568,7 +579,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
   // Update the lane numbers to start with zero and increase sequentially
   foreach(tses_sent[i])
   begin
-    tses_sent[i].lane_number = i;
+    tses_sent[i].lane_number = `NUM_OF_LANES - i - 1;
     tses_sent[i].use_lane_number = 1;
   end
 endtask
@@ -695,55 +706,62 @@ task pipe_link_up_seq::config_complete_state_downstream;
   join
 endtask
 
-task pipe_link_up_seq::config_idle_state_downstream;
+task pipe_link_up_seq::config_idle_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  int num_of_idle_data_received [`NUM_OF_LANES];
+  int num_of_idle_data_received;
   bit eight_consecutive_idle_data_detected;
+  bit one_idle_data_received;
   int i;
-  `uvm_info("pipe_link_up_seq", "Entered config_idle_state_downstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Entered config_idle_state", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
-  foreach(num_of_idle_data_received[i])
-  begin
-    num_of_idle_data_received[i] = 0;
-  end
+    num_of_idle_data_received = 0;
 
   // Transmit 16 idle data until 8 consecutive idle data are received
   eight_consecutive_idle_data_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
-
-      for (i = 0; i < 16; i++)
-      begin
-        start_item(pipe_seq_item_h);
-        finish_item(pipe_seq_item_h);
-      end
-      start_item(pipe_seq_item_h);
-      pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
-      finish_item(pipe_seq_item_h);
+      one_idle_data_received = 1;
     end
 
+    begin 
+      while (!one_idle_data_received)
+      begin
+        start_item(pipe_seq_item_h);
+        pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
+        finish_item(pipe_seq_item_h);
+        start_item(pipe_seq_item_h);
+        pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
+        finish_item(pipe_seq_item_h);
+      end
+    end
+
+    begin
+      wait (one_idle_data_received);
+        for (i = 0; i < 16; i++)
+        begin
+          start_item(pipe_seq_item_h);
+          pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
+          finish_item(pipe_seq_item_h);
+        end
+        start_item(pipe_seq_item_h);
+        pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
+        finish_item(pipe_seq_item_h);
+    end
+ 
     begin
       while (!eight_consecutive_idle_data_detected)
       begin
         @(pipe_agent_config_h.idle_data_detected_e);
         
-        foreach(idle_data_received[i])
-        begin
-          begin
-            num_of_idle_data_received[i] += 1;
-          end
-        end
+        num_of_idle_data_received += 1;
 
-        // Check if any lane detected 8 consecutive idle data
-        foreach(num_of_idle_data_received[i])
+        // Check if 8 consecutive idle data detected
+        if(num_of_idle_data_received == 8) 
         begin
-          if(num_of_idle_data_received[i] == 8)
-          begin
-            eight_consecutive_idle_data_detected = 1;
-          end
+          eight_consecutive_idle_data_detected = 1;
         end
       end
     end
