@@ -768,8 +768,8 @@ endtask
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == D) begin
-      temp =data[i];
-      data_scrambled[i] = scramble( driver_scrambler, temp,lanenum, current_gen);
+      temp = data[i];
+      data_scrambled[i] = scramble(driver_scrambler, temp,lanenum, current_gen);
     end
     else if (k_data [i] == K) begin
       data_scrambled[i] = data[i];

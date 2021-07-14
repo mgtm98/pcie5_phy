@@ -49,8 +49,11 @@ task pipe_link_up_seq::body;
     `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
   end
 
+<<<<<<< HEAD
+=======
   random_start_polling = 0;
 
+>>>>>>> 82ae31bf19ce426b628f8dad7e587c03e42aa526
   ts_sent.n_fts            = this.n_fts;
   ts_sent.lane_number      = 0;
   ts_sent.link_number      = this.link_number;
