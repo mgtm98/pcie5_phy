@@ -99,7 +99,7 @@ wire [3:0]RXexitTo;
 ///////////output linkUp,////////////
 wire witeUpconfigureCapability;
 wire writerateid;
-wire disableScrambler;
+wire disableScrambler,turnOffScrambler_flag;
 
 mainLTSSM #(
 .Width(MAXPIPEWIDTH),
@@ -117,7 +117,6 @@ mainLTSSM #(
     .rateIdIn(rateid),
     .upConfigureCapabilityIn(upConfigureCapability),
     .writeNumberOfDetectedLanes(WriteDetectLanesFlag),
-    //.writeLinkNumber(WriteLinkNumFlag),
     .writeUpconfigureCapability(witeUpconfigureCapability),
     .writeRateId(writerateid),
     .finishTx(TXFinishFlag),
@@ -128,7 +127,6 @@ mainLTSSM #(
     .linkUp(linkUp),
     .GEN(GEN),
     .numberOfDetectedLanesOut(numberOfDetectedLanes),
-    //.linkNumberOut(linkNumber),
     .rateIdOut(rateIdInTx),
     .upConfigureCapabilityOut(upConfigureCapabilityInTX),//////not used in tx
     .lpifStateStatus(pl_state_sts),
@@ -141,7 +139,8 @@ mainLTSSM #(
     .linkNumberOutTx(linkNumberTxInput),
     .linkNumberOutRx(linkNumberRxInput),
     .width(width),
-    .disableScrambler(disableScrambler)
+    .disableScrambler(disableScrambler),
+    .turnOffScrambler_flag(turnOffScrambler_flag)
 );
 
  
@@ -274,7 +273,8 @@ TX
 .TxDataK3(TxDataK[55:52]),
 .TxDataK2(TxDataK[59:56]),
 .TxDataK1(TxDataK[63:60]),
-.turnOff(disableScrambler));
+.turnOff(disableScrambler),
+.turnOffScrambler_flag(turnOffScrambler_flag));
 
 assign phy_reset = lpreset;
 

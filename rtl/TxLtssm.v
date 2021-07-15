@@ -60,8 +60,8 @@ output reg [ LANESNUMBER-1:0]DetectReq,
 output reg [ LANESNUMBER-1:0]ElecIdleReq,
 input  [ LANESNUMBER-1:0]DetectStatus,
 //scrambler
-output [23:0]seedValue
-
+output [23:0]seedValue,
+output reg turnOffScrambler_flag
 );
 
 // states encoding
@@ -90,6 +90,7 @@ reg WriteDetectLanesFlagReg;
 reg TimerEnable;
 reg TimerStart;
 reg [2:0]TimerIntervalCode;
+reg turnOffScrambler_flag_next;
 wire TimeOut;
 Timer #(.Width(32)) T(.Gen(Gen),.Reset(Reset),.Pclk(Pclk),.Enable(TimerEnable),.Start(TimerStart),.TimerIntervalCode(TimerIntervalCode),.TimeOut(TimeOut));
 
@@ -121,7 +122,7 @@ end
 always @ *
 begin
 //default value for outputs (synthesis)
-ExitToState = 4'bxxxx;
+ExitToState = 4'd0;
 ExitToFlag  = 0 ;
 
 	case(State)
@@ -188,10 +189,12 @@ OSGeneratorStart <=0;
 WriteLinkNumFlag <=0;
 	case(State)
 		DetectQuiet:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData <= 1;
 			ElecIdleReq <= {LANESNUMBER{1'b1}};
 		end
 		DetectActive:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			//DetectReq<= {LANESNUMBER{1'b1}};
 			if (DetectStatus == {LANESNUMBER{1'b1}} || DetectLanes == {LANESNUMBER{1'b1}} )begin
@@ -202,6 +205,7 @@ WriteLinkNumFlag <=0;
 				end
 		end
 		 PollingActive:begin
+			 turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -214,6 +218,7 @@ WriteLinkNumFlag <=0;
 			end
 		end
 		PollingConfigration:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -225,6 +230,7 @@ WriteLinkNumFlag <=0;
 			end
 		end
 		ConfigrationLinkWidthStart:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -244,6 +250,7 @@ WriteLinkNumFlag <=0;
 		end
 		
 		ConfigrationLinkWidthAccept:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -260,6 +267,7 @@ WriteLinkNumFlag <=0;
 			end
 		end
 		ConfigrationLaneNumWait:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -271,6 +279,7 @@ WriteLinkNumFlag <=0;
 			end
 		end
 		ConfigrationLaneNumActive:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -283,9 +292,10 @@ WriteLinkNumFlag <=0;
 		end
 		
 		ConfigrationComplete:begin
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(!OSGeneratorBusy)begin //it is supposed that
+			if(!OSGeneratorBusy && ExitToState != ConfigrationIdle)begin //it is supposed that
 			OSType<=2'b01; //TS2
 		   LinkNumber<=ReadLinkNum;
 			Rate<=MAX_GEN;
@@ -297,11 +307,13 @@ WriteLinkNumFlag <=0;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
+			turnOffScrambler_flag_next<=1'b0;
 			OSType<=3'b100; //IDLE
 			OSGeneratorStart<=1;
 			end
 		end
 		L0:begin
+			turnOffScrambler_flag<=1'b0;
 			HoldFIFOData<=0;
 			MuxSel <=1; //TODO : check is it 1 or 0 for orderset
 		end
@@ -425,6 +437,7 @@ end
 always @ (posedge Pclk)
 begin
 	if(!Reset) begin
+		turnOffScrambler_flag<= 1'b1;
 		State <= Idle;
 		TXExitTo <= DetectQuiet;
 		TXFinishFlag <= 0;
@@ -432,6 +445,7 @@ begin
 		WriteDetectLanesFlag<=0;
 	end
 	else begin
+		turnOffScrambler_flag <= turnOffScrambler_flag_next;
 		State   <= NextState;
 		TXExitTo<= ExitToState;
 		TXFinishFlag <= ExitToFlag;
