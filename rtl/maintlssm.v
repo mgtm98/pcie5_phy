@@ -25,6 +25,7 @@ parameter GEN5_PIPEWIDTH = 8)
     input [3:0] gotoTx,
     input [3:0] gotoRx,
     input forceDetect,
+    input turnOffScrambler_flag,
     output reg linkUp,
     output reg[2:0] GEN,
     output [4:0] numberOfDetectedLanesOut,
@@ -69,6 +70,11 @@ parameter GEN5_PIPEWIDTH = 8)
         configurationIdle = 4'd9,
         L0 = 4'd10;
 
+    always @(posedge clk) 
+    begin
+        if(turnOffScrambler_flag)disableScrambler<=1'b1;
+        else disableScrambler<=1'b0;      
+    end
     //Data resgiter handling
     always@(posedge clk)
     begin
@@ -173,7 +179,7 @@ end
 //output handling block
     always @(*)
     begin
-        disableScrambler = 1'b1;
+        //disableScrambler = 1'b1;
        case (currentState)
         reset_:
         begin
@@ -293,7 +299,7 @@ end
                         end
                 {configurationIdle,configurationIdle}:
                 begin
-                     disableScrambler = 1'b0;
+                    //disableScrambler = 1'b0;
                     if (finishRx&&gotoRx==L0) 
                         begin
                             linkUp = 1'b1;
@@ -317,7 +323,7 @@ end
         end
         active_:
         begin
-            disableScrambler = 1'b0;
+            //disableScrambler = 1'b0;
             {substateTxnext,substateRxnext}= {L0,L0};
             lpifStateStatus = active_;
         end
