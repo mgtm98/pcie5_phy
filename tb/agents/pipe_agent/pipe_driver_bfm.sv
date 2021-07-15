@@ -419,8 +419,8 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
   //bit RxElecIdle_Q[$];
 
   for(int i = start_lane; i < end_lane; i++) begin
-    RxDataValid[i] <= 1;
-    RxValid[i] <= 1;
+    RxDataValid[i] = 1;
+    RxValid[i] = 1;
   end
 
   reset_lfsr(driver_scrambler, current_gen);
@@ -432,8 +432,6 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
   begin
     while(RxData_Q.size())
     begin
-      @(posedge PCLK);
-      
       
         // Stuffing the Data and characters depending on the number of Bytes sent per clock on each lane
       for(int j=0;j<width/8;j++)
@@ -446,21 +444,19 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
       for(int i = start_lane;i<end_lane;i++)
       begin
         //duplicating the Data and Characters to each lane in the driver
-        RxData[i* pipe_max_width +: pipe_max_width] <=Data ;
-        RxDataK[i* pipe_max_width/8 +:pipe_max_width/8] <= Character;
+        RxData[i* pipe_max_width +: pipe_max_width] =Data ;
+        RxDataK[i* pipe_max_width/8 +:pipe_max_width/8] = Character;
         
       end
+      @(posedge PCLK);
     end 
   end
 
-  
   if(current_gen > GEN2)
   begin
     
     while(RxData_Q.size())
-    begin
-      @(posedge PCLK);
-      
+    begin      
       for(int i = start_lane;i<end_lane;i++)
       begin
 
@@ -472,9 +468,14 @@ task automatic send_ts(ts_s ts ,int start_lane = 0, int end_lane = pipe_num_of_l
         end
 
         //duplicating the Data and Characters to each lane in the driver
-        RxData[i* pipe_max_width +:pipe_max_width] <=Data ;
+        RxData[i* pipe_max_width +:pipe_max_width] =Data ;
       end
+    @(posedge PCLK);  
     end     
+  end
+  for(int i = start_lane; i < end_lane; i++) begin
+    RxDataValid[i] = 0;
+    RxValid[i] = 0;
   end
 endtask
 
@@ -506,11 +507,9 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   begin
     while(RxData_Q[0].size())
     begin
-      @(posedge PCLK);
-
       for(int i = start_lane; i < end_lane; i++) begin
-        RxDataValid[i] <= 1;
-        RxValid[i] <= 1;
+        RxDataValid[i] = 1;
+        RxValid[i] = 1;
       end
       
       for(int i = start_lane;i<end_lane;i++)
@@ -524,15 +523,15 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         end
 
         //duplicating the Data and Characters to each lane in the driver
-        RxData[i*pipe_max_width+:pipe_max_width] <=Data[i] ;
-        RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] <= Character[i];
+        RxData[i*pipe_max_width+:pipe_max_width] =Data[i] ;
+        RxDataK[i *pipe_max_width/8 +:pipe_max_width/8] = Character[i];
       end
+      @(posedge PCLK);
     end 
   end
-  @(posedge PCLK);
   for(int i = start_lane; i < end_lane; i++) begin
-    RxDataValid[i] <= 0;
-    RxValid[i] <= 0;
+    RxDataValid[i] = 0;
+    RxValid[i] = 0;
   end
 endtask
 
