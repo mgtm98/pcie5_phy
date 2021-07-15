@@ -26,7 +26,6 @@ output [3:0]exitTo,
 output witeUpconfigureCapability,
 output writerateid,
 output writeLinkNumber,
-output disableDescrambler,
 output [3:0]lpifStatus
 );
 
@@ -88,7 +87,6 @@ masterRxLTSSM masterRxLTSSM(
     finish,
     exitTo,
     resetOsCheckers,
-    disableDescrambler,
     lpifStatus,
     setTimer,
     enableTimer,

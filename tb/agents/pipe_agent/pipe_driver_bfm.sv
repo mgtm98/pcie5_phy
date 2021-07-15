@@ -74,7 +74,7 @@ import pipe_agent_pkg::*;
 //------------------------------------------
 // Data Members
 //------------------------------------------
-gen_t current_gen;
+gen_t current_gen = GEN1;
 scrambler_s driver_scrambler;
 //bit [15:0] lfsr [`NUM_OF_LANES];
 bit [5:0]  lf_to_be_recvd;
@@ -103,7 +103,7 @@ initial begin
     LocalFS                               = 0;
     LocalTxCoeffcientsValid               = 0;
     LinkEvaluationFeedbackDirectionChange = 0;
-
+    current_gen                           = GEN1;
   
     PhyStatus = {pipe_num_of_lanes{1'b1}};
 
@@ -741,11 +741,13 @@ function void send_idle_data ();
 endfunction
 
 task send_data ();
+  `uvm_info("pipe_driver_bfm","entered send data",UVM_MEDIUM)
+  `uvm_info("pipe_driver_bfm",$sformatf("current_gen = %s",current_gen.name()),UVM_MEDIUM)
   assert (PowerDown == 4'b0000) 
   else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
-  RxElecIdle = 1'b0;  
+  RxElecIdle = 0;  
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    RxDataValid [i] = 1'b1;
+    RxDataValid [i] = 1;
     // RxValid [i] = 1'b1;
   end
 	if (current_gen == GEN1 || current_gen == GEN2)
@@ -753,38 +755,48 @@ task send_data ();
 	else if (current_gen == GEN3 || current_gen == GEN4 || current_gen == GEN5) 
 	 	send_data_gen_3_4_5 ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
-    RxDataValid [i] = 1'b0;
+    RxDataValid [i] = 0;
     // RxValid [i] = 1'b0;
   end
 endtask
 
  task automatic send_data_gen_1_2 ();
   int lanenum;
-  byte data_scrambled [$];
+  byte unsigned data_scrambled [$];
   int pipe_width = get_width();
   int bus_data_width = (pipe_num_of_lanes * pipe_width);
   for(int i = 0; i < data.size(); i++) begin
+    `uvm_info("pipe_driver_bfm",$sformatf("zeft_queue = %p",data),UVM_MEDIUM)
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == D) begin
-      temp =data[i];
-      data_scrambled[i] = scramble( driver_scrambler, temp,lanenum, current_gen);
+      temp = data[i];
+      data_scrambled[i] = scramble(driver_scrambler, temp,lanenum, current_gen);
     end
     else if (k_data [i] == K) begin
       data_scrambled[i] = data[i];
     end
   end  
-  for (int k = 0; k < data_scrambled.size() + k; k = k + (bus_data_width)/8) begin
-    @ (posedge PCLK);    
-    for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
+  `uvm_info("pipe_driver_bfm",$sformatf("zeft_scrambled = %p",data_scrambled),UVM_MEDIUM)
+  `uvm_info("pipe_driver_bfm",$sformatf("size_menn = %d",data_scrambled.size()),UVM_MEDIUM)  
+  for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin
+    @ (posedge PCLK);  
+    `uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
+    `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
+    for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j++) begin
       for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
+        `uvm_info("pipe_driver_bfm",$sformatf("i_menna = %d",i),UVM_MEDIUM)  
+        `uvm_info("pipe_driver_bfm",$sformatf("j_menna = %d",j),UVM_MEDIUM)  
+        `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width = %d",bus_data_width),UVM_MEDIUM)  
         RxData[(8*i) +: 8] = data_scrambled.pop_front();
         RxDataK[i] = k_data.pop_front();
+        `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
       end
     end
   end
+  `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
-    for (int j = lanenum + 1; j < (bus_data_width)/8; j = j ++) begin
+    for (int j = lanenum + 1; j < (bus_data_width)/8; j ++) begin
       RxData [(8*j) +: 8] = 8'b11110111;
       RxDataK[j] = 1'b1;
     end

@@ -108,6 +108,45 @@
 # End of Stack Trace
 
 
+<<<<<<< HEAD
+# Current time Sat Jun 19 00:42:03 2021
+# Program = vsim
+# Id = "10.4e"
+# Version = "2016.04"
+# Date = "Apr  9 2016"
+# Platform = win64
+# Signature = 51a056345942860ec1e5920e3c0e5733
+# End of Stack Trace
+
+
+# Current time Sat Jun 19 00:42:03 2021
+# Program = vsim
+# Id = "10.4e"
+# Version = "2016.04"
+# Date = "Apr  9 2016"
+# Platform = win64
+# Signature = 51a056345942860ec1e5920e3c0e5733
+# End of Stack Trace
+
+
+# Current time Sat Jun 19 00:42:03 2021
+# Program = vsim
+# Id = "10.4e"
+# Version = "2016.04"
+# Date = "Apr  9 2016"
+# Platform = win64
+# Signature = 51a056345942860ec1e5920e3c0e5733
+# End of Stack Trace
+
+
+# Current time Sat Jun 19 00:42:03 2021
+# Program = vsim
+# Id = "10.4e"
+# Version = "2016.04"
+# Date = "Apr  9 2016"
+# Platform = win64
+# Signature = 51a056345942860ec1e5920e3c0e5733
+=======
 # Current time Mon Jul 12 20:58:33 2021
 # ModelSim SE Stack Trace
 # Program = vsim
@@ -171,6 +210,7 @@
 # Date = "Dec  7 2017"
 # Platform = win64
 # Signature = 2055aba205e7f32dd5614c32f97c438c
+>>>>>>> origin/master
 # End of Stack Trace
 
 

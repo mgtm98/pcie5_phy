@@ -169,6 +169,7 @@ module hdl_top;
     .RxStatus              (PIPE.RxStatus),
     .RxStartBlock          (PIPE.RxStartBlock),
     .RxSyncHeader          (PIPE.RxSyncHeader),
+    .RxStandby             (PIPE.RxStandby),
     .TxData                (PIPE.TxData),
     .TxDataK               (PIPE.TxDataK),
     .TxDataValid           (PIPE.TxDataValid),
@@ -205,12 +206,12 @@ module hdl_top;
     .MAXPIPEWIDTH (`PIPE_MAX_WIDTH),
     .DEVICETYPE (!`IS_ENV_UPSTREAM), //0 for downstream 1 for upstream
     .LANESNUMBER (`NUM_OF_LANES),
-    .GEN1_PIPEWIDTH (8) ,	
-    .GEN2_PIPEWIDTH (8) ,	
-    .GEN3_PIPEWIDTH (8) ,								
-    .GEN4_PIPEWIDTH (8) ,	
-    .GEN5_PIPEWIDTH (8) ,	
-    .MAX_GEN (1)
+    .GEN1_PIPEWIDTH (`GEN1_PIPEWIDTH) ,	
+    .GEN2_PIPEWIDTH (`GEN2_PIPEWIDTH) ,	
+    .GEN3_PIPEWIDTH (`GEN3_PIPEWIDTH) ,								
+    .GEN4_PIPEWIDTH (`GEN4_PIPEWIDTH) ,	
+    .GEN5_PIPEWIDTH (`GEN5_PIPEWIDTH) ,	
+    .MAX_GEN (`MAX_GEN_DUT)
   ) DUT (
   . CLK (clk),
   . lpreset                               (LPIF.reset),
@@ -228,6 +229,7 @@ module hdl_top;
   . RxDataK                               (PIPE.RxDataValid),
   . RxStartBlock                          (PIPE.RxStartBlock),
   . RxSyncHeader                          (PIPE.RxSyncHeader),
+  //. RxStandby                             (PIPE.RxStandby), // missing the design now 
   . RxStatus                              (PIPE.RxStatus),
   . RxElectricalIdle                      (PIPE.RxElecIdle),
   . PowerDown                             (PIPE.PowerDown),
