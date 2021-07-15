@@ -1383,6 +1383,7 @@ endtask
   dllp_t dllp_sent;
   tlp_t tlp_sent;
   bit [7:0] [bus_data_kontrol_param : 0] data_descrambled;
+  bit [7:0] [bus_data_kontrol_param : 0] idle_descrambled;
   byte tlp_q [$];
   byte dllp_q [$];
   int start_tlp;
@@ -1401,6 +1402,13 @@ initial begin
        wait (TxDataValid[i] == 1) ; 	
      end	
      @ (posedge PCLK);
+     
+     if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
+      repeat((16*8)/pipe_width) begin
+        @ (posedge PCLK);
+      end
+     end
+    else begin  
      for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
        if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
          start_tlp = i;
@@ -1410,16 +1418,22 @@ initial begin
          start_dllp = i;
          receive_dllp_gen_1_2; 
        end
-        else if ((TxDataK[i] == 0 && TxData[(8*i) +: 8] == 8'b0000_0000)) begin
-          num_idle_data++;
+        else if (TxDataK[i] == 0) begin
+          lanenum = $floor(i/(pipe_max_width/8.0));
+          temp_value = TxData[(8*i) +: 8];
+          idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+          if (idle_descrambled[i] == 8'b0000_0000)
+            num_idle_data++;                          
           if (num_idle_data == bus_data_width/8) begin
-            proxy.notify_idle_data_sent();
+            proxy.notify_idle_data_received();
             num_idle_data = 0;
           end
         end
-     end
-   end
- end
+
+        end
+    end
+    end
+  end
  
  task automatic receive_dllp_gen_1_2;
   int end_dllp = (bus_data_width_param + 1)/8;
@@ -1502,6 +1516,13 @@ initial begin
        wait (RxDataValid[i] == 1) ; 	
      end	
      @ (posedge PCLK);
+
+     if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
+      repeat((16*8)/pipe_width) begin
+        @ (posedge PCLK);
+      end
+     end
+
      for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
        if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
          start_tlp = i;
@@ -1511,8 +1532,12 @@ initial begin
          start_dllp = i;
          send_dllp_gen_1_2; 
        end
-        else if ((RxDataK[i] == 0 && RxData[(8*i) +: 8] == 8'b0000_0000)) begin
-          num_idle_data++;
+        else if (RxDataK[i] == 0) begin
+          lanenum = $floor(i/(pipe_max_width/8.0));
+          temp_value = TxData[(8*i) +: 8];
+          idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+          if (idle_descrambled[i] == 8'b0000_0000)
+            num_idle_data++;                          
           if (num_idle_data == bus_data_width/8) begin
             proxy.notify_idle_data_sent();
             num_idle_data = 0;
