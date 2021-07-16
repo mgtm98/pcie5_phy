@@ -49,14 +49,18 @@ task pipe_driver::run_phase(uvm_phase phase);
       // PCLK_RATE_CHANGE: pipe_driver_bfm_h.change_pclk_rate(pipe_seq_item_h.pclk_rate);
       // WIDTH_CHANGE: pipe_driver_bfm_h.change_width(pipe_seq_item_h.pipe_width);
       // SPEED_CHANGE: pipe_driver_bfm_h.change_speed();
-      // CHECK_EQ_PRESET_APPLIED: pipe_driver_bfm_h.eqialization_preset_applied();
-      INFORM_LF_FS: pipe_driver_bfm_h.inform_lf_fs( pipe_seq_item_h.lf_to_be_informed,
-                                                    pipe_seq_item_h.lf_to_be_informed);
-      SET_LOCAL_LF_FS: pipe_driver_bfm_h.set_local_lf_fs ( pipe_seq_item_h.lf_to_be_informed,
-                                                           pipe_seq_item_h.lf_to_be_informed);
-      SET_CURSOR_PARAMS: pipe_driver_bfm_h.set_cursor_params ( pipe_seq_item_h.cursor,
-                                                           pipe_seq_item_h.pre_cursor,
-                                                           pipe_seq_item_h.post_cursor);
+      CHECK_EQ_PRESET_APPLIED: pipe_driver_bfm_h.eqialization_preset_applied();
+      SET_EQ_PARAM:pipe_driver_bfm_h.set_eq_param(  pipe_seq_item_h.lf_usp,
+                                                    pipe_seq_item_h.fs_usp,
+                                                    pipe_seq_item_h.lf_dsp,
+                                                    pipe_seq_item_h.fs_dsp,
+                                                    pipe_seq_item_h.cursor,
+                                                    pipe_seq_item_h.pre_cursor,
+                                                    pipe_seq_item_h.post_cursor,
+                                                    pipe_seq_item_h.tx_preset,
+                                                    pipe_seq_item_h.rx_preset_hint,
+                                                    pipe_seq_item_h.local_txPreset_coefficients);
+
       // SEND_IDLE_DATA: pipe_driver_bfm_h.send_idle_data(pipe_seq_item_h.start_lane, pipe_seq_item_h.end_lane);
       ASSERT_EVAL_FEEDBACK_CHANGED: begin
         assert(pipe_driver_bfm_h.eval_feedback_was_asserted == 1) else

@@ -15,13 +15,18 @@ class pipe_seq_item extends uvm_sequence_item;
   rand ts_s tses_sent [];
   rand int tlp_gen_1_2_no_of_bytes;
 
-  bit [5:0] lf_to_be_informed;                    // used to inform the BFM values from the seq
-  bit [5:0] fs_to_be_informed;                    // used to inform the BFM values from the seq
-  bit [5:0] pre_cursor;                           // used to inform the BFM values from the seq
-  bit [5:0] cursor;                               // used to inform the BFM values from the seq
-  bit [5:0] post_cursor;                          // used to inform the BFM values from the seq
-  bit [5:0] local_lf;                             // used to inform the BFM values from the seq
-  bit [5:0] local_fs;                             // used to inform the BFM values from the seq
+  // used to inform the BFM with the EQ parameters from the seq
+  bit [5:0]  lf_usp;
+  bit [5:0]  fs_usp;
+  bit [5:0]  lf_dsp;
+  bit [5:0]  fs_dsp;
+  bit [5:0]  cursor;
+  bit [5:0]  pre_cursor;
+  bit [5:0]  post_cursor;
+  bit [2:0]  rx_preset_hint;
+  bit [3:0]  tx_preset;
+  bit [17:0] local_txPreset_coefficients;
+
   
   constraint c1 {
     tlp_gen_1_2_no_of_bytes > 3;

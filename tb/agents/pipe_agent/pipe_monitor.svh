@@ -39,6 +39,7 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_width_changed(logic[1:0] new_width);
   extern function void notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
   extern function void notify_Rate_changed(logic[3:0] new_Rate);
+  extern function void notify_TxDeemph_changed(logic[17:0] new_TxDeemph);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -144,6 +145,11 @@ function void pipe_monitor::notify_Rate_changed(logic[3:0] new_Rate);
   //$display("flag",new_PCLKRate);
   pipe_agent_config_h.new_Rate=new_Rate;
   -> pipe_agent_config_h.detected_Rate_change_e;
+endfunction 
+function void pipe_monitor::notify_TxDeemph_changed(logic[17:0] new_TxDeemph);
+  //$display("flag",new_PCLKRate);
+  pipe_agent_config_h.new_TxDeemph=new_TxDeemph;
+  -> pipe_agent_config_h.detected_TxDeemph_change_e;
 endfunction 
 
 // function void pipe_monitor::notify_link_up_sent();
