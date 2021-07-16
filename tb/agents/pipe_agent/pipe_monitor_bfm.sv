@@ -1525,7 +1525,7 @@ initial begin
      if (RxDataK[0] == 1 && RxData[(8*0) +: 8] == 8'b10111100) begin //comm 
       repeat(16) begin
         @ (posedge PCLK);
-        `uvm_info("pipe_monitor_bfm", "momken clock", UVM_MEDIUM)
+        `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
       end
      end
      else begin
@@ -1548,7 +1548,10 @@ initial begin
           temp_value = RxData[(8*i) +: 8];
           `uvm_info("pipe_monitor_bfm", $sformatf("data_menna3= %h",RxData[(8*i) +: 8]), UVM_MEDIUM)
           `uvm_info("pipe_monitor_bfm", $sformatf("lanenum= %d",lanenum), UVM_MEDIUM)
-          idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+          if ((i%4) == 0) 
+            idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+          else
+          idle_descrambled[i] = 8'b1111_1111;
           `uvm_info("pipe_monitor_bfm", $sformatf("idle_descrambled= %h",idle_descrambled[i]), UVM_MEDIUM)
           if (idle_descrambled[i] == 8'b0000_0000) begin
             `uvm_info("pipe_monitor_bfm", "menna 7", UVM_MEDIUM)
