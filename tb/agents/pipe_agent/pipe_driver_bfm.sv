@@ -792,7 +792,7 @@ endtask
         `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
       end
     end
-    @ (posedge PCLK);  
+    @ (posedge PCLK);
   end
   `uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
