@@ -780,7 +780,6 @@ endtask
   `uvm_info("pipe_driver_bfm",$sformatf("zeft_scrambled = %p",data_scrambled),UVM_MEDIUM)
   `uvm_info("pipe_driver_bfm",$sformatf("size_menn = %d",data_scrambled.size()),UVM_MEDIUM)  
   for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin
-    @ (posedge PCLK);  
     `uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
     `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
     for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j++) begin
@@ -793,6 +792,7 @@ endtask
         `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
       end
     end
+    @ (posedge PCLK);
   end
   `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
