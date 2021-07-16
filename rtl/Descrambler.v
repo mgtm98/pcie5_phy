@@ -25,7 +25,7 @@ module Descrambler(input wire clk, input wire reset, input wire turnOff, input w
 		else 
 			lfsrOut = lfsrOut_32;
 
-	always@(posedge clk or negedge reset)
+	always@(*)
 		if(!reset)
 			begin
 			reg1 <= 0;

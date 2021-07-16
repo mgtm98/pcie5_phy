@@ -326,4 +326,5 @@ function void pipe_monitor::notify_idle_data_sent();
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
+  `uvm_info("pipe_monitor", "idle gat", UVM_MEDIUM)
 endfunction

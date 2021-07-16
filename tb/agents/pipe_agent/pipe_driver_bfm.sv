@@ -794,7 +794,7 @@ endtask
     end
     @ (posedge PCLK);
   end
-  `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
+  `uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
     for (int j = lanenum + 1; j < (bus_data_width)/8; j ++) begin
       RxData [(8*j) +: 8] = 8'b11110111;
