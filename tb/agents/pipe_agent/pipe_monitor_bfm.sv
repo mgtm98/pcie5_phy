@@ -1522,8 +1522,15 @@ initial begin
      end	
      @ (posedge PCLK);
 
+     `uvm_info("pipe_monitor_bfm", $sformatf("RxData= %h",RxData), UVM_MEDIUM)
+     `uvm_info("pipe_monitor_bfm", $sformatf("RxData[(8*0) +: 8] = %h",RxData[(8*0) +: 8]), UVM_MEDIUM)
+     `uvm_info("pipe_monitor_bfm", $sformatf("RxData[(8*1) +: 8] = %h",RxData[(8*1) +: 8]), UVM_MEDIUM)
+     `uvm_info("pipe_monitor_bfm", $sformatf("RxData[(8*2) +: 8] = %h",RxData[(8*2) +: 8]), UVM_MEDIUM)
+     `uvm_info("pipe_monitor_bfm", $sformatf("RxData[(8*3) +: 8] = %h",RxData[(8*3) +: 8]), UVM_MEDIUM)
+
+
      if (RxDataK[0] == 1 && RxData[(8*0) +: 8] == 8'b10111100) begin //comm 
-      repeat(16) begin
+      repeat(15) begin
         @ (posedge PCLK);
         `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
       end
