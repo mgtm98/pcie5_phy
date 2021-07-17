@@ -785,8 +785,6 @@ endtask
       data_scrambled[i] = data[i];
     end
   end  
-  `uvm_info("pipe_driver_bfm",$sformatf("zeft_scrambled = %p",data_scrambled),UVM_MEDIUM)
-  `uvm_info("pipe_driver_bfm",$sformatf("size_menn = %d",data_scrambled.size()),UVM_MEDIUM)  
   for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin
     `uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
     `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
