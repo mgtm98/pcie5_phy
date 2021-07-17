@@ -38,6 +38,7 @@ output reg Loopback,
 output reg OSGeneratorStart,
 input OSGeneratorBusy,
 input OSGeneratorFinish,
+input startSend16,
 //OS generator interface equalization 
 output [1:0] EC,
 output ResetEIEOSCount,
@@ -84,6 +85,7 @@ reg ExitToFlag;
 //internal Register 
 reg [15:0]OSCount;
 reg [2:0]CurrentGen;
+reg idleCounts;
 //
 reg WriteDetectLanesFlagReg;
 //Timer interface
@@ -169,7 +171,7 @@ ExitToFlag  = 0 ;
 		 end
 		end
 		ConfigrationIdle:begin
-		if(OSGeneratorFinish)begin
+		if(startSend16 && OSCount-idleCounts > 1)begin
 			ExitToState = L0;
 			ExitToFlag  = 1 ;
 		 end
@@ -306,7 +308,7 @@ WriteLinkNumFlag <=0;
 		ConfigrationIdle:begin
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(!OSGeneratorBusy && OSCount < 1 && !OSGeneratorFinish)begin //it is supposed that
+			if(!OSGeneratorBusy)begin //it is supposed that
 			turnOffScrambler_flag_next<=1'b0;
 			OSType<=3'b100; //IDLE
 			OSGeneratorStart<=1;
@@ -452,6 +454,11 @@ begin
 		TXFinishFlag <= ExitToFlag;
 		WriteDetectLanesFlag<=WriteDetectLanesFlagReg;
 	end
+end
+
+always @(posedge startSend16) 
+begin
+	idleCounts = OSCount; 	
 end
 
 endmodule

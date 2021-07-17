@@ -37,7 +37,8 @@ parameter GEN5_PIPEWIDTH = 8)
     output reg[3:0] substateTx,
     output reg[3:0] substateRx,
     output reg[1:0] width,
-    output reg disableScrambler    
+    output reg disableScrambler,
+    output reg startSend16    
 );
 
 
@@ -299,11 +300,12 @@ end
                         end
                 {configurationIdle,configurationIdle}:
                 begin
-                    //disableScrambler = 1'b0;
-                    if (finishRx&&gotoRx==L0&&finishTx&&gotoTx==L0) 
+                    if(finishRx&&gotoRx==L0) startSend16 <= 1'b1;
+                    if (finishTx&&gotoTx==L0) 
                         begin
                             linkUp = 1'b1;
                             lpifStateStatus = reset_;
+                            startSend16 <= 1'b0;
                             //{substateTx,substateRx} <= {L0,L0};//ERASE THE COMMENT IF I CAN GOT TO L0 WITHOUT LPIF PERMISSION
                         end
                     else if((finishTx&&gotoTx==detectQuiet)||(finishRx&&gotoRx==detectQuiet))

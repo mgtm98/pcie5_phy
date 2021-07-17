@@ -14,12 +14,13 @@ parameter MAX_GEN = 1
 turnOff,TxData1,TxData2,TxData3,TxData4,TxData5,TxData6,TxData7,TxData8,TxData9,TxData10,TxData11,TxData12,TxData13,TxData14,TxData15,TxData16,TxDataValid1,TxDataValid2,TxDataValid3,TxDataValid4,TxDataValid5,TxDataValid6,TxDataValid7,TxDataValid8,TxDataValid9,TxDataValid10,TxDataValid11,TxDataValid12,
 TxDataValid13,TxDataValid14,TxDataValid15,TxDataValid16,TxDataK1,TxDataK2,TxDataK3,
 TxDataK4,TxDataK5,TxDataK6,TxDataK7,TxDataK8,TxDataK9,TxDataK10,TxDataK11,TxDataK12,TxDataK13,TxDataK14,TxDataK15,
-TxDataK16,rateIdIn,upConfigureCapabilityIn,turnOffScrambler_flag);
+TxDataK16,rateIdIn,upConfigureCapabilityIn,turnOffScrambler_flag,startSend16);
 
 //lane number 
 input [7:0] rateIdIn;
 input upConfigureCapabilityIn;
 input turnOff;
+input startSend16;
 output  [4:0] NumberDetectLanes;
 //lpif control
 wire hold;
@@ -125,7 +126,7 @@ TX_LTSSM #(.DEVICETYPE(DEVICETYPE),.MAXPIPEWIDTH(MAXPIPEWIDTH),.LANESNUMBER(LANE
 .Rate(rate),.Loopback(loopback),.OSGeneratorStart(start),.OSGeneratorBusy(busy),.OSGeneratorFinish(finish),. EC(),.ResetEIEOSCount(),.TXPreset(),.RXPreset(),.UsePresetCoff(),
 .FS(),.LF(),.PreCursorCoff(),.CursorCoff(),.PostCursorCoff(),.RejectCoff(),.SpeedChange(),.ReqEq(),.MuxSel(sel),.DetectReq(DetectReq),
 .ElecIdleReq(ElecIdleReq),.DetectStatus(DetectStatus),
-.seedValue(seedValue),.NumberDetectLanes(NumberDetectLanes),.turnOffScrambler_flag(turnOffScrambler_flag)
+.seedValue(seedValue),.NumberDetectLanes(NumberDetectLanes),.turnOffScrambler_flag(turnOffScrambler_flag),.startSend16(startSend16)
 );
 
 
