@@ -37,7 +37,7 @@ interface pipe_monitor_bfm
   input logic [3:0]                         Rate,
   input logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input logic [1:0]                         Width,
-  input logic [2:0]                         PCLKRate,
+  input logic [4:0]                         PCLKRate,
   input logic                               PclkChangeAck,
   input logic                               PclkChangeOk,
   /*************************************************************************************/
@@ -165,7 +165,7 @@ end
 // pclkRate changed
 // -----------------------------------------------------------
 initial begin
-  logic[2:0] new_PCLKRate ;
+  logic[4:0] new_PCLKRate ;
   @(build_connect_finished_e);
   forever begin
     @(PCLKRate);

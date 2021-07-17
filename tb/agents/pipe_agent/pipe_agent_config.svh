@@ -12,7 +12,7 @@ class pipe_agent_config extends uvm_object;
   
   ts_s tses_received [];
   logic[1:0] new_width;
-  logic[2:0] new_PCLKRate;
+  logic[4:0] new_PCLKRate;
   logic[3:0] new_Rate;
   logic[17:0] new_TxDeemph;
 
