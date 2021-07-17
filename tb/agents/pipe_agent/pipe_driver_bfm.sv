@@ -258,7 +258,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
     RxDataK_Q = {RxDataK_Q, 0};
 
     //Symbol 6
-    if(0 /*need flag*/)
+    if(ts.equalization_command)
     begin
         temp = 8'hFF;
         temp[2:0] = ts.rx_preset_hint;
@@ -335,14 +335,14 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
 
     //Symbol 6
     temp = 8'h00;
-    if(0) //need flag
+    if(1) //need flag
     begin
       if(ts.ts_type == TS1)
       begin
-        if(0) //need flag
+        if(1) //need flag
           temp[1:0] = ts.ec;
 
-        if(0) //need flag
+        if(1) //need flag
           temp[6:3] = ts.tx_preset;
 
         temp[7] = ts.use_preset;  
