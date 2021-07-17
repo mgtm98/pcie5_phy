@@ -90,7 +90,7 @@ reg WriteDetectLanesFlagReg;
 reg TimerEnable;
 reg TimerStart;
 reg [2:0]TimerIntervalCode;
-reg turnOffScrambler_flag_next;
+reg turnOffScrambler_flag_next,turnOffScrambler_flag_next2;
 wire TimeOut;
 Timer #(.Width(32)) T(.Gen(Gen),.Reset(Reset),.Pclk(Pclk),.Enable(TimerEnable),.Start(TimerStart),.TimerIntervalCode(TimerIntervalCode),.TimeOut(TimeOut));
 
@@ -169,7 +169,7 @@ ExitToFlag  = 0 ;
 		 end
 		end
 		ConfigrationIdle:begin
-		if(OSCount >= 16)begin
+		if(OSGeneratorFinish)begin
 			ExitToState = L0;
 			ExitToFlag  = 1 ;
 		 end
@@ -295,7 +295,7 @@ WriteLinkNumFlag <=0;
 			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(!OSGeneratorBusy && ExitToState != ConfigrationIdle)begin //it is supposed that
+			if(!OSGeneratorBusy && OSCount < 15)begin //it is supposed that
 			OSType<=2'b01; //TS2
 		   LinkNumber<=ReadLinkNum;
 			Rate<=MAX_GEN;
@@ -306,7 +306,7 @@ WriteLinkNumFlag <=0;
 		ConfigrationIdle:begin
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(!OSGeneratorBusy)begin //it is supposed that
+			if(!OSGeneratorBusy && OSCount < 1 && !OSGeneratorFinish)begin //it is supposed that
 			turnOffScrambler_flag_next<=1'b0;
 			OSType<=3'b100; //IDLE
 			OSGeneratorStart<=1;
@@ -445,7 +445,8 @@ begin
 		WriteDetectLanesFlag<=0;
 	end
 	else begin
-		turnOffScrambler_flag <= turnOffScrambler_flag_next;
+		turnOffScrambler_flag <= turnOffScrambler_flag_next2;
+		turnOffScrambler_flag_next2<=turnOffScrambler_flag_next;
 		State   <= NextState;
 		TXExitTo<= ExitToState;
 		TXFinishFlag <= ExitToFlag;

@@ -64,6 +64,7 @@ if(validFromLMC)
 begin
 		if(substate==4'd9){out,valid} = {data,1'b1};
 		else
+
 		begin
 			for(i=504;i>=0;i=i-8)
 			begin	
