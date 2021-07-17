@@ -300,7 +300,7 @@ end
                 {configurationIdle,configurationIdle}:
                 begin
                     //disableScrambler = 1'b0;
-                    if (finishRx&&gotoRx==L0) 
+                    if (finishRx&&gotoRx==L0&&finishTx&&gotoTx==L0) 
                         begin
                             linkUp = 1'b1;
                             lpifStateStatus = reset_;

@@ -3,12 +3,12 @@ class pipe_speed_change_without_equalization_seq extends pipe_base_seq;
   `uvm_object_utils(pipe_link_up_seq)
 
   int max_supported_gen_by_dsp=`MAX_GEN_FAR_PARTENER;
-  int max_supported_by_usp=`MAX_GEN_DUT;
+  int max_supported_gen_by_usp=`MAX_GEN_DUT;
   int negotaited_rate;
 
   // Standard UVM Methods:
   extern function new(string name = "pipe_speed_change_without_equalization_seq");
-  extern function automatic int calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+  extern function automatic int calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
   extern task body;
 
   extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
@@ -24,8 +24,8 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   ts_s tses_send [`NUM_OF_LANES];
   ts_s tses_recv [`NUM_OF_LANES];
   bit flag;
-  int ts2_recived_count = 1;
-  int ts2_sent_count = 0;
+  int ts2_recived_count;
+  int ts2_sent_count; 
 
   // setting generation in driver bfm to GEN1
 
@@ -35,19 +35,22 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   start_item (pipe_seq_item_h);
   finish_item (pipe_seq_item_h);
   
-  // receive TS1 with speed_change bit asserted
+  //*************************************step 1 (gen 1): wait to receive TS1 with speed_change bit asserted*************//
   this.get_tses_recived(tses_recv);
   foreach(tses_recv[i]) begin
-    assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS1) else 
-      `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+    assert((tses_recv[i].speed_change==1) && (tses_recv[i].ts_type == TS1)) else 
+      `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 1");
   end
   
   // save the USP max gen supported
-  this.max_supported_by_usp = tses_recv[0].max_gen_supported;
+  this.max_supported_gen_by_usp = tses_recv[0].max_gen_supported;
+  //*******************************************************************************************************************//
 
-  // send TS1 until TS2 is recived from USP
+  /****************************************step 2&3 (gen 1):send TS1 with speed_change bit until TS2 that still have the Speed Change bit set also have the Autonomous Change bit set is recived from USP************************************************/
+
+  flag=0;
   fork
-    // send TS1
+    // send TS1 with speed_change bit
     while (1) begin
       tses_send  = super.tses;
       foreach(tses_send[i]) begin
@@ -58,7 +61,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
       this.send_seq_item(tses_send);
       if(flag) break;
     end
-    // wait until TS2 is sent and then TS2 count is 1
+    // wait until TS2 that still have the Speed Change bit set also have the Autonomous Change bit set is recived from USP
     begin
       while(1) begin
         this.get_tses_recived(tses_recv);
@@ -66,16 +69,19 @@ task automatic pipe_speed_change_without_equalization_seq::body();
       end
       foreach(tses_recv[i]) begin
         assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS2 && tses_recv[i].auto_speed_change) else 
-          `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+          `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 2&3");
       end
       flag = 1;
     end
   join
-  
-  // send and receive TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
+  //*******************************************************************************************************************//
+ 
+// ***************************************step 4(gen 1): send and receive TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived****************************/
+  ts2_recived_count=1;
+  ts2_sent_count=0; 
   fork
     // send TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
-    while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
+    while((ts2_sent_count < 8) && (ts2_recived_count < 8)) begin
       tses_send  = super.tses;
       foreach(tses_send[i]) begin
         tses_send[i].speed_change = 1'b1;
@@ -87,17 +93,18 @@ task automatic pipe_speed_change_without_equalization_seq::body();
     end
     // receive TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
     begin
-      while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
+      while((ts2_sent_count < 8) && (ts2_recived_count < 8)) begin
         this.get_tses_recived(tses_recv);
         foreach(tses_recv[i]) begin
-          assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS2 && tses_recv[i].auto_speed_change) else 
-            `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+          assert((tses_recv[i].speed_change==1) &&(tses_recv[i].ts_type == TS2) && (tses_recv[i].auto_speed_change)) else 
+            `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 4 ");
         end
         ts2_recived_count++;
       end
     end
   join
-
+//*******************************************************************************************************************//
+/***************************************************step 5 (gen1 --> gen 2,3,4,5):snding and reciving EIOS and EIEOS and asserting PCLKRate, Rate, width *****************************************************/ 
   // receive and send EIOS before enter rec.speed
   flag = 0;
   fork
@@ -113,20 +120,22 @@ task automatic pipe_speed_change_without_equalization_seq::body();
       flag=1;
     end
   join
-
+  // wait for TxElecIdle and RxStandby to be asserted
   @(pipe_agent_config_h.detected_TxElecIdle_and_RxStandby_asserted_e);
 
-  if(max_supported_gen_by_dsp>max_supported_by_usp)
-    negotaited_rate=max_supported_by_usp;
+  // figuring out what is the negotiated gen
+  if(max_supported_gen_by_dsp>max_supported_gen_by_usp)
+    negotaited_rate=max_supported_gen_by_usp;
   else
     negotaited_rate=max_supported_gen_by_dsp;
 
+  // setting generation in driver bfm to the negotaited GEN
   $cast(pipe_seq_item_h.gen , negotaited_rate);
   pipe_seq_item_h.pipe_operation=SET_GEN;
   start_item (pipe_seq_item_h);
   finish_item (pipe_seq_item_h);
 
-  // receive and send EIEOS after changing speed to exit electic idle(gen?)
+  // receive and send EIEOS after changing speed to exit electic idle 
   flag = 0;
   fork
     //send EIEOS until receive EIEOS
@@ -161,18 +170,19 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   assert(pipe_agent_config_h.new_Rate==negotaited_rate)else`uvm_error(get_name(), "Rate signal not right");
   //assert PCLKRate
  assert(negotaited_rate==calc_gen(pipe_agent_config_h.new_width,pipe_agent_config_h.new_PCLKRate))else`uvm_error(get_name(), "PCLKRate signal not right"); 
-
-
+/*************************************************************************************************************************************************************************/
+/********************************************step 6(gen 2,3,4,5): wait to exit Electrical Idle and send TS1s again.This time, though, the Speed Change bit is not set*/
   // wait for TS1s
   this.get_tses_recived(tses_recv);
   foreach(tses_recv[i]) begin
-    assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS1) else 
-      `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+    assert((tses_recv[i].speed_change==0) && tses_recv[i].ts_type == TS1) else 
+      `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 6");
   end
+  /*************************************************************************************************************************************************************************/
+  /****************************************step 7&8 (gen 2,3,4,5):send TS1 with speed_change bit=0 until TS2 that  have the Speed Change bit=0  is recived from USP************************************************/
   // start sending TS1 and wait for TS2
   flag = 0;
   fork
-
     while (1) begin
       tses_send  = super.tses;
       foreach(tses_send[i]) begin
@@ -190,50 +200,85 @@ task automatic pipe_speed_change_without_equalization_seq::body();
           if(tses_recv[0].ts_type == TS2) break;
       end
       foreach(tses_recv[i]) begin
-        assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else 
-          `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+        assert((tses_recv[i].speed_change==0) && (tses_recv[i].ts_type == TS2)) else 
+          `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 7&8");
       end
       flag = 1;
     end
   join
-
+/*************************************************************************************************************************************************************************/
+// ***************************************step 9(gen 2,3,4,5): send and receive TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived****************************/
   ts2_sent_count = 0;
-  ts2_recived_count = 0;
+  ts2_recived_count = 1;
+
   fork
     // send TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
-    tses_send  = super.tses;
-    foreach(tses_send[i]) begin
-      tses_send[i].speed_change = 1'b0;
-      $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
-      tses_send[i].ts_type = TS2;
-    end
-    while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
-      this.send_seq_item(tses_send);
-      ts2_sent_count++;
+    begin
+      tses_send  = super.tses;
+      foreach(tses_send[i]) begin
+        tses_send[i].speed_change = 1'b0;
+        $cast(tses_send[i].max_gen_supported , this.max_supported_gen_by_dsp);
+        tses_send[i].ts_type = TS2;
+      end
+      while((ts2_sent_count < 8) && (ts2_recived_count < 8)) begin
+        this.send_seq_item(tses_send);
+        ts2_sent_count++;
+      end
     end
     // receive TS2 until 8 or more TS2 are sent and 8 or more TS2 are recived
     begin
-      while(ts2_sent_count > 8 && ts2_recived_count > 8) begin
+      while((ts2_sent_count < 8) && (ts2_recived_count < 8)) begin
         this.get_tses_recived(tses_recv);
         foreach(tses_recv[i]) begin
-          assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else 
-            `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+          assert((tses_recv[i].speed_change==0) && tses_recv[i].ts_type == TS2) else 
+            `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 9");
         end
         ts2_recived_count++;
       end
     end
   join
+/*************************************************************************************************************************************************************************/  
+/*****************************************************step 10&11 (gen 2,3,4,5):sending idle data******************************************************************************/
+  flag=0;
+  fork
+    begin
+      int i;
+      while(1) begin
+        pipe_seq_item_h.pipe_operation=IDLE_DATA_TRANSFER;
+        start_item (pipe_seq_item_h);
+        finish_item (pipe_seq_item_h);
+        pipe_seq_item_h.pipe_operation=pipe_agent_pkg::SEND_DATA;
+        start_item (pipe_seq_item_h);
+        finish_item (pipe_seq_item_h);
+        if(flag) break;
+      end
+      for ( i = 0;i<16 ;i=i+1 ) begin
+        pipe_seq_item_h.pipe_operation=IDLE_DATA_TRANSFER;
+        start_item (pipe_seq_item_h);
+        finish_item (pipe_seq_item_h);
+        pipe_seq_item_h.pipe_operation=pipe_agent_pkg::SEND_DATA;
+        start_item (pipe_seq_item_h);
+        finish_item (pipe_seq_item_h);
+      end
+    end
+    begin
+      int i;
+      @(pipe_agent_config_h.idle_data_detected_e);
+      flag=1;
+      for (i =0 ;i<7;i=i+1) begin
+        @(pipe_agent_config_h.idle_data_detected_e);
+      end
+    end
+  join
 
-  
+/*************************************************************************************************************************************************************************/
 endtask : body
 
 task pipe_speed_change_without_equalization_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   pipe_seq_item_h.tses_sent = tses;
+  pipe_seq_item_h.pipe_operation = SEND_TSES;
   start_item (pipe_seq_item_h);
-    if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TSES;}) begin
-      `uvm_error(get_name(), "")
-    end
   finish_item (pipe_seq_item_h);
 endtask : send_seq_item
 
@@ -242,7 +287,7 @@ task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_s ts
   tses = pipe_agent_config_h.tses_received;
 endtask
 
-function automatic int pipe_speed_change_without_equalization_seq::calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+function automatic int pipe_speed_change_without_equalization_seq::calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
     
 
   real PCLKRate_value;

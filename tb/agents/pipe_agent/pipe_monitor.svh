@@ -37,8 +37,9 @@ class pipe_monitor extends uvm_monitor;
   extern function void notify_eios_gen3_received();
   extern function void notify_TxElecIdle_and_RxStandby_asserted();
   extern function void notify_width_changed(logic[1:0] new_width);
-  extern function void notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
+  extern function void notify_PCLKRate_changed(logic[4:0] new_PCLKRate);
   extern function void notify_Rate_changed(logic[3:0] new_Rate);
+  extern function void notify_TxDeemph_changed(logic[17:0] new_TxDeemph);
   extern function void notify_tlp_sent(tlp_t tlp);
   extern function void notify_tlp_received(tlp_t tlp);
   extern function void notify_dllp_sent(dllp_t dllp);
@@ -135,7 +136,7 @@ function void pipe_monitor::notify_width_changed(logic[1:0] new_width);
   -> pipe_agent_config_h.detected_width_change_e;
 endfunction 
 
-function void pipe_monitor::notify_PCLKRate_changed(logic[2:0] new_PCLKRate);
+function void pipe_monitor::notify_PCLKRate_changed(logic[4:0] new_PCLKRate);
   //$display("flag",new_PCLKRate);
   pipe_agent_config_h.new_PCLKRate=new_PCLKRate;
   -> pipe_agent_config_h.detected_PCLKRate_change_e;
@@ -144,6 +145,11 @@ function void pipe_monitor::notify_Rate_changed(logic[3:0] new_Rate);
   //$display("flag",new_PCLKRate);
   pipe_agent_config_h.new_Rate=new_Rate;
   -> pipe_agent_config_h.detected_Rate_change_e;
+endfunction 
+function void pipe_monitor::notify_TxDeemph_changed(logic[17:0] new_TxDeemph);
+  //$display("flag",new_PCLKRate);
+  pipe_agent_config_h.new_TxDeemph=new_TxDeemph;
+  -> pipe_agent_config_h.detected_TxDeemph_change_e;
 endfunction 
 
 // function void pipe_monitor::notify_link_up_sent();
@@ -313,9 +319,10 @@ function void pipe_monitor::notify_idle_data_received();
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-
+  `uvm_info("pipe_monitor", "idle gat_tx", UVM_MEDIUM)
   `uvm_info (get_type_name (), $sformatf ("notify_idle_data_received is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.idle_data_detected_e;
+  `uvm_info (get_type_name (), $sformatf ("idle_event_triggered"), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_idle_data_sent();

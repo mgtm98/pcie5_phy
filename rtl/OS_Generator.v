@@ -44,6 +44,7 @@ always@(posedge pclk,negedge reset_n) begin
    Os_Out<=512'b0;
    DataK<=64'b0;
    DataValid<=64'b0;
+   busy<=1'b0;
    end
  if (start) begin 
    os_type_reg <= os_type; // storing the type of the order set
@@ -423,13 +424,19 @@ always@(posedge pclk,negedge reset_n) begin
 		   end
 		   // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		  //DataValid <= {no_of_lanes{1'b0}};
-		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
-		  DataK<= {no_of_lanes{1'b0}};
-		  send<=1'b0;
-		  finish<=1'b1;
-		  busy<= 1'b0;
+		 if (symbol!=4'b1111) begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    end
+		  else begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    send<=1'b0;
+		    finish<=1'b1;
+		    busy<= 1'b0;
 		  end
+		  symbol<=symbol+1;
+		 end
 		 end
 		else begin  //if there are no order sets available to be sent
 		  DataValid <= {no_of_lanes{not_valid}};
@@ -684,13 +691,19 @@ always@(posedge pclk,negedge reset_n) begin
 		 end
 		 // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		 //DataValid <= {no_of_lanes{1'b1}};
-		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
-		  DataK<= {no_of_lanes{1'b0}};
-		  send<=1'b0;
-		  finish<=1'b1;
-		  busy<= 1'b0;
+		 if (symbol!=4'b1111) begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    end
+		  else begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    send<=1'b0;
+		    finish<=1'b1;
+		    busy<= 1'b0;
 		  end
+		  symbol<=symbol+1;
+		end
 		end
 		 else begin  //if there are no order sets available to be sent
 		  DataValid <= {no_of_lanes{not_valid}};
@@ -989,13 +1002,19 @@ always@(posedge pclk,negedge reset_n) begin
 		 end
 		 // ******************************************************checking if IDLE to be sent********************************************
 		 else begin
-		  //DataValid <= {no_of_lanes{1'b0}};
-		  Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
-		  DataK<= {no_of_lanes{1'b0}};
-		  send<=1'b0;
-		  finish<=1'b1;
-		  busy<= 1'b0;
+		  if (symbol!=4'b1111) begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    end
+		  else begin
+		    Os_Out<={no_of_lanes*GEN1_PIPEWIDTH{1'b0}};
+		    DataK<= {no_of_lanes{1'b0}};
+		    send<=1'b0;
+		    finish<=1'b1;
+		    busy<= 1'b0;
 		  end
+		  symbol<=symbol+1;
+	 end
 	 end
   else begin  //if there are no order sets available to be sent
 		  DataValid <= {no_of_lanes{not_valid}};
@@ -1005,12 +1024,5 @@ always@(posedge pclk,negedge reset_n) begin
 		  busy<= 1'b0;
 		 end
 	  end
- else begin  
-		  Os_Out <= 512'b0;
-		  DataValid<=64'b0;
-		  DataK<= 64'b0;
-		  finish<=1'b0;
-		  busy<= 1'b0;
-		 end
 	  end
 	endmodule	  
