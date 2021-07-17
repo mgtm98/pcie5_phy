@@ -1485,7 +1485,7 @@ endtask
        else if (TxDataK [i] == 1 && ((i-(get_width/8)-1)%4) == 0) begin
         data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
-       dllp_done == 0;
+       dllp_done = 0;
     end
     else begin
       data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -1627,7 +1627,7 @@ endtask
        else if (RxDataK [i] == 1) begin
         data_descrambled[j] = (RxData[(8*i) +: 8]);
        end
-       dllp_done == 0;
+       dllp_done = 0;
     end
     else begin
       data_descrambled[j] = (RxData[(8*i) +: 8]);
@@ -1665,7 +1665,7 @@ endtask
        else if (RxDataK [i] == 1) begin
          data_descrambled[j] = (RxData[(8*i) +: 8]);
        end
-      tlp_done == 0;
+      tlp_done = 0;
     end
     else begin
       data_descrambled[j] = (RxData[(8*i) +: 8]);
