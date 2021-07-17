@@ -1513,7 +1513,7 @@ endtask
         end                 
         if (num_idle_data == (pipe_num_of_lanes*get_width())/8) begin
           `uvm_info("pipe_monitor_bfm", "menna 8_tx", UVM_MEDIUM)
-          proxy.notify_idle_data_sent();
+          proxy.notify_idle_data_received();
           num_idle_data = 0;
         end
       end

@@ -655,14 +655,16 @@ task pipe_link_up_seq::config_idle_state;
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
-    num_of_idle_data_received = 0;
+  num_of_idle_data_received = 0;
 
   // Transmit 16 idle data until 8 consecutive idle data are received
   eight_consecutive_idle_data_detected = 0;
   fork
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
+      `uvm_info("pipe_link_up_seq", "one_idle_data_received=1", UVM_MEDIUM)
       one_idle_data_received = 1;
+      `uvm_info("pipe_link_up_seq", "one_idle_data_received=1", UVM_MEDIUM)
     end
 
     begin 
@@ -684,10 +686,12 @@ task pipe_link_up_seq::config_idle_state;
       wait (one_idle_data_received);
         for (i = 0; i < 16; i++)
         begin
+          `uvm_info("pipe_link_up_seq", "maggie 4", UVM_MEDIUM)
           start_item(pipe_seq_item_h);
           pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
           finish_item(pipe_seq_item_h);
         end
+        `uvm_info("pipe_link_up_seq", "maggie 5", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
         finish_item(pipe_seq_item_h);

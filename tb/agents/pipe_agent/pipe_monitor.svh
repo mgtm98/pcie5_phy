@@ -319,9 +319,10 @@ function void pipe_monitor::notify_idle_data_received();
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-
+  `uvm_info("pipe_monitor", "idle gat_tx", UVM_MEDIUM)
   `uvm_info (get_type_name (), $sformatf ("notify_idle_data_received is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.idle_data_detected_e;
+  `uvm_info (get_type_name (), $sformatf ("idle_event_triggered"), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_idle_data_sent();
