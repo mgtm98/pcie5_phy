@@ -39,7 +39,7 @@ interface pipe_if
   logic [3:0]                         Rate;
   logic [pipe_num_of_lanes-1:0]       PhyStatus;
   logic [1:0]                         Width;
-  logic [2:0]                         PCLKRate;
+  logic [4:0]                         PCLKRate;
   logic                               PclkChangeAck;
   logic                               PclkChangeOk;
   /*************************************************************************************/

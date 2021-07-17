@@ -8,7 +8,7 @@ class pipe_speed_change_without_equalization_seq extends pipe_base_seq;
 
   // Standard UVM Methods:
   extern function new(string name = "pipe_speed_change_without_equalization_seq");
-  extern function automatic int calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+  extern function automatic int calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
   extern task body;
 
   extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
@@ -287,7 +287,7 @@ task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_s ts
   tses = pipe_agent_config_h.tses_received;
 endtask
 
-function automatic int pipe_speed_change_without_equalization_seq::calc_gen(input logic[1:0] width, input logic[2:0] PCLKRate );
+function automatic int pipe_speed_change_without_equalization_seq::calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
     
 
   real PCLKRate_value;

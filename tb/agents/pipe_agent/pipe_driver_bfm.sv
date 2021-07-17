@@ -36,7 +36,7 @@ interface pipe_driver_bfm
   input  logic [3:0]                         Rate,
   output logic [pipe_num_of_lanes-1:0]       PhyStatus,
   input  logic [1:0]                         Width,
-  input  logic [2:0]                         PCLKRate,
+  input  logic [4:0]                         PCLKRate,
   input  logic                               PclkChangeAck,
   output logic                               PclkChangeOk,
   /*************************************************************************************/
