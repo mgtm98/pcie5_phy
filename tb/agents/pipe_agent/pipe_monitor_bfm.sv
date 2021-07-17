@@ -1399,58 +1399,12 @@ endtask
   byte dllp_q [$];
   int start_tlp;
   int start_dllp;
-  bit dllp_done = 0;
-  bit tlp_done = 0;
+  int dllp_done = 2;
+  int tlp_done = 2;
   int num_idle_data = 0;
 
   byte data_sent [$];
   byte data_received [$];
-
-//check receiving data
-// initial begin
-//    forever begin 
-//      foreach(TxDataValid[i]) begin
-//        wait (TxDataValid[i] == 1) ; 	
-//      end	
-//      @ (posedge PCLK);
-//      `uvm_info("pipe_monitor_bfm", "forever_menna", UVM_MEDIUM)
-//     if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
-//       `uvm_info("pipe_monitor_bfm", $sformatf("raqam = %d ", (16*8)/get_width()), UVM_MEDIUM)
-//       repeat(16) begin
-//         @ (posedge PCLK);
-//         `uvm_info("pipe_monitor_bfm", "clock_menna", UVM_MEDIUM)
-//       end
-//     end
-//     else begin  
-//      for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
-//        if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
-//         `uvm_info("pipe_monitor_bfm", "momken stp", UVM_MEDIUM)
-//          start_tlp = i;
-//          receive_tlp_gen_1_2; 
-//        end
-//        else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) || dllp_done == 0) begin
-//         `uvm_info("pipe_monitor_bfm", "momken sdp", UVM_MEDIUM)
-//          start_dllp = i;
-//          receive_dllp_gen_1_2; 
-//        end
-//        else if (TxDataK[i] == 0) begin
-//           `uvm_info("pipe_monitor_bfm", "momken idle", UVM_MEDIUM)
-//           lanenum = $floor(i/(pipe_max_width/8.0));
-//           temp_value = TxData[(8*i) +: 8];
-//           idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
-//           `uvm_info("pipe_monitor_bfm", $sformatf("idle=%h",idle_descrambled[i] ), UVM_MEDIUM)
-//           if (idle_descrambled[i] == 8'b0000_0000)
-//             num_idle_data++;                          
-//           if (num_idle_data == bus_data_width/8) begin
-//             proxy.notify_idle_data_received();
-//             num_idle_data = 0;
-//           end
-//         end
-
-//         end
-//     end
-//     end
-//   end
 
   initial begin
     forever begin 
@@ -1470,7 +1424,6 @@ endtask
       `uvm_info("pipe_monitor_bfm", $sformatf("adel4_tx= %h",TxData[(8*3) +: 8]), UVM_MEDIUM)
  
       if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
-       `uvm_info("pipe_monitor_bfm", "momken abl_elrepeat_tx", UVM_MEDIUM)
        repeat((128/get_width())-1) begin
          @ (posedge PCLK);
          `uvm_info("pipe_monitor_bfm", "momken clock_sent_tx", UVM_MEDIUM)
@@ -1485,22 +1438,20 @@ endtask
  task process_tx_data_gen_1_2;
   if (TxDataValid[0] === 1) begin  
    for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
-     if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) ) begin
-      `uvm_info("pipe_monitor_bfm", $sformatf("TxData_menna= %h",TxData[(8*i) +: 8]), UVM_MEDIUM)
+     if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
       `uvm_info("pipe_monitor_bfm", "momken stp_sent_tx", UVM_MEDIUM)
        start_tlp = i;
-       send_tlp_gen_1_2; 
+       receive_tlp_gen_1_2; 
      end
-     else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) ) begin
+     else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) || dllp_done == 0) begin
       `uvm_info("pipe_monitor_bfm", "momken sdp_sent_tx", UVM_MEDIUM)
        start_dllp = i;
-       send_dllp_gen_1_2; 
+       receive_dllp_gen_1_2; 
      end
      else if (TxDataK[i] == 0) begin
         `uvm_info("pipe_monitor_bfm", "momken idle_sent_tx", UVM_MEDIUM)
         lanenum = $floor(i/(pipe_max_width/8.0));
         temp_value = TxData[(8*i) +: 8];
-        `uvm_info("pipe_monitor_bfm", $sformatf("data_menna3_tx= %h",TxData[(8*i) +: 8]), UVM_MEDIUM)
         `uvm_info("pipe_monitor_bfm", $sformatf("lanenum_tx= %d",lanenum), UVM_MEDIUM)
         if (((i-(get_width/8)-1)%4) == 0) 
           idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
@@ -1534,6 +1485,7 @@ endtask
        else if (TxDataK [i] == 1 && ((i-(get_width/8)-1)%4) == 0) begin
         data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
+       dllp_done == 0;
     end
     else begin
       data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -1565,12 +1517,13 @@ endtask
     if(!(TxDataK[i] == 1 && TxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0 && ((i-(get_width/8)-1)%4) == 0) begin
-          temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+         temp_value = TxData[(8*i) +: 8];
+         data_descrambled[j] = descramble(monitor_tx_scrambler, temp_value, lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
          data_descrambled[j] = (TxData[(8*i) +: 8]);
        end
+       tlp_done = 0;
     end
     else begin
       data_descrambled[j] = (TxData[(8*i) +: 8]);
@@ -1595,8 +1548,6 @@ endtask
   end
  endtask   
 
-//  for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
-//   if ((RxDataK[i] == 0 && RxData[(8*i) +: 8] == 8'hff) ) begin
  //check sending data
  initial begin
    forever begin 
@@ -1616,7 +1567,6 @@ endtask
      `uvm_info("pipe_monitor_bfm", $sformatf("adel4= %h",RxData[(8*3) +: 8]), UVM_MEDIUM)
     //@ (posedge PCLK);
     if (RxDataK[0] == 1 && RxData[(8*0) +: 8] == 8'b10111100) begin //comm 
-      `uvm_info("pipe_monitor_bfm", "momken abl_elrepeat", UVM_MEDIUM)
       repeat((128/get_width())-1) begin
         @ (posedge PCLK);
         `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
@@ -1631,14 +1581,12 @@ endtask
 task process_rx_data_gen_1_2;
 if (RxDataValid[0] === 1) begin  
   for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
-    if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `STP_gen_1_2) ) begin
-     `uvm_info("pipe_monitor_bfm", $sformatf("stp= %h",`STP_gen_1_2), UVM_MEDIUM)
-     `uvm_info("pipe_monitor_bfm", $sformatf("rxdata_menna= %h",RxData[(8*i) +: 8]), UVM_MEDIUM)
+    if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
      `uvm_info("pipe_monitor_bfm", "momken stp_sent", UVM_MEDIUM)
       start_tlp = i;
       send_tlp_gen_1_2; 
     end
-    else if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `SDP_gen_1_2) ) begin
+    else if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `SDP_gen_1_2) || dllp_done == 0) begin
      `uvm_info("pipe_monitor_bfm", "momken sdp_sent", UVM_MEDIUM)
       start_dllp = i;
       send_dllp_gen_1_2; 
@@ -1647,7 +1595,6 @@ if (RxDataValid[0] === 1) begin
        `uvm_info("pipe_monitor_bfm", "momken idle_sent", UVM_MEDIUM)
        lanenum = $floor(i/(pipe_max_width/8.0));
        temp_value = RxData[(8*i) +: 8];
-       `uvm_info("pipe_monitor_bfm", $sformatf("data_menna3= %h",RxData[(8*i) +: 8]), UVM_MEDIUM)
        `uvm_info("pipe_monitor_bfm", $sformatf("lanenum= %d",lanenum), UVM_MEDIUM)
        if (((i-(get_width/8)-1)%4) == 0) 
          idle_descrambled[i] = descramble(monitor_rx_scrambler,temp_value,lanenum, current_gen);
@@ -1680,6 +1627,7 @@ endtask
        else if (RxDataK [i] == 1) begin
         data_descrambled[j] = (RxData[(8*i) +: 8]);
        end
+       dllp_done == 0;
     end
     else begin
       data_descrambled[j] = (RxData[(8*i) +: 8]);
@@ -1717,6 +1665,7 @@ endtask
        else if (RxDataK [i] == 1) begin
          data_descrambled[j] = (RxData[(8*i) +: 8]);
        end
+      tlp_done == 0;
     end
     else begin
       data_descrambled[j] = (RxData[(8*i) +: 8]);
