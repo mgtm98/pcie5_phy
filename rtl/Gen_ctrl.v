@@ -86,5 +86,5 @@ end
 
 assign sel =(gen == gen1_sel | gen == gen2_sel)? 1'b0:1'b1;
 assign w = valid_pd & linkup;
-assign valid = valid_reg;  
+assign valid =(linkup)?valid_reg:64'b0;  
 endmodule

@@ -186,6 +186,18 @@ initial begin
   end
 end
 // -----------------------------------------------------------
+// TxDeemph changed
+// -----------------------------------------------------------
+initial begin
+  logic [17:0] new_TxDeemph ;
+  @(build_connect_finished_e);
+  forever begin
+    @(TxDeemph);
+    new_TxDeemph=TxDeemph[17:0];
+    proxy.notify_TxDeemph_changed(new_TxDeemph);
+  end
+end
+// -----------------------------------------------------------
 // TxElecIdle and RxStandby asserted
 // -----------------------------------------------------------
 initial begin

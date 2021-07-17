@@ -54,8 +54,6 @@ typedef enum {
   IDLE_DATA_TRANSFER,
   LINK_UP, 
   ENTER_RECOVERY, 
-  // ENTER_L0S, 
-  // EXIT_L0S, 
   SPEED_CHANGE,         // speed change is used to direct the driver to change the speed using pipe signals
   RESET, 
   PCLK_RATE_CHANGE,
@@ -67,9 +65,7 @@ typedef enum {
   SET_GEN,
   SEND_DATA,
   CHECK_EQ_PRESET_APPLIED,
-  INFORM_LF_FS,
-  SET_LOCAL_LF_FS,
-  SET_CURSOR_PARAMS,
+  SET_EQ_PARAM,
   ASSERT_EVAL_FEEDBACK_CHANGED
 } pipe_operation_t;
 

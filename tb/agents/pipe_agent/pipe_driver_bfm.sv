@@ -77,12 +77,20 @@ import pipe_agent_pkg::*;
 gen_t current_gen = GEN1;
 scrambler_s driver_scrambler;
 //bit [15:0] lfsr [`NUM_OF_LANES];
-bit [5:0]  lf_to_be_recvd;
-bit [5:0]  fs_to_be_recvd;
+bit [5:0]  lf_usp;
+bit [5:0]  fs_usp;
+bit [5:0]  lf_dsp;
+bit [5:0]  fs_dsp;
 bit [5:0]  cursor;
 bit [5:0]  pre_cursor;
 bit [5:0]  post_cursor;
+bit [2:0]  my_rx_preset_hint;
+bit [3:0]  my_tx_preset;
+bit [17:0] my_local_txPreset_coefficients;
 bit        eval_feedback_was_asserted = 0;
+bit flag_tx_preset_applied;
+assign LocalFS={pipe_num_of_lanes{fs_usp}};
+assign LocalLF={pipe_num_of_lanes{lf_usp}};
 
 /******************************* RESET# (Phystatus de-assertion) *******************************/
 initial begin
@@ -99,8 +107,8 @@ initial begin
     RxElecIdle                            = 0;
     PclkChangeOk                          = 0;
     LocalTxPresetCoeffcients              = 0;
-    LocalLF                               = 0;
-    LocalFS                               = 0;
+    lf_usp                               = 0;
+    fs_usp                               = 0;
     LocalTxCoeffcientsValid               = 0;
     LinkEvaluationFeedbackDirectionChange = 0;
     current_gen                           = GEN1;
@@ -250,7 +258,7 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
     RxDataK_Q = {RxDataK_Q, 0};
 
     //Symbol 6
-    if(0 /*need flag*/)
+    if(ts.equalization_command)
     begin
         temp = 8'hFF;
         temp[2:0] = ts.rx_preset_hint;
@@ -327,14 +335,14 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
 
     //Symbol 6
     temp = 8'h00;
-    if(0) //need flag
+    if(1) //need flag
     begin
       if(ts.ts_type == TS1)
       begin
-        if(0) //need flag
+        if(1) //need flag
           temp[1:0] = ts.ec;
 
-        if(0) //need flag
+        if(1) //need flag
           temp[6:3] = ts.tx_preset;
 
         temp[7] = ts.use_preset;  
@@ -792,7 +800,7 @@ endtask
         `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
       end
     end
-    @ (posedge PCLK);  
+    @ (posedge PCLK);
   end
   `uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
@@ -838,58 +846,63 @@ endtask
 
 
 /******************************* Equalization *******************************/
-  task eqialization_preset_applied(preset_index);
-    @(LocalPresetIndex);
-    assert(LocalPresetIndex == preset_index) else 
-    `uvm_error("pipe_driver_bfm", "")
-    wait(GetLocalPresetCoeffcients == 1);
-    @(posedge PCLK);
-    LocalTxCoeffcientsValid  <= 1;
-    // LocalTxPresetCoefficients <= 0; // TODO: How to get these values from the table
-    @(posedge PCLK);
-    LocalTxCoeffcientsValid  <= 0;
-    @(TxDeemph);
-    assert(TxDeemph == 0) else 
-    `uvm_error("pipe_driver_bfm", "")
+  initial begin
+    flag_tx_preset_applied=0;
+    forever begin
+      wait((LocalPresetIndex==my_tx_preset)&&(GetLocalPresetCoeffcients == 1));
+      @(posedge PCLK);
+      LocalTxCoeffcientsValid  <= 1;
+      LocalTxPresetCoeffcients <=my_local_txPreset_coefficients;
+
+      @(posedge PCLK);
+      LocalTxCoeffcientsValid  <= 0;
+      wait(TxDeemph == my_local_txPreset_coefficients);
+      flag_tx_preset_applied=1;
+    end
+  end
+
+  task eqialization_preset_applied();
+    `uvm_info("pipe_monitor_bfm", "waiting for flag_tx_preset_applied ", UVM_NONE)
+    wait(flag_tx_preset_applied==1);
   endtask : eqialization_preset_applied
 
-  function void inform_lf_fs(bit [5:0] lf, bit[5:0] fs);
-    lf_to_be_recvd = lf;
-    fs_to_be_recvd = fs;
-  endfunction : inform_lf_fs
 
-  function void set_local_lf_fs(bit [5:0] lf, bit[5:0] fs);
-    LocalLF <= lf;
-    LocalFS <= fs;
-  endfunction : set_local_lf_fs
+  function void set_eq_param( bit [5:0]  lf_usp_i,
+                              bit [5:0]  fs_usp_i,
+                              bit [5:0]  lf_dsp_i,
+                              bit [5:0]  fs_dsp_i,
+                              bit [5:0]  cursor_i,
+                              bit [5:0]  pre_cursor_i,
+                              bit [5:0]  post_cursor_i,
+                              bit [3:0]  my_tx_preset_i,
+                              bit [2:0]  my_rx_preset_hint_i,
+                              bit [17:0] my_local_txPreset_coefficients_i);
 
-  function void set_cursor_params(bit [5:0] cursor, bit[5:0] pre_cursor, bit[5:0] post_cursor);
-    pre_cursor = pre_cursor;
-    post_cursor = post_cursor;
-    cursor = cursor;
-  endfunction // set_cursor_params
+    lf_usp<=lf_usp_i;
+    fs_usp<=fs_usp_i;
+    lf_dsp<=lf_dsp_i;
+    fs_dsp<=fs_dsp_i;
+    cursor<=cursor_i;
+    pre_cursor<=pre_cursor_i;
+    post_cursor<=post_cursor_i;
+    my_tx_preset<=my_tx_preset_i;
+    my_rx_preset_hint<=my_rx_preset_hint_i;
+    my_local_txPreset_coefficients<=my_local_txPreset_coefficients_i;
 
-  initial begin
-    @(LF) assert(LF == lf_to_be_recvd) else
-    `uvm_error("pipe_driver_bfm", "")
-  end
+  endfunction : set_eq_param
 
-  initial begin
-    @(FS) assert(FS == fs_to_be_recvd) else
-    `uvm_error("pipe_driver_bfm", "")
-  end
 
-  initial begin
-    wait(RxEqEval == 1);
-    @(posedge PCLK);
-    LinkEvaluationFeedbackDirectionChange <= 6'b000000;
-    eval_feedback_was_asserted <= 1;
-  end
 
   initial begin
-    @(TxDeemph);
-    assert(TxDeemph == {pre_cursor, cursor, post_cursor}) else
-    `uvm_error("pipe_driver_bfm", "")
+    forever begin
+      wait(RxEqEval == 1);
+      assert((FS=={pipe_num_of_lanes{fs_dsp}})&&(LF=={pipe_num_of_lanes{lf_dsp}}))else `uvm_error("pipe_driver_bfm", "FS and LF not assigned");
+      @(posedge PCLK);
+      LinkEvaluationFeedbackDirectionChange <= 6'b000000;
+      eval_feedback_was_asserted <= 1;
+    end
   end
+
+  
 
 endinterface
