@@ -171,7 +171,7 @@ ExitToFlag  = 0 ;
 		 end
 		end
 		ConfigrationIdle:begin
-		if(startSend16 && OSCount-idleCounts > 1)begin
+		if(startSend16 && OSCount-idleCounts > 6)begin
 			ExitToState = L0;
 			ExitToFlag  = 1 ;
 		 end
