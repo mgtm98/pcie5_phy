@@ -100,7 +100,7 @@ wire [3:0]RXexitTo;
 wire witeUpconfigureCapability;
 wire writerateid;
 wire disableScrambler,turnOffScrambler_flag;
-
+wire startSend16;
 mainLTSSM #(
 .Width(MAXPIPEWIDTH),
 .DEVICETYPE(DEVICETYPE), //0 for downstream 1 for upstream
@@ -140,7 +140,8 @@ mainLTSSM #(
     .linkNumberOutRx(linkNumberRxInput),
     .width(width),
     .disableScrambler(disableScrambler),
-    .turnOffScrambler_flag(turnOffScrambler_flag)
+    .turnOffScrambler_flag(turnOffScrambler_flag),
+    .startSend16(startSend16)
 );
 
  
@@ -274,7 +275,8 @@ TX
 .TxDataK2(TxDataK[59:56]),
 .TxDataK1(TxDataK[63:60]),
 .turnOff(disableScrambler),
-.turnOffScrambler_flag(turnOffScrambler_flag));
+.turnOffScrambler_flag(turnOffScrambler_flag),
+.startSend16(startSend16));
 
 assign phy_reset = lpreset;
 
