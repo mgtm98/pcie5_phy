@@ -11,7 +11,7 @@ module LFSR_16_gen3(seedValue, scrambler_reset, reset_n, pclk, data_out);
   always @(*) begin
 
     if(scrambler_reset)
-       lfsr_q <= 16'hFFFF;
+       lfsr_q <= seedValue;
 
     lfsr_c[0] =  lfsr_q[7] ^   lfsr_q[9] ^ lfsr_q[11] ^ lfsr_q[13] ^ lfsr_q[14] ^ lfsr_q[15] ^ lfsr_q[17] ^ lfsr_q[18] ^ lfsr_q[19];
     lfsr_c[1] =  lfsr_q[8] ^  lfsr_q[10] ^ lfsr_q[12] ^ lfsr_q[14] ^ lfsr_q[15] ^ lfsr_q[16] ^ lfsr_q[18] ^ lfsr_q[19] ^ lfsr_q[20];
@@ -58,7 +58,7 @@ module LFSR_16_gen3(seedValue, scrambler_reset, reset_n, pclk, data_out);
   always @(posedge pclk or negedge reset_n) begin
 
     if(~reset_n) 
-      lfsr_q <= 23'hfffff; 
+      lfsr_q <= seedValue; 
     else
       lfsr_q <= lfsr_c ;
 
