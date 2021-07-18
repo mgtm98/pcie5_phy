@@ -15,7 +15,12 @@ input valid_pd,
 input [2:0]gen,
 input linkup,
 input clk,
+input rst,
 input [4:0]numberOfDetectedLanes,
+// gen 3
+input [31:0]syncHeader,
+
+
 output [511:0] data_out,
 
 output [63:0]pl_valid,
@@ -46,12 +51,27 @@ Gen1_2_DataPath gen1_2_db(
     .valid(valid),
     .Data_out(data_sel1),
     .clk(clk),
-    .dlpstart(bytetype_sel1[63:0]),
-    .dlpend(bytetype_sel1[127:64]),
-    .tlpstart(bytetype_sel1[191:128]),
-    .tlpedb(bytetype_sel1[255:192]),
-    .tlpend(bytetype_sel1[319:256]),
-    .valid_d(bytetype_sel1[383:320])
+    .dlpstart   (bytetype_sel1[63:0]    ),
+    .dlpend     (bytetype_sel1[127:64]  ),
+    .tlpstart   (bytetype_sel1[191:128]  ),
+    .tlpedb     (bytetype_sel1[255:192] ),
+.tlpend         (bytetype_sel1[319:256]  ),
+    .valid_d    (bytetype_sel1[383:320  ])
+);
+
+Gen3_DataPath gen3_db(
+    .Data_in(data_in),
+    .syncHeader(syncHeader),
+    .valid(valid),
+    .clk(clk),
+    .Data_out(data_sel2),
+    .dlpstart (bytetype_sel2[63:0]   ),
+    .dlpend   (bytetype_sel2[127:64] ),
+    .tlpstart (bytetype_sel2[191:128]),
+    .tlpedb   (bytetype_sel2[255:192]),
+    .tlpend   (bytetype_sel2[319:256]),
+    .valid_d  (bytetype_sel2[383:320])  ,
+    .rst(rst)
 );
 
 Gen_ctrl #(

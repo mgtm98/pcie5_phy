@@ -1,5 +1,5 @@
 
-
+/*
 module pcieTB;
     parameter MAXPIPEWIDTH = 32;
 	parameter DEVICETYPE = 0; //0 for downstream 1 for upstream
@@ -100,6 +100,7 @@ begin
     RxStatus={16{3'b011}};
     #10
     RxStatus=16'd0;
+	wait(linkUp);
 	lp_state_req = active_;
 	@(negedge CLK);
 	lp_irdy=1;
@@ -211,3 +212,4 @@ P2M_MessageBus
 
 assign {RxData,RxDataValid,RxDataK,RxValid} = {TxData,TxDataValid,TxDataK,TxDataValid}; 
 endmodule
+*/

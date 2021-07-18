@@ -1,4 +1,4 @@
-module PIPE_Control(substate, generation, pclk, reset_n, RxStatus, ElecIdle_req, Detect_req, PhyStatus, TxDetectRx_Loopback, PowerDown, Detect_status, TxElecIdle);
+module PIPE_Control(substate, generation, pclk, reset_n, RxStatus, ElecIdle_req, Detect_req, PhyStatus, TxDetectRx_Loopback, PowerDown, Detect_status, TxElecIdle,RxStandbyRequest,RxStandby);
 
 
 parameter number_of_lanes= 4;
@@ -8,16 +8,16 @@ parameter  DetectQuiet = 4'b0000, DetectActive = 4'b0001, PollingActive = 4'b001
             ConfigrationIdle = 4'b1001,L0=4'b1010 ,Idle=4'b1111;
 
 input pclk, reset_n;
-input [3:0] substate;
+input [4:0] substate;
 input [2:0] generation;
 input [2:0] RxStatus; 
 input ElecIdle_req, Detect_req, PhyStatus;
-
+input RxStandbyRequest;
 output reg TxDetectRx_Loopback;
 output reg [3:0] PowerDown;
 output reg Detect_status; 
 output reg TxElecIdle;
-
+output reg RxStandby;
 
 always @(posedge pclk or negedge reset_n) begin
   if (~reset_n) begin
@@ -25,6 +25,7 @@ always @(posedge pclk or negedge reset_n) begin
   	Detect_status=0;
   	TxElecIdle=1;
   	TxDetectRx_Loopback=0;
+    RxStandby = 1'b0;
   end
 
   else begin
@@ -54,6 +55,12 @@ always @(posedge pclk or negedge reset_n) begin
       else begin
           Detect_status=0;
       end
+
+      if(RxStandbyRequest)
+      begin
+        RxStandby = 1'b1;
+      end
+      else RxStandby = 1'b0;
 
   end
 

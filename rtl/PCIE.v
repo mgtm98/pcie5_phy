@@ -32,11 +32,11 @@ input	[(MAXPIPEWIDTH/8)*LANESNUMBER-1:0]RxDataK,
 input	[LANESNUMBER-1:0]RxStartBlock,
 input	[2*LANESNUMBER -1:0]RxSyncHeader,
 input	[3*LANESNUMBER -1:0]RxStatus,
-input [15:0]RxElectricalIdle,
+input   [15:0]RxElectricalIdle,
 //commands and status signals
-output [4*LANESNUMBER-1:0]PowerDown,
-output  [3:0]Rate,
-input [LANESNUMBER-1:0]PhyStatus,
+output  [4*LANESNUMBER-1:0]PowerDown,
+output  [3:0] Rate,
+input   [LANESNUMBER-1:0]PhyStatus,
 
 //pclkcontrolsignal
 output [4:0]PCLKRate,
@@ -76,31 +76,56 @@ output [64-1:0]pl_dlpend,
 output [64-1:0]pl_tlpstart,
 output [64-1:0]pl_tlpend,
 output [64-1:0]pl_tlpedb,
-output linkUp,
+output pl_linkUp,
 //optional Message bus
 output [7:0] M2P_MessageBus,
-input  [7:0] P2M_MessageBus
+input  [7:0] P2M_MessageBus,
+output  [15:0] RxStandby
 );
 
 wire WriteDetectLanesFlag;
-wire [3:0] SetTXState;
+wire [4:0] SetTXState;
 wire TXFinishFlag;
-wire [3:0]TXExitTo;
+wire [4:0]TXExitTo;
 wire WriteLinkNumFlagTx,WriteLinkNumFlagRx;
 wire [4:0] NumberDetectLanesfromtx;
 wire [2:0]GEN; 
 wire [4:0]numberOfDetectedLanes;
-wire [3:0]RXsubstate;
+wire [4:0]RXsubstate;
 wire [7:0]linkNumberRxInput,linkNumberTxInput,linkNumberRxOutput,linkNumberTxOutput;
 wire [7:0] rateid,rateIdInTx;
 wire upConfigureCapability,upConfigureCapabilityInTX;
 wire RXfinish;
-wire [3:0]RXexitTo;
-///////////output linkUp,////////////
+wire [4:0]RXexitTo;
+///////////output pl_linkUp,////////////
 wire witeUpconfigureCapability;
 wire writerateid;
-wire disableScrambler,turnOffScrambler_flag;
+wire  directed_speed_change;
+wire  [47:0] ReceiverpresetHintDSP;
+wire  [63:0] TransmitterPresetHintDSP;
+wire  [47:0] ReceiverpresetHintUSP;
+wire  [63:0] TransmitterPresetHintUSP;
+wire  [6*16-1:0]LF_register;
+wire  [6*16-1:0]FS_register;
+wire  [6*16-1:0]CursorCoff;
+wire  [6*16-1:0]PreCursorCoff;
+wire  [6*16-1:0]PostCursorCoff;
+wire  [47:0] ReceiverpresetHintDSPIn;
+wire  [63:0] TransmitterPresetHintDSPIn;
+wire  [47:0] ReceiverpresetHintUSPIn;
+wire  [63:0] TransmitterPresetHintUSPIn;
+wire writeReceiverpresetHintDSP;
+wire writeTransmitterPresetHintDSP;
+wire writeReceiverpresetHintUSP;
+wire writeTransmitterPresetHintUSP;
+wire directed_speed_change_In;
+wire write_directed_speed_chang;
+wire [2:0] trainToGen;
+wire [16*6-1:0] FSDSP,LFDSP;
+wire disableScrambler;
+wire turnOffScrambler_flag;
 wire startSend16;
+
 mainLTSSM #(
 .Width(MAXPIPEWIDTH),
 .DEVICETYPE(DEVICETYPE), //0 for downstream 1 for upstream
@@ -108,7 +133,9 @@ mainLTSSM #(
 .GEN2_PIPEWIDTH (GEN2_PIPEWIDTH) ,	
 .GEN3_PIPEWIDTH (GEN3_PIPEWIDTH),	
 .GEN4_PIPEWIDTH (GEN4_PIPEWIDTH) ,	
-.GEN5_PIPEWIDTH (GEN5_PIPEWIDTH)	
+.GEN5_PIPEWIDTH (GEN5_PIPEWIDTH),
+.LANESNUMBER(LANESNUMBER),
+.MAX_GEN(MAX_GEN)
 ) mainltssm(
     .clk(CLK),
     .reset(lpreset),
@@ -124,7 +151,7 @@ mainLTSSM #(
     .gotoTx(TXExitTo),
     .gotoRx(RXexitTo),
     .forceDetect(lp_force_detect),
-    .linkUp(linkUp),
+    .linkUp(pl_linkUp),
     .GEN(GEN),
     .numberOfDetectedLanesOut(numberOfDetectedLanes),
     .rateIdOut(rateIdInTx),
@@ -139,13 +166,46 @@ mainLTSSM #(
     .linkNumberOutTx(linkNumberTxInput),
     .linkNumberOutRx(linkNumberRxInput),
     .width(width),
+    .ReceiverpresetHintDSPIn(ReceiverpresetHintDSPIn),
+    .TransmitterPresetHintDSPIn(TransmitterPresetHintDSPIn),
+    .ReceiverpresetHintUSPIn(ReceiverpresetHintUSPIn),
+    .TransmitterPresetHintUSPIn(TransmitterPresetHintUSPIn),
+    .writeReceiverpresetHintDSP(writeReceiverpresetHintDSP),
+    .writeTransmitterPresetHintDSP(writeTransmitterPresetHintDSP),
+    .writeReceiverpresetHintUSP(writeReceiverpresetHintUSP),
+    .writeTransmitterPresetHintUSP(writeTransmitterPresetHintUSP),
+    .directed_speed_change_In(directed_speed_change_In),
+    .write_directed_speed_change(write_directed_speed_change),
+    .LocalTxPresetCoefficients(LocalTxPresetCoefficients),
+    .LocalFS(LocalFS),
+    .LocalLF(LocalLF),
+    .LocalTxCoefficientsValid(LocalTxCoefficientsValid),
+    .LinkEvaluationFeedbackDirectionChange(LinkEvaluationFeedbackDirectionChange),
+    .TxDeemph(TxDeemph),
+    .LocalPresetIndex(LocalPresetIndex),
+    .GetLocalPresetCoeffcients(GetLocalPresetCoeffcients),
+    .LF(LF),
+    .FS(FS),
+    .RxEqEval(RxEqEval),
+    .InvalidRequest(InvalidRequest),
+    .directed_speed_change(directed_speed_change),
+    .ReceiverpresetHintDSP(ReceiverpresetHintDSP),
+    .TransmitterPresetHintDSP(TransmitterPresetHintDSP),
+    .ReceiverpresetHintUSP(ReceiverpresetHintUSP),
+    .TransmitterPresetHintUSP(TransmitterPresetHintUSP),
+    .LF_register(LF_register),
+    .FS_register(FS_register),
+    .CursorCoff(CursorCoff),
+    .PreCursorCoff(PreCursorCoff),
+    .PostCursorCoff(PostCursorCoff),
+    .trainToGen(trainToGen),
+    .LFDSP(LFDSP),
+    .FSDSP(FSDSP),
     .disableScrambler(disableScrambler),
-    .turnOffScrambler_flag(turnOffScrambler_flag),
-    .startSend16(startSend16)
+    .PCLKRate(PCLKRate),
+    .startSend16(startSend16),
+    .turnOffScrambler_flag(turnOffScrambler_flag)
 );
-
- 
-
 
 RX #(.DEVICETYPE(DEVICETYPE),.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH),.GEN2_PIPEWIDTH(GEN2_PIPEWIDTH),.GEN3_PIPEWIDTH(GEN3_PIPEWIDTH),.GEN4_PIPEWIDTH(GEN4_PIPEWIDTH),.GEN5_PIPEWIDTH(GEN5_PIPEWIDTH))
 rx
@@ -163,7 +223,6 @@ rx
 .numberOfDetectedLanes(numberOfDetectedLanes),
 .substate(RXsubstate),
 .linkNumber(linkNumberRxInput),
-//.lp_force_detect(lp_force_detect),
 .pl_tlpstart(pl_tlpstart), 
 .pl_dllpstart(pl_dlpstart), 
 .pl_tlpend(pl_tlpend),
@@ -172,21 +231,35 @@ rx
 .pl_valid(pl_valid), 
 .pl_data(pl_data),
 .pl_speedmode(pl_speedmode), 
-//.pl_state_sts(),
 .rateid(rateid),
 .upConfigureCapability(upConfigureCapability),
 .finish( RXfinish),
 .exitTo(RXexitTo),
-//.linkUp(),/////////////////////////////////////////////output from RX
 .witeUpconfigureCapability(witeUpconfigureCapability),
 .writerateid(writerateid),
 .linkNumberOut(linkNumberRxOutput),
 .writeLinkNumber(WriteLinkNumFlagRx),
-.disableScrambler(disableScrambler));
-
-
-
-
+.ReceiverpresetHintDSPout(ReceiverpresetHintDSPIn),
+.TransmitterPresetHintDSPout(TransmitterPresetHintDSPIn),
+.ReceiverpresetHintUSPout(ReceiverpresetHintUSPIn),
+.TransmitterPresetHintUSPout(TransmitterPresetHintUSPIn),
+.ReceiverpresetHintDSP(ReceiverpresetHintDSP),
+.TransmitterPresetHintDSP(TransmitterPresetHintDSP),
+.ReceiverpresetHintUSP(ReceiverpresetHintUSP),
+.TransmitterPresetHintUSP(TransmitterPresetHintUSP),
+.writeReceiverpresetHintDSP(writeReceiverpresetHintDSP),
+.writeTransmitterPresetHintDSP(writeTransmitterPresetHintDSP),
+.writeReceiverpresetHintUSP(writeReceiverpresetHintUSP),
+.writeTransmitterPresetHintUSP(writeTransmitterPresetHintUSP),
+.LFDSP(LFDSP),
+.FSDSP(FSDSP),
+.CursorCoff(CursorCoff),
+.PreCursorCoff(PreCursorCoff),
+.PostCursorCoff(PostCursorCoff),
+.directed_speed_change(directed_speed_change),
+.trainToGen(trainToGen),
+.disableScrambler(disableScrambler)
+);
 
 TOP_MODULE #
 (
@@ -226,6 +299,7 @@ TX
 .ReadLinkNum(linkNumberTxInput),
 .rateIdIn(rateIdInTx),
 .upConfigureCapabilityIn(upConfigureCapabilityInTX),
+.MainLTSSMGen(GEN),
 .TxData16(TxData[31:0]),
 .TxData15(TxData[63:32]),
 .TxData14(TxData[95:64]),
@@ -273,10 +347,55 @@ TX
 .TxDataK4(TxDataK[51:48]),
 .TxDataK3(TxDataK[55:52]),
 .TxDataK2(TxDataK[59:56]),
-.TxDataK1(TxDataK[63:60]),
-.turnOff(disableScrambler),
-.turnOffScrambler_flag(turnOffScrambler_flag),
-.startSend16(startSend16));
+ .TxDataK1(TxDataK[63:60]),
+.TxSyncHeader1(TxSyncHeader[1:0]),
+ .TxSyncHeader2(TxSyncHeader[3:2]),
+ .TxSyncHeader3(TxSyncHeader[5:4]),
+ .TxSyncHeader4(TxSyncHeader[7:6]),
+ .TxSyncHeader5(TxSyncHeader[9:8]),
+ .TxSyncHeader6(TxSyncHeader[11:10]),
+ .TxSyncHeader7(TxSyncHeader[13:12]),
+ .TxSyncHeader8(TxSyncHeader[15:14]),
+ .TxSyncHeader9(TxSyncHeader[17:16]),
+ .TxSyncHeader10(TxSyncHeader[19:18]),
+ .TxSyncHeader11(TxSyncHeader[21:20]),
+ .TxSyncHeader12(TxSyncHeader[23:22]),
+ .TxSyncHeader13(TxSyncHeader[25:24]),
+ .TxSyncHeader14(TxSyncHeader[27:26]),
+ .TxSyncHeader15(TxSyncHeader[29:28]),
+ .TxSyncHeader16(TxSyncHeader[31:30]),
+ .TxStartBlock1(TxStartBlock[0]), 
+ .TxStartBlock2(TxStartBlock[1]), 
+ .TxStartBlock3(TxStartBlock[2]), 
+ .TxStartBlock4(TxStartBlock[3]), 
+ .TxStartBlock5(TxStartBlock[4]), 
+ .TxStartBlock6(TxStartBlock[5]), 
+ .TxStartBlock7(TxStartBlock[6]), 
+ .TxStartBlock8(TxStartBlock[7]), 
+ .TxStartBlock9(TxStartBlock[8]),
+ .TxStartBlock10(TxStartBlock[9]), 
+ .TxStartBlock11(TxStartBlock[10]),
+ .TxStartBlock12(TxStartBlock[11]), 
+ .TxStartBlock13(TxStartBlock[12]), 
+ .TxStartBlock14(TxStartBlock[13]), 
+ .TxStartBlock15(TxStartBlock[14]), 
+ .TxStartBlock16(TxStartBlock[15]),
+ .ReceiverpresetHintDSP(ReceiverpresetHintDSP), 
+ .TransmitterPresetHintDSP(TransmitterPresetHintDSP),
+ .ReceiverpresetHintUSP(ReceiverpresetHintUSP),
+ .TransmitterPresetHintUSP(TransmitterPresetHintUSP),
+ .LF_register(LF_register),
+ .FS_register(FS_register),
+ .CursorCoff_register(CursorCoff),
+ .PreCursorCoff_register(PreCursorCoff),
+ .PostCursorCoff_register(PostCursorCoff),
+ .TrainToGen(trainToGen),
+ .ReadDirectSpeedChange(directed_speed_change),
+ .turnOff(disableScrambler),
+ .RxStandby(RxStandby),
+ .startSend16(startSend16),
+ .turnOffScrambler_flag(turnOffScrambler_flag)
+ );
 
 assign phy_reset = lpreset;
 
@@ -285,196 +404,224 @@ endmodule
 
 
 
-// module pcieTB;
-//     parameter MAXPIPEWIDTH = 32;
-// 	parameter DEVICETYPE = 0; //0 for downstream 1 for upstream
-// 	parameter LANESNUMBER =16;
-// 	parameter GEN1_PIPEWIDTH = 8 ;	
-// 	parameter GEN2_PIPEWIDTH = 8 ;	
-// 	parameter GEN3_PIPEWIDTH = 8 ;								
-// 	parameter GEN4_PIPEWIDTH = 8 ;	
-// 	parameter GEN5_PIPEWIDTH = 8 ;	
-// 	parameter MAX_GEN = 1;
-// reg CLK;
-// reg reset;
-// //output phy_reset,
-// //PIPE interface width
-// //output [1:0] width, ///////////////////which module
-// //TX_signals
-// wire [MAXPIPEWIDTH*LANESNUMBER-1:0]TxData;
-// wire [LANESNUMBER-1:0]TxDataValid;
-// wire [LANESNUMBER-1:0]TxElecIdle;
-// wire [LANESNUMBER-1:0]TxStartBlock;
-// wire [(MAXPIPEWIDTH/8)*LANESNUMBER-1:0]TxDataK;
-// wire [2*LANESNUMBER -1:0]TxSyncHeader;
-// wire [LANESNUMBER-1:0]TxDetectRx_Loopback;
-// //RX_signals
-// reg [MAXPIPEWIDTH*LANESNUMBER-1:0]RxData;
-// reg [LANESNUMBER-1:0]RxDataValid;////////////////////////////////////////
-// reg	[(MAXPIPEWIDTH/8)*LANESNUMBER-1:0]RxDataK;
-// reg	[LANESNUMBER-1:0]RxStartBlock;
-// reg	[2*LANESNUMBER -1:0]RxSyncHeader;
-// reg	[LANESNUMBER-1:0]RxValid;
-// reg	[3*LANESNUMBER -1:0]RxStatus;
-// reg [15:0]RxElectricalIdle;
-// //commands and status signals
-// wire [4*LANESNUMBER-1:0]PowerDown;
-// wire  [3:0]Rate;
-// reg [LANESNUMBER-1:0]PhyStatus;
+module pcieTB;
+    parameter MAXPIPEWIDTH = 32;
+	parameter DEVICETYPE = 0; //0 for downstream 1 for upstream
+	parameter LANESNUMBER =16;
+	parameter GEN1_PIPEWIDTH = 8 ;	
+	parameter GEN2_PIPEWIDTH = 8 ;	
+	parameter GEN3_PIPEWIDTH = 8 ;								
+	parameter GEN4_PIPEWIDTH = 8 ;	
+	parameter GEN5_PIPEWIDTH = 8 ;	
+	parameter MAX_GEN = 1;
+reg CLK;
+reg reset;
+//output phy_reset,
+//PIPE interface width
+//output [1:0] width, ///////////////////which module
+//TX_signals
+wire [1:0] width;
+wire [MAXPIPEWIDTH*LANESNUMBER-1:0]TxData;
+wire [LANESNUMBER-1:0]TxDataValid;
+wire [LANESNUMBER-1:0]TxElecIdle;
+wire [LANESNUMBER-1:0]TxStartBlock;
+wire [(MAXPIPEWIDTH/8)*LANESNUMBER-1:0]TxDataK;
+wire [2*LANESNUMBER -1:0]TxSyncHeader;
+wire [LANESNUMBER-1:0]TxDetectRx_Loopback;
+//RX_signals
+wire [MAXPIPEWIDTH*LANESNUMBER-1:0]RxData;
+wire [LANESNUMBER-1:0]RxDataValid;////////////////////////////////////////
+wire[(MAXPIPEWIDTH/8)*LANESNUMBER-1:0]RxDataK;
+wire[LANESNUMBER-1:0]RxStartBlock;
+wire[2*LANESNUMBER -1:0]RxSyncHeader;
+wire[LANESNUMBER-1:0]RxValid;
+wire [15:0]RxStandby;
+reg	[3*LANESNUMBER -1:0]RxStatus;
+reg [15:0]RxElectricalIdle;
+//commands and status signals
+wire [4*LANESNUMBER-1:0]PowerDown;
+wire  [3:0]Rate;
+reg [LANESNUMBER-1:0]PhyStatus;
 
-// //pclkcontrolsignal
-// wire [4:0]PCLKRate;
-// wire PclkChangeAck;
-// reg  PclkChangeOk;
-// //eq_signals
-// reg 	[18*LANESNUMBER -1:0]LocalTxPresetCoefficients;
-// wire 	[18*LANESNUMBER -1:0]TxDeemph;
-// reg 	[6*LANESNUMBER -1:0]LocalFS;
-// reg 	[6*LANESNUMBER -1:0]LocalLF;
-// wire 	[4*LANESNUMBER -1:0]LocalPresetIndex;
-// wire 	[LANESNUMBER -1:0]GetLocalPresetCoeffcients;
-// reg 	[LANESNUMBER -1:0]LocalTxCoefficientsValid;
-// wire 	[6*LANESNUMBER -1:0]LF;
-// wire 	[6*LANESNUMBER -1:0]FS;
-// wire 	[LANESNUMBER -1:0]RxEqEval;
-// wire 	[LANESNUMBER -1:0]InvalidRequest;
-// reg 	[6*LANESNUMBER -1:0]LinkEvaluationFeedbackDirectionChange;
-// wire    pl_trdy;
-// reg     lp_irdy;
-// reg     [512-1:0]lp_data;
-// reg     [64-1:0]lp_valid;
-// wire [512-1:0]pl_data;
-// wire [64-1:0] pl_valid;
-// reg  [3:0]lp_state_req;
-// wire [3:0]pl_state_sts;
-// wire [2:0]pl_speedmode;////////////////////////////////////////
-// reg lp_force_detect;
-// ////lPIF start & end of TLP DLLP
-// reg [64-1:0]lp_dlpstart;
-// reg [64-1:0]lp_dlpend;
-// reg  [64-1:0]lp_tlpstart;
-// reg  [64-1:0]lp_tlpend;
-// wire [64-1:0]pl_dlpstart;
-// wire [64-1:0]pl_dlpend;
-// wire [64-1:0]pl_tlpstart;
-// wire [64-1:0]pl_tlpend;
-// wire [64-1:0]pl_tlpedb;
-// wire linkUp;
-// //optional Message bus
-// wire [7:0] M2P_MessageBus;
-// reg  [7:0] P2M_MessageBus;
+//pclkcontrolsignal
+wire [4:0]PCLKRate;
+wire PclkChangeAck;
+reg  PclkChangeOk;
+//eq_signals
+reg 	[18*LANESNUMBER -1:0]LocalTxPresetCoefficients;
+wire 	[18*LANESNUMBER -1:0]TxDeemph;
+reg 	[6*LANESNUMBER -1:0]LocalFS;
+reg 	[6*LANESNUMBER -1:0]LocalLF;
+wire 	[4*LANESNUMBER -1:0]LocalPresetIndex;
+wire 	[LANESNUMBER -1:0]GetLocalPresetCoeffcients;
+reg 	[LANESNUMBER -1:0]LocalTxCoefficientsValid;
+wire 	[6*LANESNUMBER -1:0]LF;
+wire 	[6*LANESNUMBER -1:0]FS;
+wire 	[LANESNUMBER -1:0]RxEqEval;
+wire 	[LANESNUMBER -1:0]InvalidRequest;
+reg 	[6*LANESNUMBER -1:0]LinkEvaluationFeedbackDirectionChange;
+wire    pl_trdy;
+reg     lp_irdy;
+reg     [512-1:0]lp_data;
+reg     [64-1:0]lp_valid;
+wire [512-1:0]pl_data;
+wire [64-1:0] pl_valid;
+reg  [3:0]lp_state_req;
+wire [3:0]pl_state_sts;
+wire [2:0]pl_speedmode;////////////////////////////////////////
+reg lp_force_detect;
+////lPIF start & end of TLP DLLP
+reg [64-1:0]lp_dlpstart;
+reg [64-1:0]lp_dlpend;
+reg  [64-1:0]lp_tlpstart;
+reg  [64-1:0]lp_tlpend;
+wire [64-1:0]pl_dlpstart;
+wire [64-1:0]pl_dlpend;
+wire [64-1:0]pl_tlpstart;
+wire [64-1:0]pl_tlpend;
+wire [64-1:0]pl_tlpedb;
+wire pl_linkUp;
+//optional Message bus
+wire [7:0] M2P_MessageBus;
+reg  [7:0] P2M_MessageBus;
 
-// localparam[1:0]
-//         reset_   = 2'd0,
-//         active_  = 2'd1,
-//         retrain_ = 2'd2;
+localparam[1:0]
+        reset_   = 2'd0,
+        active_  = 2'd1,
+        retrain_ = 2'd2;
+integer i;
 
-// initial
-// begin
-//     CLK = 0;
-//     reset = 0;
-//     #8
-//     reset = 1;
-//     #10
-//     lp_state_req = reset_;
-//     #10
-//     wait(TxDetectRx_Loopback);
-//     PhyStatus={16{1'b1}};
-//     RxStatus={16{3'b011}};
-//     #100
-//     RxStatus=16'd0;
+initial
+begin
+    CLK = 0;
+    reset = 0;
+    #20
+    reset = 1;
+    #10
+    lp_state_req = reset_;
+    #10
+    wait(TxDetectRx_Loopback);
+    #10
+    PhyStatus={16{1'b1}};
+    RxStatus={16{3'b011}};
+    #10
+    RxStatus=16'd0;
+    lp_state_req = active_;
+    //wait(pl_state_sts == 3)
+    //lp_state_req = retrain_;
+    wait(GetLocalPresetCoeffcients == {16{1'b1}});
+    LocalTxCoefficientsValid = {16{1'b1}};
+    LocalTxPresetCoefficients={16*18{1'b1}};
+    LocalLF={16*6{1'b1}};
+    LocalFS={16*6{1'b1}};
+	wait(pl_linkUp && pl_speedmode==2'b10 && pl_state_sts==active_);
+	lp_state_req = active_;
+	@(negedge CLK);
+	lp_irdy=1;
+	for (i=0;i<512;i=i+1) 
+	begin
+		lp_data[i]=$random;
+		lp_tlpstart[i]=0;
+		lp_tlpend[i]=0;
+		lp_dlpend[i]=0;
+		lp_dlpstart[i]=0;
+	end
+	lp_valid={2'b00, {62{1'b1}}};
+	lp_tlpstart[0]=1;
+	lp_tlpend[61]=1;
+    // lp_dlpstart[0]=1;
+    // lp_dlpend[5]=1;
+	#10
+	lp_irdy=0;
+end
+always #5 CLK = ~CLK;
 
 
-// end
-// always #5 CLK = ~CLK;
 
 
-
-
-// PCIe #(
+PCIe #(
 	
-// 	.MAXPIPEWIDTH(32),
-// 	.DEVICETYPE (0), //0 for downstream 1 for upstream
-// 	. LANESNUMBER (16),
-// 	. GEN1_PIPEWIDTH (8) ,	
-// 	. GEN2_PIPEWIDTH (8) ,	
-// 	. GEN3_PIPEWIDTH (8) ,								
-// 	. GEN4_PIPEWIDTH (8) ,	
-// 	. GEN5_PIPEWIDTH (8) ,	
-// 	. MAX_GEN (1)
-// )
-// pcie
-// (
-// //clk and reset 
-//  CLK,
-//  reset,
-//  phy_reset,
-// //PIPE interface width
-//  width, ///////////////////which module
-// //TX_signals
-//  TxData,
-//  TxDataValid,
-//  TxElecIdle,
-//  TxStartBlock,
-//  TxDataK,
-//  TxSyncHeader,
-//  TxDetectRx_Loopback,
-// //RX_signals
-//  RxData,
-//  RxDataValid,////////////////////////////////////////
-//  RxDataK,
-//  RxStartBlock,
-//  RxSyncHeader,
-//  RxStatus,
-//  RxElectricalIdle,
-// //commands and status signals
-//  PowerDown,
-//  Rate,
-//  PhyStatus,
+	.MAXPIPEWIDTH(32),
+	.DEVICETYPE (0), //0 for downstream 1 for upstream
+	. LANESNUMBER (16),
+	. GEN1_PIPEWIDTH (8) ,	
+	. GEN2_PIPEWIDTH (8) ,	
+	. GEN3_PIPEWIDTH (8) ,								
+	. GEN4_PIPEWIDTH (8) ,	
+	. GEN5_PIPEWIDTH (8) ,	
+	. MAX_GEN (3)
+)
+pcie
+(
+//clk and reset 
+ CLK,
+ reset,
+ phy_reset,
+//PIPE interface width
+ width, ///////////////////which module
+//TX_signals
+ TxData,
+ TxDataValid,
+ TxElecIdle,
+ TxStartBlock,
+ TxDataK,
+ TxSyncHeader,
+ TxDetectRx_Loopback,
+//RX_signals
+ RxData,
+ RxDataValid,////////////////////////////////////////
+ RxDataK,
+ RxStartBlock,
+ RxSyncHeader,
+ RxStatus,
+ RxElectricalIdle,
+//commands and status signals
+ PowerDown,
+ Rate,
+ PhyStatus,
 
-// //pclkcontrolsignal
-//  PCLKRate,
-//  PclkChangeAck,
-//  PclkChangeOk,
-// //eq_signals
-//  LocalTxPresetCoefficients,
-//  TxDeemph,
-//  LocalFS,
-//  LocalLF,
-//  LocalPresetIndex,
-//  GetLocalPresetCoeffcients,
-//  LocalTxCoefficientsValid,
-// LF,
-// FS,
-// RxEqEval,
-// InvalidRequest,
-// LinkEvaluationFeedbackDirectionChange,
-
-// pl_trdy,
-// lp_irdy,
-// lp_data,
-// lp_valid,
-// pl_data,
-// pl_valid,
-// lp_state_req,
-// pl_state_sts,
-// pl_speedmode,////////////////////////////////////////
-// lp_force_detect,
-// ////lPIF start & end of TLP DLLP
-// lp_dlpstart,
-// lp_dlpend,
-// lp_tlpstart,
-// lp_tlpend,
-// pl_dlpstart,
-// pl_dlpend,
-// pl_tlpstart,
-// pl_tlpend,
-// pl_tlpedb,
-// linkUp,
-// //optional Message bus
-// M2P_MessageBus,
-// P2M_MessageBus
-// );
-
-// assign {RxData,RxDataValid,RxDataK,RxValid} = {TxData,TxDataValid,TxDataK,TxDataValid}; 
-// endmodule
+//pclkcontrolsignal
+ PCLKRate,
+ PclkChangeAck,
+ PclkChangeOk,
+//eq_signals
+ LocalTxPresetCoefficients,
+ TxDeemph,
+ LocalFS,
+ LocalLF,
+ LocalPresetIndex,
+ GetLocalPresetCoeffcients,
+ LocalTxCoefficientsValid,
+LF,
+FS,
+RxEqEval,
+InvalidRequest,
+LinkEvaluationFeedbackDirectionChange,
+pl_trdy,
+lp_irdy,
+lp_data,
+lp_valid,
+pl_data,
+pl_valid,
+lp_state_req,
+pl_state_sts,
+pl_speedmode,////////////////////////////////////////
+lp_force_detect,
+////lPIF start & end of TLP DLLP
+lp_dlpstart,
+lp_dlpend,
+lp_tlpstart,
+lp_tlpend,
+pl_dlpstart,
+pl_dlpend,
+pl_tlpstart,
+pl_tlpend,
+pl_tlpedb,
+pl_linkUp,
+//optional Message bus
+M2P_MessageBus,
+P2M_MessageBus,
+RxStandby
+);
+assign {RxData,RxDataValid,RxDataK,RxValid,RxSyncHeader,RxStartBlock} = {TxData,TxDataValid,TxDataK,TxDataValid,TxSyncHeader,TxStartBlock}; 
+endmodule
