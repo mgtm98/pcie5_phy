@@ -456,7 +456,7 @@ RxStandby<=16'b0;
 		Ph0:begin
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(DEVICETYPE==DownStream)begin/////////////////****************************************************************////////
+			if(DEVICETYPE==UpStream)begin/////////////////****************************************************************////////
 				if(!OSGeneratorBusy)begin //it is supposed that
 					OSType<=3'b000; //TS1
 					LinkNumber<=ReadLinkNum;
