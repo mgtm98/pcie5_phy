@@ -270,7 +270,7 @@ module hdl_top;
   . pl_tlpstart     (LPIF.pl_tlp_start),
   . pl_tlpend       (LPIF.pl_tlp_end),
   . pl_tlpedb       (LPIF.pl_tlpedb),
-  . linkUp          (LPIF.pl_linkup)
+  . pl_linkUp          (LPIF.pl_linkup)
   );
 
 
