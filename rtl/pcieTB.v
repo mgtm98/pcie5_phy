@@ -100,7 +100,6 @@ begin
     RxStatus={16{3'b011}};
     #10
     RxStatus=16'd0;
-	wait(linkUp);
 	lp_state_req = active_;
 	@(negedge CLK);
 	lp_irdy=1;

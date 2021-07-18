@@ -107,7 +107,7 @@ parameter GEN5_PIPEWIDTH = 8)
        case (currentState)
         reset_:
         begin
-            if(finishRx&&gotoRx==L0&&lpifStateRequest==active_)
+            if(finishTx&&gotoTx==L0&&finishRx&&gotoRx==L0&&lpifStateRequest==active_)
             begin
                 nextState <= active_;
             end
