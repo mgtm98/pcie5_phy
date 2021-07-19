@@ -774,7 +774,7 @@ endtask
   int pipe_width = get_width();
   int bus_data_width = (pipe_num_of_lanes * pipe_width);
   for(int i = 0; i < data.size(); i++) begin
-    `uvm_info("pipe_driver_bfm",$sformatf("zeft_queue = %p",data),UVM_MEDIUM)
+    //`uvm_info("pipe_driver_bfm",$sformatf("zeft_queue = %p",data),UVM_MEDIUM)
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == D) begin
@@ -786,13 +786,13 @@ endtask
     end
   end  
   for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin
-    `uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
-    `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
+    //`uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
+    //`uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
     for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j++) begin
       for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
-        `uvm_info("pipe_driver_bfm",$sformatf("i_menna = %d",i),UVM_MEDIUM)  
-        `uvm_info("pipe_driver_bfm",$sformatf("j_menna = %d",j),UVM_MEDIUM)  
-        `uvm_info("pipe_driver_bfm",$sformatf("bus_data_width = %d",bus_data_width),UVM_MEDIUM)  
+      //  `uvm_info("pipe_driver_bfm",$sformatf("i_menna = %d",i),UVM_MEDIUM)  
+       // `uvm_info("pipe_driver_bfm",$sformatf("j_menna = %d",j),UVM_MEDIUM)  
+        //`uvm_info("pipe_driver_bfm",$sformatf("bus_data_width = %d",bus_data_width),UVM_MEDIUM)  
         RxData[(8*i) +: 8] = data_scrambled.pop_front();
         RxDataK[i] = k_data.pop_front();
         `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
@@ -800,7 +800,7 @@ endtask
     end
     @ (posedge PCLK);
   end
-  `uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
     for (int j = lanenum + 1; j < (bus_data_width)/8; j ++) begin
       RxData [(8*j) +: 8] = 8'b11110111;

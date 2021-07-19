@@ -173,7 +173,7 @@ parameter LANESNUMBER = 16)
             begin
                nextState <= reset_; 
             end
-            else if(lpifStateRequest==retrain_ || trainToGen == 3'd2 || trainToGen == 3'd3)
+            else if(lpifStateRequest==retrain_ || trainToGen >= 3'd2)
             begin
                nextState <= retrain_; 
             end
@@ -388,23 +388,35 @@ end
         active_:
         begin
             {substateTxnext,substateRxnext}= {L0,L0};
-            //disableScrambler = 1'b0;
             lpifStateStatus = active_;
             linkUp = 1'b1;
-            if((MAX_GEN==3'd3 && rateId[3:1] == 3'b111)&&(GEN<3'd3)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
+            if((MAX_GEN==3'd3 && rateId[5:1] == 5'b00111)&&(GEN<3'd3)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
             begin
                 directed_speed_change = 1'b1;
                 trainToGen = 3'd3;
                 {substateTxnext,substateRxnext}= {recoveryRcvrLock,recoveryRcvrLock};
                 
             end
-            else if((MAX_GEN==3'd2 && rateId[3:1] == 3'b011)&&(GEN<3'd2)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
+            else if((MAX_GEN==3'd2 && rateId[5:1] == 5'b00011)&&(GEN<3'd2)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
             begin
                 directed_speed_change = 1'b1;
                 trainToGen = 3'd2;
                 {substateTxnext,substateRxnext}= {recoveryRcvrLock,recoveryRcvrLock};
             end             
-                
+
+            else if((MAX_GEN==3'd4 && rateId[5:1] == 5'b01111)&&(GEN<3'd4)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
+            begin
+                directed_speed_change = 1'b1;
+                trainToGen = 3'd4;
+                {substateTxnext,substateRxnext}= {recoveryRcvrLock,recoveryRcvrLock};
+            end   
+
+            else if((MAX_GEN==3'd5 && rateId[5:1] == 5'b11111)&&(GEN<3'd5)&&(!DEVICETYPE || (DEVICETYPE && finishRx &&gotoRx== recoveryRcvrLock)))
+            begin
+                directed_speed_change = 1'b1;
+                trainToGen = 3'd5;
+                {substateTxnext,substateRxnext}= {recoveryRcvrLock,recoveryRcvrLock};
+            end   
                 
                        
         end

@@ -11,7 +11,7 @@ parameter GEN5_PIPEWIDTH = 8 ,
 parameter MAX_GEN = 1
 )
 (pclk,reset_n,NumberDetectLanes,pl_trdy,lp_irdy,lp_data,lp_valid,lp_dlpstart,lp_dlpend, lp_tlpstart,lp_tlpend,RxStatus,TxDetectRx_Loopback,PowerDown,
- PhyStatus,TxElecIdle,detected_lanes,WriteDetectLanesFlag,SetTXState,TXFinishFlag,TXExitTo,WriteLinkNum,WriteLinkNumFlag,ReadLinkNum ,
+ PhyStatus,TxElecIdle,WriteDetectLanesFlag,SetTXState,TXFinishFlag,TXExitTo,WriteLinkNum,WriteLinkNumFlag,ReadLinkNum ,
 TxData1,TxData2,TxData3,TxData4,TxData5,TxData6,TxData7,TxData8,TxData9,TxData10,TxData11,TxData12,TxData13,TxData14,TxData15,TxData16,
 TxDataValid1,TxDataValid2,TxDataValid3,TxDataValid4,TxDataValid5,TxDataValid6,TxDataValid7,TxDataValid8,TxDataValid9,TxDataValid10,TxDataValid11,TxDataValid12,
 TxDataValid13,TxDataValid14,TxDataValid15,TxDataValid16,TxDataK1,TxDataK2,TxDataK3,TxDataK4,TxDataK5,TxDataK6,TxDataK7,TxDataK8,TxDataK9,TxDataK10,TxDataK11,
@@ -97,7 +97,7 @@ wire ReqEq;
 wire EQTS2;
 
 ///main ltssm
-output [15:0]detected_lanes;
+wire [15:0]detected_lanes;
 output  WriteDetectLanesFlag;
 input  [4:0] SetTXState;
 output  TXFinishFlag;

@@ -106,12 +106,12 @@ endtask
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
   int rec_8_ts1 = 0;
   @(pipe_agent_config_h.DUT_start_polling_e);
-  `uvm_info("pipe_link_up_seq", "print 1", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "checked DUT powerdown changed to P0", UVM_MEDIUM)
   while (rec_8_ts1 < 8) begin
     @(pipe_agent_config_h.detected_tses_e);
       if(pipe_agent_config_h.tses_received[0].ts_type == TS1 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
         rec_8_ts1++;
-        `uvm_info("pipe_link_up_seq", "receiving ts1s", UVM_MEDIUM)
+        `uvm_info("pipe_link_up_seq", "Received TS1s", UVM_MEDIUM)
       end
       else
       `uvm_error(get_name(), "training sequences of polling active state received is not correct")
@@ -129,19 +129,17 @@ task pipe_link_up_seq::sending_1024_ts1;
     end
   end
   for (send_1024_ts1 = 0; send_1024_ts1 < 1024; send_1024_ts1++) begin
-  `uvm_info("Pipe_link_up_seq", "sending 1024 ts1", UVM_LOW)
   start_item (pipe_seq_item_h);
     if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS1;})
     begin
       `uvm_error(get_name(), "Can't randomize sequence item and send TS1s")
     end
   finish_item (pipe_seq_item_h);
+  `uvm_info("Pipe_link_up_seq", "sent TS1s", UVM_LOW)
   end
 endtask
 
 task pipe_link_up_seq::polling_active_state;
-  `uvm_info("Pipe_link_up_seq", $sformatf("delay_clocks = %d",delay_clocks), UVM_LOW)
-  `uvm_info("Pipe_link_up_seq", $sformatf("random_start_polling = %d",random_start_polling), UVM_LOW)
   fork
     begin
       sending_1024_ts1;
@@ -149,6 +147,7 @@ task pipe_link_up_seq::polling_active_state;
     end
     begin
       receiving_8_ts1;
+      `uvm_info("Pipe_link_up_seq", "8 ts1 received", UVM_LOW)
     end
   join
 endtask
@@ -156,7 +155,6 @@ endtask
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   wait(pipe_agent_config_h.detected_tses_e.triggered)
-  `uvm_info("pipe_link_up_seq", $sformatf("print tsemad: %p",pipe_agent_config_h.tses_received), UVM_MEDIUM)
   while (pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
     start_item (pipe_seq_item_h);
         if (!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TS; ts_sent.ts_type == TS2;})
@@ -171,13 +169,14 @@ task pipe_link_up_seq::polling_configuration_state;
       int rec_8_ts2 = 0;
       while(rec_8_ts2 < 8) begin
       wait(pipe_agent_config_h.detected_tses_e.triggered)
-      `uvm_info("pipe_link_up_seq", $sformatf("print ts2 received"), UVM_MEDIUM)
       if(pipe_agent_config_h.tses_received[0].ts_type == TS2 && !(pipe_agent_config_h.tses_received[0].use_lane_number) &&  !(pipe_agent_config_h.tses_received[0].use_link_number)) begin
         rec_8_ts2++;
+        `uvm_info("pipe_link_up_seq", $sformatf("TS2 received"), UVM_MEDIUM)
       end
       else       
       `uvm_error(get_name(), "training sequences of polling config state received is not correct")
       end
+      `uvm_info("pipe_link_up_seq", $sformatf("8 TS2 received"), UVM_MEDIUM)
     end
   
     begin
@@ -191,6 +190,7 @@ task pipe_link_up_seq::polling_configuration_state;
       // end
       finish_item (pipe_seq_item_h);
       end
+      `uvm_info("pipe_link_up_seq", $sformatf("16 TS2 sent"), UVM_MEDIUM)
     end
   join
 endtask
@@ -225,24 +225,19 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
   end
-  // Transmit TS1s until 2 consecutive TS2s are received
-  `uvm_info("pipe_link_up_seq", "print2 config_linkwidth_start_state_upstream", UVM_MEDIUM)
+  // Transmit TS1s until 2 consecutive TS2s are receivedIUM)
   two_consecutive_ts1s_with_non_pad_link_number_detected = 0;
   fork
     begin
-      `uvm_info("pipe_link_up_seq", $sformatf("print3 two_consecutive_ts1s_with_non_pad_link_number_detected=%d",two_consecutive_ts1s_with_non_pad_link_number_detected), UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
-        `uvm_info("pipe_link_up_seq", "Print e1", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "Print e2", UVM_MEDIUM)
         finish_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "print4 config_linkwidth_start_state_upstream", UVM_MEDIUM)
+        `uvm_info("pipe_link_up_seq", "TS1 with PAD Link and Lane numbers sent", UVM_MEDIUM)
       end
     end
 
     begin
-      `uvm_info("pipe_link_up_seq", "print5 config_linkwidth_start_state_upstream", UVM_MEDIUM)
       while (!two_consecutive_ts1s_with_non_pad_link_number_detected)
       begin
         @(pipe_agent_config_h.detected_tses_e);
@@ -252,6 +247,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
           if(tses_received[i].ts_type == TS1 && tses_received[i].use_link_number)
           begin
             num_of_ts1s_with_non_pad_link_number[i] += 1;
+            `uvm_info("pipe_link_up_seq", "TS1 with Non-PAD Link number received", UVM_MEDIUM)
           end
           else
           begin
@@ -264,6 +260,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
           if(num_of_ts1s_with_non_pad_link_number[i] == 2)
           begin
             two_consecutive_ts1s_with_non_pad_link_number_detected = 1;
+            `uvm_info("pipe_link_up_seq", "2 Consecutive TS1s with Non-PAD Link number are Detected", UVM_MEDIUM)
           end
         end
       end
@@ -294,6 +291,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS1 with received Link number sent", UVM_MEDIUM)
       end
     end
     begin
@@ -311,6 +309,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
           if(tses_received[i].use_lane_number)
           begin
             ts1_with_non_pad_lane_number_detected = 1;
+            `uvm_info("pipe_link_up_seq", "TS1 with Non-PAD Lane number received", UVM_MEDIUM)
           end
         end
       end
@@ -348,6 +347,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS1 with Non-PAD Link and Lane numbers sent", UVM_MEDIUM)
       end
     end
 
@@ -358,29 +358,28 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
         tses_received = pipe_agent_config_h.tses_received;
         foreach(tses_received[i])
         begin
-          `uvm_info("pipe_link_up_seq", $sformatf("ts_type_adel=%s",tses_received[i].ts_type.name), UVM_MEDIUM)
           if(tses_received[i].ts_type == TS2)
           begin
             num_of_ts2_received[i] += 1;
+            `uvm_info("pipe_link_up_seq", "TS2 with the same Link number and Lane number received", UVM_MEDIUM)
           end
           else
           begin
             num_of_ts2_received[i] = 0;
           end
         end
-        `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream2", UVM_MEDIUM)
         // Check if any lane detected 2 consecutive ts2s
         foreach(num_of_ts2_received[i])
         begin
           if(num_of_ts2_received[i] == 2)
           begin
             two_consecutive_ts2s_detected = 1;
+            `uvm_info("pipe_link_up_seq", "2 Consecutive TS2s with the same Link number and Lane number are Detected", UVM_MEDIUM)
           end
         end
       end
     end
   join
-  `uvm_info("pipe_link_up_seq", "config_lanenum_wait_state_upstream3", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_complete_state_upstream;
@@ -413,7 +412,9 @@ task pipe_link_up_seq::config_complete_state_upstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS2 with the correct Link and Lane numbers sent", UVM_MEDIUM)
       end
+      `uvm_info("pipe_link_up_seq", "16 TS2s with the correct Link and Lane numbers are Sent", UVM_MEDIUM)
 
       while (!eight_consecutive_ts2s_detected)
       begin
@@ -433,6 +434,7 @@ task pipe_link_up_seq::config_complete_state_upstream;
           if(tses_received[i].ts_type == TS2)
           begin
             num_of_ts2_received[i] += 1;
+            `uvm_info("pipe_link_up_seq", "TS2 with the correct Link and Lane numbers received", UVM_MEDIUM)
           end
           else
           begin
@@ -446,6 +448,7 @@ task pipe_link_up_seq::config_complete_state_upstream;
           if(num_of_ts2_received[i] == 8)
           begin
             eight_consecutive_ts2s_detected = 1;
+            `uvm_info("pipe_link_up_seq", "8 Consecutive TS2s with the correct Link and Lane numbers are Detected", UVM_MEDIUM)
           end
         end
       end
@@ -479,6 +482,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS1 with the generated Link number sent", UVM_MEDIUM)
       end
     end
     begin
@@ -492,6 +496,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
           if(tses_received[i].link_number == link_number && tses_received[i].use_link_number)
           begin
             num_of_detected_ts1s_with_same_link_number[i] += 1;
+            `uvm_info("pipe_link_up_seq", "TS1 with the same Link number received", UVM_MEDIUM)
           end
           else
           begin
@@ -505,12 +510,12 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
           if(num_of_detected_ts1s_with_same_link_number[i] == 2)
           begin
             two_ts1s_with_same_link_number_detected = 1;
+            `uvm_info("pipe_link_up_seq", "2 Consecutive TS1s with Link no. that matches transmitted Link number are Detected", UVM_MEDIUM)
           end
         end
       end
     end
   join
-  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_start_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
@@ -540,6 +545,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS1 with the generated Lane numbers sent", UVM_MEDIUM)
       end
     end
     begin
@@ -559,6 +565,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
         if (all_lane_numbers_are_correct)
         begin
           num_of_detected_ts1s_with_same_lane_numbers += 1;
+          `uvm_info("pipe_link_up_seq", "TS1 with same Lane numbers Detected", UVM_MEDIUM)
         end
         else
         begin
@@ -569,6 +576,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
         if(num_of_detected_ts1s_with_same_lane_numbers == 2)
         begin
           two_ts1s_with_same_lane_numbers_detected = 1;
+          `uvm_info("pipe_link_up_seq", "2 TS1s with the same Link number and Lane number are Detected", UVM_MEDIUM)
         end
       end
     end
@@ -605,7 +613,9 @@ task pipe_link_up_seq::config_complete_state_downstream;
       begin
         start_item(pipe_seq_item_h);
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "TS2 with the correct Link and Lane numbers sent", UVM_MEDIUM)
       end
+      `uvm_info("pipe_link_up_seq", "16 TS2s with the correct Link and Lane numbers are Sent", UVM_MEDIUM)
 
       while (!eight_consecutive_ts2s_detected)
       begin
@@ -625,6 +635,7 @@ task pipe_link_up_seq::config_complete_state_downstream;
           if(tses_received[i].ts_type == TS2)
           begin
             num_of_ts2_received[i] += 1;
+            `uvm_info("pipe_link_up_seq", "TS2 with the correct Link and Lane numbers received", UVM_MEDIUM)
           end
           else
           begin
@@ -638,6 +649,7 @@ task pipe_link_up_seq::config_complete_state_downstream;
           if(num_of_ts2_received[i] == 8)
           begin
             eight_consecutive_ts2s_detected = 1;
+            `uvm_info("pipe_link_up_seq", "8 Consecutive TS2s with the correct Link and Lane numbers are Detected", UVM_MEDIUM)
           end
         end
       end
@@ -662,9 +674,8 @@ task pipe_link_up_seq::config_idle_state;
   fork
     begin
       @(pipe_agent_config_h.idle_data_detected_e);
-      `uvm_info("pipe_link_up_seq", "one_idle_data_received=1", UVM_MEDIUM)
       one_idle_data_received = 1;
-      `uvm_info("pipe_link_up_seq", "one_idle_data_received=1", UVM_MEDIUM)
+      `uvm_info("pipe_link_up_seq", "one_idle_data_received = 1", UVM_MEDIUM)
     end
 
     begin 
@@ -673,28 +684,25 @@ task pipe_link_up_seq::config_idle_state;
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
         finish_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "maggie 1", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
         finish_item(pipe_seq_item_h);
-        `uvm_info("pipe_link_up_seq", "maggie 2", UVM_MEDIUM)
       end
-      `uvm_info("pipe_link_up_seq", "maggie 3", UVM_MEDIUM)
     end
 
     begin
       wait (one_idle_data_received);
         for (i = 0; i < 16; i++)
         begin
-          `uvm_info("pipe_link_up_seq", "maggie 4", UVM_MEDIUM)
           start_item(pipe_seq_item_h);
           pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
           finish_item(pipe_seq_item_h);
+          `uvm_info("pipe_link_up_seq", "idle data sent", UVM_MEDIUM)
         end
-        `uvm_info("pipe_link_up_seq", "maggie 5", UVM_MEDIUM)
         start_item(pipe_seq_item_h);
         pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
         finish_item(pipe_seq_item_h);
+        `uvm_info("pipe_link_up_seq", "16 Idle Data are Sent", UVM_MEDIUM)
     end
  
     begin
@@ -703,11 +711,13 @@ task pipe_link_up_seq::config_idle_state;
         @(pipe_agent_config_h.idle_data_detected_e);
         
         num_of_idle_data_received += 1;
+        `uvm_info("pipe_link_up_seq", "idle data received", UVM_MEDIUM)
 
         // Check if 8 consecutive idle data detected
         if(num_of_idle_data_received == 8) 
         begin
           eight_consecutive_idle_data_detected = 1;
+          `uvm_info("pipe_link_up_seq", "8 Consecutive Idle Data are Detected", UVM_MEDIUM)
         end
       end
     end
