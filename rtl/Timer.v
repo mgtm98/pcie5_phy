@@ -74,6 +74,20 @@ begin
 			 8 :TimerInterval=TimerIntervalBase<<2<<2 ; //multiply base by 4 for Gen2 and another 4 for 16 bit width (Gen3 32 bit)
 			 endcase
 		end
+		Gen4:begin //Gen3  
+			 case(GEN4_PIPEWIDTH)
+			 32:TimerInterval=TimerIntervalBase<<3<<0 ; //multiply base by 4 for Gen2 (Gen3 32 bit)
+			 16:TimerInterval=TimerIntervalBase<<3<<1 ; //multiply base by 4 for Gen2 and another 2 for 16 bit width (Gen3 16 bit)
+			 8 :TimerInterval=TimerIntervalBase<<3<<2 ; //multiply base by 4 for Gen2 and another 4 for 16 bit width (Gen3 32 bit)
+			 endcase
+		end
+		Gen5:begin //Gen3  
+			 case(GEN5_PIPEWIDTH)
+			 32:TimerInterval=TimerIntervalBase<<5<<0 ; //multiply base by 4 for Gen2 (Gen3 32 bit)
+			 16:TimerInterval=TimerIntervalBase<<5<<1 ; //multiply base by 4 for Gen2 and another 2 for 16 bit width (Gen3 16 bit)
+			 8 :TimerInterval=TimerIntervalBase<<5<<2 ; //multiply base by 4 for Gen2 and another 4 for 16 bit width (Gen3 32 bit)
+			 endcase
+		end
 	endcase
 end
 assign TimeOut = (Start)? 0:(Tick >= TimerInterval)? 1:0 ;
