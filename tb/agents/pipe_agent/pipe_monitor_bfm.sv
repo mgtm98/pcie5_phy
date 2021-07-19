@@ -90,7 +90,7 @@ interface pipe_monitor_bfm
   genvar i;
   generate
     for (i=0; i<8; i++) begin
-      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Assertion done", UVM_LOW);
+      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Reset Assertions done", UVM_LOW);
     end
  endgenerate
  /************************************************************************/
@@ -348,7 +348,7 @@ end
   /******************************* Receiver detection Scenario *******************************/
   initial begin
     forever begin  
-      `uvm_info("pipe_driver_bfm", "Entered receiver detection", UVM_LOW)
+      `uvm_info("pipe_driver_bfm", "Started receiver detection scenario", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 1);
       end
@@ -362,7 +362,7 @@ end
         wait(PhyStatus[i]==1);
         assert (RxStatus[(i*3) +:3]=='b011) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b011")
       end
-      `uvm_info ("pipe_monitor_bfm", "Powerdown and rxstatus is tamam", UVM_LOW)
+      `uvm_info ("pipe_monitor_bfm", "Powerdown = P1 and RxStatus = 'b011", UVM_LOW)
 
       @(posedge PCLK);
     
@@ -370,11 +370,11 @@ end
         wait(PhyStatus[i]==0);
         assert (RxStatus[(i*3) +:3]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
-      `uvm_info ("pipe_monitor_bfm", "waiting for txdetectrx to be deasserted", UVM_LOW)
+      `uvm_info ("pipe_monitor_bfm", "waiting for TxDetectRx signal to be deasserted", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 0);
       end
-      `uvm_info ("pipe_monitor_bfm", "txdetectrx is deasserted", UVM_LOW)
+      `uvm_info ("pipe_monitor_bfm", "TxDetectRx is deasserted", UVM_LOW)
       @(posedge PCLK);
       proxy.notify_receiver_detected();
       `uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
@@ -1417,16 +1417,10 @@ endtask
        end	
        @ (posedge PCLK);
      end
-      `uvm_info("pipe_monitor_bfm", $sformatf("adel0_tx= %h",TxData), UVM_MEDIUM)
-      `uvm_info("pipe_monitor_bfm", $sformatf("adel1_tx= %h",TxData[(8*0) +: 8]), UVM_MEDIUM)
-      `uvm_info("pipe_monitor_bfm", $sformatf("adel2_tx= %h",TxData[(8*1) +: 8]), UVM_MEDIUM)
-      `uvm_info("pipe_monitor_bfm", $sformatf("adel3_tx= %h",TxData[(8*2) +: 8]), UVM_MEDIUM)
-      `uvm_info("pipe_monitor_bfm", $sformatf("adel4_tx= %h",TxData[(8*3) +: 8]), UVM_MEDIUM)
- 
       if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
        repeat((128/get_width())-1) begin
          @ (posedge PCLK);
-         `uvm_info("pipe_monitor_bfm", "momken clock_sent_tx", UVM_MEDIUM)
+         //`uvm_info("pipe_monitor_bfm", "momken clock_sent_tx", UVM_MEDIUM)
        end
       end
      else begin
@@ -1560,16 +1554,11 @@ endtask
       end	
       @ (posedge PCLK);
     end
-     `uvm_info("pipe_monitor_bfm", $sformatf("adel0= %h",RxData), UVM_MEDIUM)
-     `uvm_info("pipe_monitor_bfm", $sformatf("adel1= %h",RxData[(8*0) +: 8]), UVM_MEDIUM)
-     `uvm_info("pipe_monitor_bfm", $sformatf("adel2= %h",RxData[(8*1) +: 8]), UVM_MEDIUM)
-     `uvm_info("pipe_monitor_bfm", $sformatf("adel3= %h",RxData[(8*2) +: 8]), UVM_MEDIUM)
-     `uvm_info("pipe_monitor_bfm", $sformatf("adel4= %h",RxData[(8*3) +: 8]), UVM_MEDIUM)
     //@ (posedge PCLK);
     if (RxDataK[0] == 1 && RxData[(8*0) +: 8] == 8'b10111100) begin //comm 
       repeat((128/get_width())-1) begin
         @ (posedge PCLK);
-        `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
+        // `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
       end
     end
     else begin

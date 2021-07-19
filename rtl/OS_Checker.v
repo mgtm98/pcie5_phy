@@ -502,7 +502,7 @@ begin
             resetcounter = 1'b0; countup = 1'b0;
             if(valid &&(ts2CorrectStart||ts1CorrectStart)&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
             &&(orderedset[87:80] == TS2||orderedset[87:80] == TS1)&&orderedset[39]==directed_speed_change&&
-            ((orderedset[49:48] == 2'b00&&gen == 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
+            ((orderedset[49:48] == 2'b00&&gen >= 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
             begin
             nextState = RcvrLock2;
             resetcounter = 1'b1; countup = 1'b1;
@@ -519,7 +519,7 @@ begin
                 begin
                     if((ts2CorrectStart||ts1CorrectStart)&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
                     &&(orderedset[87:80] == TS2||orderedset[87:80] == TS1)&&orderedset[39]==directed_speed_change&&
-                    ((orderedset[49:48] == 2'b00&&gen == 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
+                    ((orderedset[49:48] == 2'b00&&gen >= 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
                     begin
                         countup = 1'b1;
                         nextState =  RcvrLock2;
@@ -529,7 +529,7 @@ begin
             else nextState =  RcvrLock2;
         end
 
-         L0up1:
+        L0up1:
         begin
             resetcounter = 1'b0; countup = 1'b0;
             if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
@@ -814,7 +814,8 @@ begin
         RcvrSpeedeieos1:
         begin
             resetcounter = 1'b0; countup = 1'b0;
-            if(valid &&((gen==3'd3&&orderedset=={8{16'hFF00}})||(gen!=3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}}))))
+            if(valid &&((gen==3'd4 && orderedset=={4{32'hFFFF0000}})||(gen==3'd5&&orderedset=={2{64'hFFFFFFFF00000000}})||
+            (gen==3'd3&&orderedset=={8{16'hFF00}})||(gen<3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}}))))
             begin
             nextState = RcvrSpeedeieos2;
             resetcounter = 1'b1; countup = 1'b1;
@@ -828,7 +829,9 @@ begin
             resetcounter = 1'b1; countup = 1'b0;
             if(valid)
                 begin
-                    if((gen==3'd3&&orderedset=={8{16'hFF00}})||(gen!=3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}})))
+                    if((gen==3'd4 && orderedset=={4{32'hFFFF0000}})||(gen==3'd5&&orderedset=={2{64'hFFFFFFFF00000000}})||
+                    (gen==3'd3&&orderedset=={8{16'hFF00}})||
+                    (gen<3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}})))
                     begin
                         countup = 1'b1;
                         nextState =  RcvrSpeedeieos2;

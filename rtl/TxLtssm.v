@@ -108,6 +108,7 @@ reg TimerStart;
 reg [2:0]TimerIntervalCode;
 reg turnOffScrambler_flag_next,turnOffScrambler_flag_next2;
 wire TimeOut;
+reg SDSFlag;
 Timer #(.Width(32)) T(.Gen(Gen),.Reset(Reset),.Pclk(Pclk),.Enable(TimerEnable),.Start(TimerStart),.TimerIntervalCode(TimerIntervalCode),.TimeOut(TimeOut));
 
 //assignment
@@ -211,7 +212,7 @@ always @ * begin
 		end
 		RecoverySpeed:begin
 			if(TimeOut && OSCount >= 2)begin
-				if(TrainToGen==Gen3)begin
+				if(TrainToGen>=Gen3)begin
 					ExitToState<=Ph0;
 					ExitToFlag<=1;
 				end
@@ -253,6 +254,7 @@ ResetEIEOSCount<=1'b0;
 RejectCoff<=1'b0;
 ReqEq <= 1'b0;
 RxStandby<=16'b0;
+
 	case(State)
 		DetectQuiet:begin
 			turnOffScrambler_flag_next<=1'b1;
@@ -374,8 +376,24 @@ RxStandby<=16'b0;
 		end
 		L0:begin
 			turnOffScrambler_flag_next<=1'b0;
+			if(Gen<3'b011)begin 
 			HoldFIFOData<=0;
-			MuxSel <=1; //TODO : check is it 1 or 0 for orderset
+			MuxSel <=1;
+			end
+			else if(Gen>=3'b011)begin
+				if(!OSGeneratorBusy && !SDSFlag)begin
+					HoldFIFOData<=1;
+					MuxSel <=0;
+					OSType<=3'b110;
+					OSGeneratorStart<=1;
+					SDSFlag<=1;					
+				end
+				if(SDSFlag && OSGeneratorFinish)begin
+					HoldFIFOData<=0;
+					MuxSel <=1;
+				end
+			end
+			 //TODO : check is it 1 or 0 for orderset
 		end
 		RecoveryRcvrLock: begin
 			HoldFIFOData<=1;
@@ -403,7 +421,7 @@ RxStandby<=16'b0;
 				LaneNumber<=2'b01; //num_seq
 				SpeedChange<=ReadDirectSpeedChange;
 				EC<=2'b00;
-				if (TrainToGen == Gen3 && DEVICETYPE ==DownStream && ReadDirectSpeedChange )
+				if (TrainToGen >= Gen3 && DEVICETYPE ==DownStream && ReadDirectSpeedChange )
 				begin 
 					EQTS2<=1;
 					for(i=0;i<LANESNUMBER;i=i+1)begin
@@ -456,7 +474,7 @@ RxStandby<=16'b0;
 		Ph0:begin
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
-			if(DEVICETYPE==UpStream)begin/////////////////****************************************************************////////
+			if(DEVICETYPE==DownStream)begin/////////////////****************************************************************////////
 				if(!OSGeneratorBusy)begin //it is supposed that
 					OSType<=3'b000; //TS1
 					LinkNumber<=ReadLinkNum;
@@ -530,7 +548,13 @@ RxStandby<=16'b0;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			ElecIdleReq <= {LANESNUMBER{1'b1}};
 			if(!OSGeneratorBusy)begin 
-				OSType<=3'b100; //idle
+				if(Gen>=3'b011 && !SDSFlag)begin
+					OSType<=3'b110; //sds
+					SDSFlag<=1;
+				end
+				else begin
+					OSType<=3'b100; //idle
+				end
 				OSGeneratorStart<=1;
 			end
 			
@@ -645,6 +669,7 @@ TimerStart <= 0;
 			end
 			else if (NextState==RecoveryIdle)begin
 				OSCount<= 0;
+				SDSFlag<=0;
 			end
 		end
 		
@@ -666,9 +691,11 @@ TimerStart <= 0;
 				TimerIntervalCode <= t12ms;
 			end
 			
+			
 			else if (NextState == PollingActive || NextState == PollingConfigration 
-			|| NextState == ConfigrationComplete )begin
+			|| NextState == ConfigrationComplete || NextState==L0)begin
 				OSCount<=0;		
+				SDSFlag<=0;
 			end			
 		end		
 		default:begin
@@ -694,6 +721,7 @@ begin
 		TXFinishFlag <= 0;
 		CurrentGen=Gen1;
 		WriteDetectLanesFlag<=0;
+		SDSFlag<=0;
 	end
 	else begin
 		turnOffScrambler_flag <= turnOffScrambler_flag_next2;

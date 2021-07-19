@@ -289,7 +289,6 @@ TX
 .PowerDown(PowerDown),
 .PhyStatus(PhyStatus),
 .TxElecIdle(TxElecIdle),
-.detected_lanes(),//////////////////////////////////////////////////////
 .WriteDetectLanesFlag(WriteDetectLanesFlag),
 .SetTXState(SetTXState),
 .TXFinishFlag(TXFinishFlag),
@@ -514,7 +513,7 @@ begin
     LocalTxPresetCoefficients={16*18{1'b1}};
     LocalLF={16*6{1'b1}};
     LocalFS={16*6{1'b1}};
-	wait(pl_linkUp && pl_speedmode==2'b10 && pl_state_sts==active_);
+	wait(pl_linkUp && pl_speedmode==3'd4 && pl_state_sts==active_);
 	lp_state_req = active_;
 	@(negedge CLK);
 	lp_irdy=1;
@@ -549,7 +548,7 @@ PCIe #(
 	. GEN3_PIPEWIDTH (8) ,								
 	. GEN4_PIPEWIDTH (8) ,	
 	. GEN5_PIPEWIDTH (8) ,	
-	. MAX_GEN (3)
+	. MAX_GEN (5)
 )
 pcie
 (

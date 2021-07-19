@@ -934,12 +934,12 @@ always @(negedge clk)begin
     end*/
   end
   always@(posedge clk) begin
-   if (Gen == 3'b011) begin
+   if (Gen >= 3'b011) begin
     DataOut<=DataOut_reg;
 	ValidOut<=ValidOut_reg;
 	DKOut<=64'b0;
     end
-  else if (Gen == 3'b001) begin
+  else if (Gen < 3'b011) begin
     DataOut<=0;
 ValidOut<=0;
 if(~Hold && finishprocessing && |valid_reg )
