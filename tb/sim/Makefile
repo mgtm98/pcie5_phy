@@ -51,7 +51,7 @@ run:
 	vsim -gui -do "wave.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887
 
 run_design:
-	vsim -novopt -do "design.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887
+	vsim -novopt -do "design.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887 -suppress 12110
 
 clean:
 	rm -r work

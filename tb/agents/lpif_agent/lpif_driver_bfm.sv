@@ -73,6 +73,7 @@ interface lpif_driver_bfm #(
     lp_state_req <= ACTIVE;
     wait(pl_linkup == 1 && pl_state_sts == ACTIVE);
   	@(posedge lclk);
+    //`uvm_info("lpif_driver_bfm", "reset scenario finished", UVM_LOW)
   endtask
 
 /********************************** Normal Data Operation ***********************************/
