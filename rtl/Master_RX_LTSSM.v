@@ -1,14 +1,16 @@
-module  masterRxLTSSM #(parameter MAXLANES = 16)(
+module  masterRxLTSSM #(parameter MAXLANES = 16 , DEVICETYPE = 0)(
     input clk,
     input [4:0]numberOfDetectedLanes,
-    input [3:0]substate,
+    input [4:0]substate,
     input [15:0]countersComparators,
-    //input forceDetect,
     input rxElectricalIdle,
     input timeOut,
     input reset,
+    input [15:0]RcvrCfgToidle,
+    input [2:0] trainToGen,
+    input [15:0]detailedRecoverySubstates,
     output reg finish,
-    output reg [3:0]exitTo,
+    output reg [4:0]exitTo,
     output reg [15:0]resetOsCheckers,
     output [3:0]lpifStatus,
     output reg [2:0]timeToWait,
@@ -17,27 +19,37 @@ module  masterRxLTSSM #(parameter MAXLANES = 16)(
     output reg resetTimer,
     output reg[4:0]comparatorsCount);
     
-    reg[3:0] lastState,lastState_next;
+    reg[4:0] lastState,lastState_next;
     reg[1:0] currentState,nextState;
-    //reg[5:0] timeToWait;
     reg[15:0]comparatorsCondition;
-    //reg forcedetectflag;
+
 
 //timer parameters
-parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b101,t0ms = 3'b000;
+parameter t0ms = 3'd0,t12ms= 3'd1,t24ms = 3'd2,t48ms = 3'd3,t2ms = 3'd4,t8ms = 3'd5,t1ms=3'd6;
 //input substates from main ltssm
-    localparam [3:0]
-	detectQuiet =  4'd0,
-	detectActive = 4'd1,
-	pollingActive= 4'd2,
-	pollingConfiguration= 4'd3,
-    configurationLinkWidthStart = 4'd4,
-    configurationLinkWidthAccept = 4'd5,
-    configurationLanenumWait = 4'd6,
-    configurationLanenumAccept = 4'd7,
-    configurationComplete =4'd8,
-    configurationIdle = 4'd9,
-	L0 = 4'd10;
+    localparam [4:0]
+	    detectQuiet =  5'd0,
+        detectActive = 5'd1,
+        pollingActive= 5'd2,
+        pollingConfiguration= 5'd3,
+        configurationLinkWidthStart = 5'd4,
+        configurationLinkWidthAccept = 5'd5,
+        configurationLanenumWait = 5'd6,
+        configurationLanenumAccept = 5'd7,
+        configurationComplete = 5'd8,
+        configurationIdle = 5'd9,
+        L0 = 5'd10,
+        recoveryRcvrLock = 5'd11,
+        recoveryRcvrCfg = 5'd12,
+        recoverySpeed = 5'd13,
+        phase0 = 5'd14,
+        phase1 = 5'd15,
+        phase2 = 5'd16,
+        phase3 =5'd17,
+        recoveryIdle = 5'd18,
+        recoverySpeedeieos = 5'd19,
+        recoverywait = 5'd20;
+
     
 
 //local states
@@ -72,7 +84,8 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
         begin
     
           if(substate != lastState) //ensure that this is a new request
-         begin
+            begin
+            lastState_next = substate;
             resetOsCheckers = {16{1'b1}};
             if(substate == detectQuiet)
             begin
@@ -101,7 +114,8 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
                 enableTimer = 1'b1;
 		
             end
-            else if (substate==configurationLinkWidthStart||substate==configurationLinkWidthAccept||substate==configurationLanenumAccept)
+            else if (substate==configurationLinkWidthStart||substate==configurationLinkWidthAccept||
+                    substate==configurationLanenumAccept||substate==phase0||substate==phase1||substate==phase2||substate==phase3)
             begin
                 comparatorsCount = 5'd2;
                 timeToWait = t24ms;
@@ -119,7 +133,7 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
                 enableTimer = 1'b1;
 		
             end
-            else if (substate==pollingConfiguration)
+            else if (substate==pollingConfiguration||substate==recoveryRcvrLock||substate==recoveryRcvrCfg)
             begin
                 comparatorsCount=5'd8;
                 timeToWait = t48ms;
@@ -137,11 +151,27 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
                 enableTimer = 1'b1;
 		
             end
-		else if (substate == L0) begin
-			nextState = start;
+
+        else if (substate==recoveryIdle)
+            begin
+                comparatorsCount=5'd1;
+                timeToWait = t2ms;
+                nextState = counting;
+                startTimer = 1'b1;
+                enableTimer = 1'b1;
+        
+            end
+
+        else if ((substate == L0 && DEVICETYPE) || substate==recoverySpeed || substate==recoverySpeedeieos) 
+            begin
+                comparatorsCount=5'd1;
+                timeToWait = t48ms;
+                nextState = counting;
+                startTimer = 1'b1;
+                enableTimer = 1'b1;
 			end
 		
-        end
+       end
         
        else 
         begin
@@ -162,8 +192,9 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
         resetTimer  = 1'b1;
         resetOsCheckers = {16{1'b1}};
         startTimer = 1'b0;
-		finish = 1'b0;
-        if((!timeOut && countersComparators >= comparatorsCondition) || (substate == detectQuiet && rxElectricalIdle) || (substate == detectQuiet && timeOut)|| (substate == detectActive && timeOut))
+	    finish = 1'b0;
+        if((!timeOut && countersComparators >= comparatorsCondition) || (substate == detectQuiet && rxElectricalIdle) || (substate == detectQuiet && timeOut)|| (substate == detectActive && timeOut)
+        ||(substate==recoverySpeed && countersComparators >= comparatorsCondition && timeOut))
         begin
             enableTimer = 1'b0;
             resetTimer  = 1'b0;
@@ -172,42 +203,47 @@ parameter t12ms= 3'b001,t24ms = 3'b010,t48ms = 3'b011,t2ms = 3'b100,t8ms = 3'b10
            
         end
         else if(timeOut)
-	begin
-	nextState = failed;
-	end	
+            begin
+            nextState = failed;
+            end	
         else nextState = counting;
     end
-        success:
-        begin
-	    lastState_next = substate;
-            resetOsCheckers = 16'b0;
-            enableTimer = 1'b0;
-            resetTimer = 1'b0;
-            finish = 1'b1;
-            exitTo =  substate + 1'b1;
-            nextState = start;
-        end
-        failed:
-        begin
-            lastState_next = substate;
-            resetOsCheckers = 16'b0;
-            enableTimer = 1'b0;
-            resetTimer = 1'b0;
-            finish = 1'b1;
-            exitTo = detectQuiet;
-            nextState = start;
-        end
-        default:
-        begin
-            nextState = start;
-            enableTimer = 1'b0;
-            resetTimer = 1'b0;
-            resetOsCheckers = 16'b0;
-        end
-        
-
+    success:
+    begin
+        if(RcvrCfgToidle[0])exitTo = recoveryIdle;
+        else if(substate == phase1 && detailedRecoverySubstates[0])exitTo = recoveryRcvrLock;
+        else if(substate == recoveryIdle)exitTo = L0;
+        else if(substate==recoverySpeed)exitTo = recoverywait;
+        else if(substate==recoverySpeedeieos && trainToGen<3'd3)exitTo=recoveryRcvrLock;
+        else if(substate==recoverySpeedeieos && trainToGen>=3'd3)exitTo=phase0;
+        else exitTo = substate+1'b1;
+        resetOsCheckers = 16'b0;
+        enableTimer = 1'b0;
+        resetTimer = 1'b0;
+        finish = 1'b1;
+        nextState = start;
+    end
+    failed:
+    begin
+        //lastState_next = substate;
+        resetOsCheckers = 16'b0;
+        enableTimer = 1'b0;
+        resetTimer = 1'b0;
+        finish = 1'b1;
+        exitTo = detectQuiet;
+        nextState = start;
+    end
+    default:
+    begin
+        nextState = start;
+        enableTimer = 1'b0;
+        resetTimer = 1'b0;
+        resetOsCheckers = 16'b0;
+    end
     
-        endcase
+
+
+    endcase
     end
     
 

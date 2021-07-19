@@ -4,19 +4,36 @@ module osChecker #(parameter DEVICETYPE = 0)(
     input [7:0]laneNumber,
     input [127:0]orderedset,
     input valid,
-    input [3:0]substate,
+    input [4:0]substate,
     input reset,
+    input directed_speed_change,
+    input [2:0]gen,
     output reg countup,
     output reg resetcounter,
     output [7:0] rateid,
     output [7:0] linkNumberOut,
-    output upconfigure_capability);
+    output upconfigure_capability,
+    output reg RcvrCfgToidle,
+    output reg[5:0]LFDSP,
+    output reg[5:0]FSDSP,
+    output reg [2:0] ReceiverpresetHintDSPout,
+    output reg [3:0] TransmitterPresetHintDSPout,
+    output reg [2:0] ReceiverpresetHintUSPout,
+    output reg [3:0] TransmitterPresetHintUSPout,
+    output reg detailedRecoverySubstates,
+    input [2:0] ReceiverpresetHintDSP,
+    input [3:0] TransmitterPresetHintDSP,
+    input [2:0] ReceiverpresetHintUSP,
+    input [3:0] TransmitterPresetHintUSP,
+    input [5:0]CursorCoff,
+    input [5:0]PreCursorCoff,
+    input [5:0]PostCursorCoff);
 
     //LOCLA VARIABLES
-    reg[4:0] currentState,nextState;
+    reg[5:0] currentState,nextState;
     reg[127:0] localorderedset;
     reg notEqual;
-    reg [7:0] linkNumberReg;
+    reg [7:0]linkNumberReg;
     wire ts1CorrectStart,ts2CorrectStart;
     localparam [7:0]
     PAD = 8'hF7, 
@@ -24,49 +41,93 @@ module osChecker #(parameter DEVICETYPE = 0)(
     TS2 = 8'h45,
     COM = 	8'hBC, //BC
     gen3TS1 = 8'h1E,
-    gen3TS2 = 8'h2D;
+    gen3TS2 = 8'h2D,
+    gen3eios = 8'h66,
+    idle = 8'h7c,
+    gen1eieos = 8'hC4;
 
 //input substates from main ltssm
-    localparam [3:0]
-        detectQuiet =  4'd0,
-        detectActive = 4'd1,
-        pollingActive= 4'd2,
-        pollingConfiguration= 4'd3,
-        configurationLinkWidthStart = 4'd4,
-        configurationLinkWidthAccept = 4'd5,
-        configurationLanenumWait = 4'd6,
-        configurationLanenumAccept = 4'd7,
-        configurationComplete = 4'd8,
-        configurationIdle = 4'd9;
 
+        localparam [4:0]
+	    detectQuiet =  5'd0,
+        detectActive = 5'd1,
+        pollingActive= 5'd2,
+        pollingConfiguration= 5'd3,
+        configurationLinkWidthStart = 5'd4,
+        configurationLinkWidthAccept = 5'd5,
+        configurationLanenumWait = 5'd6,
+        configurationLanenumAccept = 5'd7,
+        configurationComplete = 5'd8,
+        configurationIdle = 5'd9,
+        L0 = 5'd10,
+        recoveryRcvrLock = 5'd11,
+        recoveryRcvrCfg = 5'd12,
+        recoverySpeed = 5'd13,
+        phase0 = 5'd14,
+        phase1 = 5'd15,
+        phase2 = 5'd16,
+        phase3 =5'd17,
+        recoveryIdle = 5'd18,
+        recoverySpeedeieos = 5'd19,
+        recoverywait = 5'd20;
 
 //internal states
-    localparam [4:0]
-        start = 5'd0,
-        pollingActive1= 5'd1,
-        pollingActive2= 5'd2,
-        pollingConfiguration1= 5'd3,
-        pollingConfiguration2= 5'd4,
-        configLinkWidthStartDown1 = 5'd5,
-        configLinkWidthStartDown2 = 5'd6,
-        configLinkWidthStartUp1 = 5'd7,
-        configLinkWidthStartUp2 = 5'd8,
-        configLinkWidthAcceptUp1 = 5'd9,
-        configLinkWidthAcceptUp2 = 5'd10,
-        configLanenumWaitDown1 = 5'd11,
-        configLanenumWaitDown2 = 5'd12,
-        configLanenumWaitUp1 = 5'd13,
-        configLanenumWaitUp2 = 5'd14,
-        configLanenumAcceptDown1 = 5'd15,
-        configLanenumAcceptDown2 = 5'd16,
-        configLanenumAcceptUp1 = 5'd17,
-        configLanenumAcceptUp2 = 5'd18,
-        configCompleteDown1 = 5'd19,
-        configCompleteDown2 = 5'd20,
-        configCompleteUp1 = 5'd21,
-        configCompleteUp2 = 5'd22,
-        configIdle1 = 5'd23,
-        configIdle2 = 5'd24;
+    localparam [5:0]
+        start = 6'd0,
+        pollingActive1= 6'd1,
+        pollingActive2= 6'd2,
+        pollingConfiguration1= 6'd3,
+        pollingConfiguration2= 6'd4,
+        configLinkWidthStartDown1 = 6'd5,
+        configLinkWidthStartDown2 = 6'd6,
+        configLinkWidthStartUp1 = 6'd7,
+        configLinkWidthStartUp2 = 6'd8,
+        configLinkWidthAcceptUp1 = 6'd9,
+        configLinkWidthAcceptUp2 = 6'd10,
+        configLanenumWaitDown1 = 6'd11,
+        configLanenumWaitDown2 = 6'd12,
+        configLanenumWaitUp1 = 6'd13,
+        configLanenumWaitUp2 = 6'd14,
+        configLanenumAcceptDown1 = 6'd15,
+        configLanenumAcceptDown2 = 6'd16,
+        configLanenumAcceptUp1 = 6'd17,
+        configLanenumAcceptUp2 = 6'd18,
+        configCompleteDown1 = 6'd19,
+        configCompleteDown2 = 6'd20,
+        configCompleteUp1 = 6'd21,
+        configCompleteUp2 = 6'd22,
+        configIdle1 = 6'd23,
+        configIdle2 = 6'd24,
+        /*****recovery lock****/
+        RcvrLock1    = 6'd25,
+        RcvrLock2 = 6'd26,
+        /*****recovery configuration****/
+        RcvrCfg = 6'd27,
+        RcvrCfg_speed = 6'd28,
+        RcvrCfg_idle = 6'd29,
+        /*********eq***********************/
+        phase0up1 = 6'd30,
+        phase0up2 = 6'd31,
+        phase0down1 = 6'd32,
+        phase0down2 = 6'd33,
+
+        phase1up1 = 6'd34,
+        phase1up2 = 6'd35,
+        phase1down1 = 6'd36,
+        phase1down2 = 6'd37,
+        /***********speed******************/
+        RcvrSpeed1 = 6'd38,
+        RcvrSpeed2 = 6'd39,
+        RcvrIdle1 = 6'd40,
+        RcvrIdle2 = 6'd41,
+        L0up1 = 6'd42,
+        L0up2 = 6'd43,
+        RcvrSpeedeieos1 = 6'd45,
+        RcvrSpeedeieos2 = 6'd46;
+
+
+reg [7:0]symbol6OfTS2;
+reg [7:0]rateidTs2;
 //CURRENT STATE FF
 always @(posedge clk or negedge reset)
 begin
@@ -106,6 +167,16 @@ begin
             else if (substate == configurationComplete && DEVICETYPE == 1'b0) nextState = configCompleteDown1;
             else if (substate == configurationComplete && DEVICETYPE == 1'b1) nextState = configCompleteUp1;
             else if (substate == configurationIdle) nextState = configIdle1;
+            else if (substate == recoveryRcvrLock) nextState = RcvrLock1;
+            else if (substate == recoveryRcvrCfg) nextState = RcvrCfg;
+            else if (substate == recoverySpeed) nextState = RcvrSpeed1;
+            else if (substate == phase0 && DEVICETYPE) nextState = phase0up1;
+            else if (substate == phase0 && !DEVICETYPE)nextState = phase0down1;
+            else if (substate == phase1 && DEVICETYPE) nextState = phase1up1;
+            else if (substate == phase1 && !DEVICETYPE)nextState = phase1down1;
+            else if (substate == recoveryIdle)nextState = RcvrIdle1;
+            else if (substate == recoverySpeedeieos)nextState = RcvrSpeedeieos1;
+
             else nextState = start;
         end
 /******************************polling Active**************************************************/
@@ -425,8 +496,379 @@ begin
                 end
             else nextState =  configIdle2;   
         end
+/***************************************************RECOVERY********************************************************/
+        RcvrLock1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&(ts2CorrectStart||ts1CorrectStart)&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&(orderedset[87:80] == TS2||orderedset[87:80] == TS1)&&orderedset[39]==directed_speed_change&&
+            ((orderedset[49:48] == 2'b00&&gen >= 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
+            begin
+            nextState = RcvrLock2;
+            resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else nextState = RcvrLock1;
+        end
 
 
+        RcvrLock2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if((ts2CorrectStart||ts1CorrectStart)&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&(orderedset[87:80] == TS2||orderedset[87:80] == TS1)&&orderedset[39]==directed_speed_change&&
+                    ((orderedset[49:48] == 2'b00&&gen >= 3'd3)||(orderedset[55:48] == TS1 ||orderedset[55:48] == TS2)))
+                    begin
+                        countup = 1'b1;
+                        nextState =  RcvrLock2;
+                    end
+                    else nextState =  RcvrLock1;
+                end
+            else nextState =  RcvrLock2;
+        end
+
+        L0up1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS1&&orderedset[39]==1'b1)
+            begin
+            nextState = L0up2;
+            resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else nextState = L0up1;
+
+        end
+        L0up2:
+        begin
+             resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                   if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[39]==1'b1)
+                    begin
+                        countup = 1'b1;
+                        nextState =  L0up2;
+                    end
+                    else nextState =  L0up1;
+                end
+            else nextState =  L0up2;
+
+        end
+
+        phase0up1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS1&&orderedset[39]==1'b0&&orderedset[49:48] != 2'b00)
+            begin
+            nextState = phase0up2;
+            resetcounter = 1'b1; countup = 1'b1;
+            FSDSP = orderedset[61:56];
+            LFDSP = orderedset[69:64];
+            end
+
+            else nextState = phase0up1;
+
+        end
+
+        phase0up2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[39]==1'b0&&orderedset[49:48] != 2'b00)
+                    begin
+                        countup = 1'b1;
+                        nextState =  phase0up2;
+                        FSDSP = orderedset[61:56];
+                        LFDSP = orderedset[69:64];
+                    end
+                    else nextState =  phase0up1;
+                end
+            else nextState =  phase0up2;
+        end
+      
+        phase0down1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&!DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80]==TS1&&orderedset[54:51]==TransmitterPresetHintDSP
+            &&orderedset[7*8+5:7*8]==PreCursorCoff&&orderedset[8*8+5:8*8]==CursorCoff&&orderedset[9*8+5:9*8]==PostCursorCoff&&orderedset[49:48]== 2'b00)
+            begin
+            nextState = phase0down2;
+            resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else nextState = phase0down1;
+
+        end
+
+        phase0down2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(!DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[54:51]==TransmitterPresetHintDSP
+                    &&orderedset[7*8+5:7*8]==PreCursorCoff&&orderedset[8*8+5:8*8]==CursorCoff&&orderedset[9*8+5:9*8]==PostCursorCoff&&orderedset[49:48]== 2'b00)
+                    begin
+                        countup = 1'b1;
+                        nextState =  phase0down2;
+                    end
+                    else nextState =  phase0down1;
+                end
+            else nextState =  phase0down2;
+        end
+
+        phase1up1:
+        begin
+            detailedRecoverySubstates = 1'b0;
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS1&&orderedset[49:48] == 2'b10)
+            begin
+            nextState = phase1up2;
+            resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else if(valid &&DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS1&&orderedset[49:48] == 2'b00)
+            begin
+            nextState = phase1up2;
+            resetcounter = 1'b1; countup = 1'b1;
+            detailedRecoverySubstates = 1'b1;
+            end
+
+            else nextState = phase1up1;
+
+        end
+
+        phase1up2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(DEVICETYPE&&!detailedRecoverySubstates&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[49:48] == 2'b10)
+                    begin
+                        countup = 1'b1;
+                        nextState =  phase1up2;
+                    end
+
+                    else if(DEVICETYPE&&detailedRecoverySubstates&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[49:48] == 2'b00)
+                    begin
+                        countup = 1'b1;
+                        nextState =  phase1up2;
+                    end
+
+                    else nextState =  phase1up1;
+                end
+            else nextState =  phase1up2;
+        end
+
+        phase1down1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&!DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80]==TS1&&orderedset[49:48]== 2'b01)
+            begin
+            nextState = phase1down2;
+            resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else nextState = phase1down1;
+
+        end
+
+        phase1down2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(!DEVICETYPE&&ts1CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS1&&orderedset[49:48]== 2'b01)
+                    begin
+                        countup = 1'b1;
+                        nextState =  phase1down2;
+                    end
+                    else nextState =  phase1down1;
+                end
+            else nextState =  phase1down2;
+        end
+
+
+        RcvrCfg:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&ts2CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS2&&orderedset[39]==1'b1 &&orderedset[55]==1'b1)
+            begin
+                nextState = RcvrCfg_speed;
+                rateidTs2 = orderedset[39:32];
+                symbol6OfTS2 = orderedset[55:48];
+                resetcounter = 1'b1; countup = 1'b1;
+                if(DEVICETYPE)
+                begin
+                    ReceiverpresetHintDSPout = localorderedset[50:48];
+                    TransmitterPresetHintDSPout = localorderedset[54:51];
+                end
+                else if(!DEVICETYPE)
+                begin
+                    ReceiverpresetHintUSPout = localorderedset[50:48];
+                    TransmitterPresetHintUSPout = localorderedset[54:51];
+                end
+            end
+            else if(valid &&ts2CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+            &&orderedset[87:80] == TS2&&orderedset[39]==1'b0)
+            begin
+                nextState = RcvrCfg_idle;
+                resetcounter = 1'b1; countup = 1'b1;
+            end
+
+            else nextState = RcvrCfg;
+        end
+
+        RcvrCfg_speed:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(ts2CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS2&&orderedset[39]==1'b1 &&orderedset[39:32]==rateidTs2
+                    &&orderedset[55:48]==symbol6OfTS2&&orderedset[55]==1'b1)
+                    begin
+                        symbol6OfTS2 = orderedset[55:48];
+                        rateidTs2 = orderedset[39:32];
+                        resetcounter = 1'b1; countup = 1'b1;
+                        countup = 1'b1;
+                        nextState =  RcvrCfg_speed;
+                        RcvrCfgToidle = 1'b0;
+                        if(DEVICETYPE)
+                            begin
+                                ReceiverpresetHintDSPout = localorderedset[50:48];
+                                TransmitterPresetHintDSPout = localorderedset[54:51];
+                            end
+                        else if(!DEVICETYPE)
+                            begin
+                                ReceiverpresetHintUSPout = localorderedset[50:48];
+                                TransmitterPresetHintUSPout = localorderedset[54:51];
+                            end
+                    end
+                    else nextState =  RcvrCfg;
+                end
+            else nextState =  RcvrCfg_speed;
+        end
+
+        RcvrCfg_idle:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(ts2CorrectStart&& orderedset[15:8]==linkNumber && orderedset[23:16]==laneNumber 
+                    &&orderedset[87:80] == TS2&& orderedset[39]==1'b0)
+                    begin
+                        resetcounter = 1'b1; countup = 1'b1;
+                        countup = 1'b1;
+                        nextState =  RcvrCfg_idle;
+                        RcvrCfgToidle = 1'b1;
+                    end
+                    else nextState =  RcvrCfg;
+                end
+            else nextState =  RcvrCfg_idle;
+        end
+
+        RcvrSpeed1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&((gen==3'd3&&(|orderedset == 8'h66))||(gen!=3'd3&&orderedset[7:0]==COM &&(orderedset[31:8]=={3{idle}}))))
+            begin
+            nextState = RcvrSpeed2;
+            resetcounter = 1'b1; countup = 1'b1;
+            RcvrCfgToidle = 1'b0;
+            end
+            else nextState = RcvrSpeed1;
+        end
+
+        RcvrSpeed2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if(((gen==3'd3&&(|orderedset == 8'h66))||(gen!=3'd3&&orderedset[7:0]==COM &&(|orderedset[31:8]=={3{idle}}))))
+                    begin
+                        countup = 1'b1;
+                        nextState =  RcvrSpeed2;
+                        RcvrCfgToidle = 1'b0;
+                    end
+                    else nextState =  RcvrSpeed1;
+                end
+            else nextState =  RcvrSpeed2;
+        end
+
+        RcvrSpeedeieos1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid &&((gen==3'd4 && orderedset=={4{32'hFFFF0000}})||(gen==3'd5&&orderedset=={2{64'hFFFFFFFF00000000}})||
+            (gen==3'd3&&orderedset=={8{16'hFF00}})||(gen<3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}}))))
+            begin
+            nextState = RcvrSpeedeieos2;
+            resetcounter = 1'b1; countup = 1'b1;
+            RcvrCfgToidle = 1'b0;
+            end
+            else nextState = RcvrSpeedeieos1;
+        end
+
+        RcvrSpeedeieos2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if((gen==3'd4 && orderedset=={4{32'hFFFF0000}})||(gen==3'd5&&orderedset=={2{64'hFFFFFFFF00000000}})||
+                    (gen==3'd3&&orderedset=={8{16'hFF00}})||
+                    (gen<3'd3&&orderedset[7:0]==COM &&(orderedset[119:8]=={14{gen1eieos}})))
+                    begin
+                        countup = 1'b1;
+                        nextState =  RcvrSpeedeieos2;
+                        RcvrCfgToidle = 1'b0;
+                    end
+                    else nextState =  RcvrSpeedeieos1;
+                end
+            else nextState =  RcvrSpeedeieos2;
+        end
+
+        RcvrIdle1:
+        begin
+            resetcounter = 1'b0; countup = 1'b0;
+            if(valid && (|orderedset==1'b0))
+            begin
+            nextState = RcvrIdle2;
+            resetcounter = 1'b1; countup = 1'b1;
+            RcvrCfgToidle = 1'b0;
+            end
+            else nextState = RcvrIdle1;
+        end
+
+        RcvrIdle2:
+        begin
+            resetcounter = 1'b1; countup = 1'b0;
+            if(valid)
+                begin
+                    if((|orderedset==1'b0))
+                    begin
+                        countup = 1'b1;
+                        nextState =  RcvrIdle2;
+                        RcvrCfgToidle = 1'b0;
+                    end
+                    else nextState =  RcvrIdle1;
+                end
+            else nextState =  RcvrIdle2;   
+        end
         default:nextState = start;
 endcase
 end
@@ -435,6 +877,7 @@ end
     assign upconfigure_capability = localorderedset[42];
     assign ts1CorrectStart = (orderedset[7:0]==COM || orderedset[7:0]==gen3TS1)? 1'b1 : 1'b0;
     assign ts2CorrectStart = (orderedset[7:0]==COM || orderedset[7:0]==gen3TS2)? 1'b1 : 1'b0;
-    //assign {link,lane,id}={orderedset[15:8],orderedset[23:16],orderedset[87:80]};
+    
+
     
 endmodule

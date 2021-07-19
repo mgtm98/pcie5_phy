@@ -14,17 +14,31 @@ parameter MAX_GEN = 1
 (
 input Pclk,
 input Reset, //active low
-output reg [2:0]Gen ,
+output  [2:0]Gen ,
 output reg [4:0] NumberDetectLanes,
 output reg [LANESNUMBER-1:0] DetectLanes,
 output reg WriteDetectLanesFlag,
 // main LTSSM interface
-input  [3:0] SetTXState,
+input [2:0] MainLTSSMGen,
+input  [4:0] SetTXState,
 output reg TXFinishFlag,
-output reg [3:0] TXExitTo,
+output reg [4:0] TXExitTo,
 output reg[7:0] WriteLinkNum,
 output reg WriteLinkNumFlag,
 input [7:0] ReadLinkNum,
+input [2:0] TrainToGen,
+input ReadDirectSpeedChange,
+input  [47:0] ReceiverpresetHintDSP,
+input [63:0] TransmitterPresetHintDSP,
+input  [47:0] ReceiverpresetHintUSP,
+input  [63:0] TransmitterPresetHintUSP,
+input  [6*16-1:0]LF_register,
+input  [6*16-1:0]FS_register,
+input  [6*16-1:0]CursorCoff_register,
+input  [6*16-1:0]PreCursorCoff_register,
+input  [6*16-1:0]PostCursorCoff_register,
+
+//input ReadCompleteEqualizationVariable, //////ask Emad 
 // LPIF TX control & data flow interface 
 output reg HoldFIFOData,
 input FIFOReady,
@@ -40,52 +54,52 @@ input OSGeneratorBusy,
 input OSGeneratorFinish,
 input startSend16,
 //OS generator interface equalization 
-output [1:0] EC,
-output ResetEIEOSCount,
-output [4* LANESNUMBER-1:0] TXPreset,
-output [3* LANESNUMBER-1:0] RXPreset,
-output [LANESNUMBER-1:0] UsePresetCoff,
-output [6* LANESNUMBER-1:0] FS,
-output [6* LANESNUMBER-1:0] LF,
-output [6* LANESNUMBER-1:0] PreCursorCoff,
-output [6* LANESNUMBER-1:0] CursorCoff,
-output [6* LANESNUMBER-1:0] PostCursorCoff,
-output [ LANESNUMBER-1:0] RejectCoff,
-output SpeedChange,
-output ReqEq,
+output reg [1:0] EC,
+output reg ResetEIEOSCount,
+output reg [4* LANESNUMBER-1:0] TXPreset,
+output reg [3* LANESNUMBER-1:0] RXPreset,
+output reg [LANESNUMBER-1:0] UsePresetCoff,
+output reg [6* LANESNUMBER-1:0] FS,
+output reg [6* LANESNUMBER-1:0] LF,
+output reg [6* LANESNUMBER-1:0] PreCursorCoff,
+output reg [6* LANESNUMBER-1:0] CursorCoff,
+output reg [6* LANESNUMBER-1:0] PostCursorCoff,
+output reg [ LANESNUMBER-1:0] RejectCoff,
+output reg SpeedChange,
+output reg ReqEq,
+output reg EQTS2,
+output reg[15:0] RxStandby,
+output reg turnOffScrambler_flag,
 //mux
 output reg MuxSel,
 //Lane Management control 
 //PIPE TX Control
 output reg [ LANESNUMBER-1:0]DetectReq,
 output reg [ LANESNUMBER-1:0]ElecIdleReq,
-input  [ LANESNUMBER-1:0]DetectStatus,
-//scrambler
-output [23:0]seedValue,
-output reg turnOffScrambler_flag
+input  [ LANESNUMBER-1:0]DetectStatus
 );
 
 // states encoding
- parameter  DetectQuiet = 4'b0000, DetectActive = 4'b0001, PollingActive = 4'b0010,
-	    PollingConfigration = 4'b0011, ConfigrationLinkWidthStart = 4'b0100, ConfigrationLinkWidthAccept= 4'b0101,
-            ConfigrationLaneNumWait = 4'b0110,  ConfigrationLaneNumActive = 4'b0111, ConfigrationComplete = 4'b1000,
-            ConfigrationIdle = 4'b1001,L0=4'b1010 ,Idle=4'b1111;
+ parameter  DetectQuiet = 5'd0, DetectActive = 5'd1, PollingActive = 5'd2,
+	    PollingConfigration = 5'd3, ConfigrationLinkWidthStart = 5'd4, ConfigrationLinkWidthAccept= 5'd5,
+            ConfigrationLaneNumWait = 5'd6,  ConfigrationLaneNumActive = 5'd7, ConfigrationComplete = 5'd8,
+            ConfigrationIdle = 5'd9,L0=5'd10,RecoveryRcvrLock=5'd11,RecoveryRcvrCfg=5'd12, RecoverySpeed=5'd13,Ph0=5'd14,Ph1=5'd15,Ph2=5'd16,Ph3=5'd17,RecoveryIdle= 5'd18, Idle=5'd31,recoverySpeedeieos = 5'd19,
+        recoverywait = 5'd20;
 //Device type 
 parameter DownStream = 0 ,UpStream = 1;
 //time 
-parameter t12ms= 3'b001,t0ms = 3'b000;
+parameter t12ms= 3'b001,t0ms = 3'b000 , t1ms=3'b110;
 //Generation
 parameter Gen1 = 3'b001,Gen2 = 3'b010,Gen3 = 3'b011,Gen4 = 3'b100,Gen5 = 3'b101; // TODO edited
 //internal Register 
-
-reg [3:0]State;
-wire [3:0]NextState;
-reg [3:0] ExitToState;
+reg idleCounts;
+reg [4:0]State;
+wire [4:0]NextState;
+reg [4:0] ExitToState;
 reg ExitToFlag;
 //internal Register 
 reg [15:0]OSCount;
 reg [2:0]CurrentGen;
-reg idleCounts;
 //
 reg WriteDetectLanesFlagReg;
 //Timer interface
@@ -94,6 +108,7 @@ reg TimerStart;
 reg [2:0]TimerIntervalCode;
 reg turnOffScrambler_flag_next,turnOffScrambler_flag_next2;
 wire TimeOut;
+reg SDSFlag;
 Timer #(.Width(32)) T(.Gen(Gen),.Reset(Reset),.Pclk(Pclk),.Enable(TimerEnable),.Start(TimerStart),.TimerIntervalCode(TimerIntervalCode),.TimeOut(TimeOut));
 
 //assignment
@@ -121,11 +136,10 @@ else if (DetectLanes[0]) NumberDetectLanes=0+1;
 else   NumberDetectLanes=0;
 end 
 //exit to logic combinational
-always @ *
-begin
+always @ * begin
 //default value for outputs (synthesis)
-ExitToState = 4'd0;
-ExitToFlag  = 0 ;
+	ExitToState = 4'd0;
+	ExitToFlag  = 0 ;
 
 	case(State)
 		DetectQuiet:begin
@@ -176,19 +190,71 @@ ExitToFlag  = 0 ;
 			ExitToFlag  = 1 ;
 		 end
 		end
+		RecoveryRcvrLock:begin //////////////TODO ask Emad 
+			if(OSGeneratorFinish)begin 
+				ExitToState<=RecoveryRcvrCfg;
+				ExitToFlag<=1;				
+			end
 		
+		end
+		RecoveryRcvrCfg:begin
+			if(OSGeneratorFinish)begin 
+				if(ReadDirectSpeedChange)begin
+					ExitToState<=RecoverySpeed;
+					ExitToFlag<=1;
+				end
+				else begin
+					ExitToState<=RecoveryIdle;
+					ExitToFlag<=1;
+				end
+			end
+		
+		end
+		RecoverySpeed:begin
+			if(TimeOut && OSCount >= 2)begin
+				if(TrainToGen>=Gen3)begin
+					ExitToState<=Ph0;
+					ExitToFlag<=1;
+				end
+				else begin
+					ExitToState<=RecoveryRcvrLock;
+					ExitToFlag<=1;
+				end
+			end
+		end
+		RecoveryIdle:begin
+		if( OSCount >= 6)begin
+					ExitToState<=L0;
+					ExitToFlag<=1;
+		end		
+		end
+
+		recoverywait:begin
+			if(RxStandby)
+			begin
+				ExitToState<=recoverySpeedeieos;
+				ExitToFlag<=1;
+			end
+		end
+
 	endcase
 end
-
-
-//TODO Remeber 
+assign Gen = MainLTSSMGen;
+integer i;
 always @(posedge Pclk) begin
 //Default values of outputs
-Gen <= CurrentGen;
+//Gen <= CurrentGen;
 ElecIdleReq <= {LANESNUMBER{1'b0}};
 DetectReq<= {LANESNUMBER{1'b0}};
 OSGeneratorStart <=0;
 WriteLinkNumFlag <=0;
+SpeedChange<=1'b0;
+UsePresetCoff<=1'b0;
+ResetEIEOSCount<=1'b0;
+RejectCoff<=1'b0;
+ReqEq <= 1'b0;
+RxStandby<=16'b0;
+
 	case(State)
 		DetectQuiet:begin
 			turnOffScrambler_flag_next<=1'b1;
@@ -198,16 +264,10 @@ WriteLinkNumFlag <=0;
 		DetectActive:begin
 			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
-			//DetectReq<= {LANESNUMBER{1'b1}};
-			if (DetectStatus == {LANESNUMBER{1'b1}} || DetectLanes == {LANESNUMBER{1'b1}} )begin
-				DetectReq<= {LANESNUMBER{1'b0}};
-				end
-			else begin
-				DetectReq<= {LANESNUMBER{1'b1}};
-				end
+			DetectReq<= {LANESNUMBER{1'b1}};
 		end
 		 PollingActive:begin
-			 turnOffScrambler_flag_next<=1'b1;
+			turnOffScrambler_flag_next<=1'b1;
 			HoldFIFOData<=1;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy)begin //it is supposed that
@@ -299,7 +359,7 @@ WriteLinkNumFlag <=0;
 			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
 			if(!OSGeneratorBusy && OSCount < 15)begin //it is supposed that
 			OSType<=2'b01; //TS2
-		   LinkNumber<=ReadLinkNum;
+		    LinkNumber<=ReadLinkNum;
 			Rate<=MAX_GEN;
 			LaneNumber<=2'b01; //num_seq
 			OSGeneratorStart<=1;
@@ -315,10 +375,191 @@ WriteLinkNumFlag <=0;
 			end
 		end
 		L0:begin
-			turnOffScrambler_flag<=1'b0;
+			turnOffScrambler_flag_next<=1'b0;
+			if(Gen<3'b011)begin 
 			HoldFIFOData<=0;
-			MuxSel <=1; //TODO : check is it 1 or 0 for orderset
+			MuxSel <=1;
+			end
+			else if(Gen>=3'b011)begin
+				if(!OSGeneratorBusy && !SDSFlag)begin
+					HoldFIFOData<=1;
+					MuxSel <=0;
+					OSType<=3'b110;
+					OSGeneratorStart<=1;
+					SDSFlag<=1;					
+				end
+				if(SDSFlag && OSGeneratorFinish)begin
+					HoldFIFOData<=0;
+					MuxSel <=1;
+				end
+			end
+			 //TODO : check is it 1 or 0 for orderset
 		end
+		RecoveryRcvrLock: begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			if(!OSGeneratorBusy)begin //it is supposed that
+				OSType<=3'b000; //TS1
+				LinkNumber<=ReadLinkNum;
+				Rate<=MAX_GEN;
+				EQTS2<=0;
+				LaneNumber<=2'b01; //num_seq
+				SpeedChange<=ReadDirectSpeedChange;
+				EC<=2'b00;
+				OSGeneratorStart<=1;
+			end
+		end
+		
+		
+		RecoveryRcvrCfg:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset			
+			if(!OSGeneratorBusy)begin //it is supposed that
+				OSType<=3'b001; //TS2
+				LinkNumber<=ReadLinkNum;
+				Rate<=MAX_GEN;
+				LaneNumber<=2'b01; //num_seq
+				SpeedChange<=ReadDirectSpeedChange;
+				EC<=2'b00;
+				if (TrainToGen >= Gen3 && DEVICETYPE ==DownStream && ReadDirectSpeedChange )
+				begin 
+					EQTS2<=1;
+					for(i=0;i<LANESNUMBER;i=i+1)begin
+						RXPreset[3*i+:3]<=ReceiverpresetHintDSP[3*i+:3];
+						TXPreset[4*i+:4]<=TransmitterPresetHintDSP[4*i+:4];
+					end 
+				end
+				OSGeneratorStart<=1;
+			end
+		end
+		RecoverySpeed:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			//ElecIdleReq <= {LANESNUMBER{1'b1}};
+			if(!OSGeneratorBusy)begin 
+				OSType<=3'b011; //eios
+				OSGeneratorStart<=1;
+			end
+		end
+//3'b101
+		recoverySpeedeieos:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			//ElecIdleReq <= {LANESNUMBER{1'b1}};
+			if(!OSGeneratorBusy)begin 
+				OSType<=3'b101; //eieos
+				OSGeneratorStart<=1;
+			end
+		end
+
+		recoverySpeedeieos:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			//ElecIdleReq <= {LANESNUMBER{1'b1}};
+			if(!OSGeneratorBusy)begin 
+				OSType<=3'b101; //eieos
+				OSGeneratorStart<=1;
+			end
+		end
+
+		recoverywait:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			if(!OSGeneratorBusy)begin
+			ElecIdleReq <= {LANESNUMBER{1'b1}};
+			RxStandby <= {LANESNUMBER{1'b1}};
+			end
+		end
+
+		Ph0:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			if(DEVICETYPE==DownStream)begin/////////////////****************************************************************////////
+				if(!OSGeneratorBusy)begin //it is supposed that
+					OSType<=3'b000; //TS1
+					LinkNumber<=ReadLinkNum;
+					Rate<=MAX_GEN;
+					LaneNumber<=2'b01; //num_seq
+					SpeedChange<=ReadDirectSpeedChange;
+					EC<=2'b00;
+					for(i=0;i<LANESNUMBER;i=i+1)begin
+						TXPreset[4*i+:4]<=TransmitterPresetHintUSP[4*i+:4];
+						PreCursorCoff[6*i+:6] <=PreCursorCoff_register[6*i+:6];//[23:18][5:0]       [35:0][17:0]
+						CursorCoff[6*i+:6]    <=CursorCoff_register[6*i+:6];//[29:24][11:6]
+	 					PostCursorCoff[6*i+:6]<=PostCursorCoff_register[6*i+:6];//[35:30][17:12]
+					//	LF[6*i+:6] <= LocalLF[(6*LANESNUMBER-6)-6*i+:6];
+						//FS[6*i+:6] <= LocalFS[(6*LANESNUMBER-6)-6*i+:6];
+					end 
+
+					OSGeneratorStart<=1;
+				end
+			end
+		end
+		Ph1:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			if(DEVICETYPE==DownStream)begin
+				
+				if(!OSGeneratorBusy)begin //it is supposed that
+					OSType<=3'b000; //TS1
+					LinkNumber<=ReadLinkNum;
+					Rate<=MAX_GEN;
+					LaneNumber<=2'b01; //num_seq
+					SpeedChange<=ReadDirectSpeedChange;
+		 			EC<=2'b01;
+					for(i=0;i<LANESNUMBER;i=i+1)begin
+						TXPreset[4*i+:4]<=TransmitterPresetHintDSP[4*i+:4];
+						//PreCursorCoff[6*i+5:6*i] <=LocalTxPresetCoefficients[18*LANESNUMBER-18*i-12-1:18*LANESNUMBER-18*i-18];//[23:18][5:0]       [35:0][17:0]
+						//CursorCoff[6*i+5:6*i] <=LocalTxPresetCoefficients[18*LANESNUMBER-18*i-6-1:18*LANESNUMBER-18*i-12];//[29:24][11:6]
+	 					PostCursorCoff[6*i+:6] <=PostCursorCoff_register[6*i+:6];//[35:30][17:12]
+						LF[6*i+:6] <= LF_register[6*i+:6];
+						FS[6*i+:6] <= FS_register[6*i+:6];
+					end 
+					OSGeneratorStart<=1;
+				end
+			end
+			else if(DEVICETYPE==UpStream)begin
+			if(!OSGeneratorBusy)begin //it is supposed that
+					OSType<=3'b000; //TS1
+					LinkNumber<=ReadLinkNum;
+					Rate<=MAX_GEN;
+					LaneNumber<=2'b01; //num_seq
+					SpeedChange<=ReadDirectSpeedChange;
+					EC<=2'b01;
+					for(i=0;i<LANESNUMBER;i=i+1)begin
+						TXPreset[4*i+:4]<=TransmitterPresetHintUSP[4*i+:4];
+						//PreCursorCoff[6*i+5:6*i] <=LocalTxPresetCoefficients[18*LANESNUMBER-18*i-12-1:18*LANESNUMBER-18*i-18];//[23:18][5:0]       [35:0][17:0]
+						//CursorCoff[6*i+5:6*i] <=LocalTxPresetCoefficients[18*LANESNUMBER-18*i-6-1:18*LANESNUMBER-18*i-12];//[29:24][11:6]
+	 					PostCursorCoff[6*i+:6] <=PostCursorCoff_register[6*i+:6];//[35:30][17:12]
+						LF[6*i+:6] <= LF_register[6*i+:6];
+						FS[6*i+:6] <= FS_register[6*i+:6];
+					end 
+					OSGeneratorStart<=1;
+				end
+			
+			
+			
+			end
+		
+		
+		end
+		RecoveryIdle:begin
+			HoldFIFOData<=1;
+			MuxSel <=0; //TODO : check is it 1 or 0 for orderset
+			ElecIdleReq <= {LANESNUMBER{1'b1}};
+			if(!OSGeneratorBusy)begin 
+				if(Gen>=3'b011 && !SDSFlag)begin
+					OSType<=3'b110; //sds
+					SDSFlag<=1;
+				end
+				else begin
+					OSType<=3'b100; //idle
+				end
+				OSGeneratorStart<=1;
+			end
+			
+		end
+	
 	endcase 
 end
 
@@ -334,7 +575,6 @@ TimerStart <= 0;
 				TimerStart  <= 1;
 				TimerIntervalCode <= t12ms;
 			end
-			
 			else if (NextState == PollingActive || NextState == PollingConfigration 
 			|| NextState == ConfigrationComplete ||NextState == ConfigrationIdle)begin
 				OSCount<=0;		
@@ -398,13 +638,10 @@ TimerStart <= 0;
 				TimerStart  <= 1;
 				TimerIntervalCode <= t12ms;
 			end
-			else if (NextState == PollingActive || NextState == PollingConfigration)begin
+			else if (NextState == PollingActive || NextState == PollingConfigration 
+			||NextState == ConfigrationIdle)begin
 				OSCount<=0;		
 			end			
-			else if(NextState == ConfigrationIdle) begin
-					OSCount<=0;
-				end
-
 		end		
 
 		ConfigrationIdle:begin
@@ -416,12 +653,51 @@ TimerStart <= 0;
 				TimerStart  <= 1;
 				TimerIntervalCode <= t12ms;
 			end
+			
 			else if (NextState == PollingActive || NextState == PollingConfigration 
 			|| NextState == ConfigrationComplete )begin
 				OSCount<=0;		
 			end			
 		end		
 		
+		RecoveryRcvrCfg:begin
+			if(NextState==RecoverySpeed)begin
+				TimerEnable <= 1;
+				TimerStart  <= 1;
+				TimerIntervalCode <= t0ms;
+				OSCount<= 0;
+			end
+			else if (NextState==RecoveryIdle)begin
+				OSCount<= 0;
+				SDSFlag<=0;
+			end
+		end
+		
+		RecoverySpeed:begin
+			if(OSGeneratorFinish)begin
+				OSCount <= OSCount + 1;		
+			end
+			if(TimeOut)begin
+				TimerEnable <= 0;
+			end
+		end
+		RecoveryIdle:begin
+			if(OSGeneratorFinish)begin
+				OSCount<=OSCount+1;		
+			end
+			if(NextState == DetectQuiet || NextState == DetectActive)begin
+				TimerEnable <= 1;
+				TimerStart  <= 1;
+				TimerIntervalCode <= t12ms;
+			end
+			
+			
+			else if (NextState == PollingActive || NextState == PollingConfigration 
+			|| NextState == ConfigrationComplete || NextState==L0)begin
+				OSCount<=0;		
+				SDSFlag<=0;
+			end			
+		end		
 		default:begin
 			if(NextState == DetectQuiet || NextState == DetectActive)begin
 				TimerEnable <= 1;
@@ -429,7 +705,7 @@ TimerStart <= 0;
 				TimerIntervalCode <= t12ms;
 			end
 			else if (NextState == PollingActive || NextState == PollingConfigration 
-			|| NextState == ConfigrationComplete ||NextState == ConfigrationIdle)begin
+			|| NextState == ConfigrationComplete ||NextState == ConfigrationIdle || NextState == RecoverySpeed )begin
 				OSCount<=0;		
 			end			
 		end		
@@ -445,6 +721,7 @@ begin
 		TXFinishFlag <= 0;
 		CurrentGen=Gen1;
 		WriteDetectLanesFlag<=0;
+		SDSFlag<=0;
 	end
 	else begin
 		turnOffScrambler_flag <= turnOffScrambler_flag_next2;
@@ -455,6 +732,7 @@ begin
 		WriteDetectLanesFlag<=WriteDetectLanesFlagReg;
 	end
 end
+
 
 always @(posedge startSend16) 
 begin
