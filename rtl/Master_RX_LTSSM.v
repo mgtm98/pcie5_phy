@@ -1,4 +1,7 @@
-module  masterRxLTSSM #(parameter MAXLANES = 16 , DEVICETYPE = 0)(
+module  masterRxLTSSM #(parameter MAXLANES = 16 , DEVICETYPE = 0,
+    parameter GEN1_PIPEWIDTH = 8, parameter GEN2_PIPEWIDTH = 8, parameter GEN3_PIPEWIDTH = 8,
+    parameter GEN4_PIPEWIDTH = 8,parameter GEN5_PIPEWIDTH = 8)
+ (
     input clk,
     input [4:0]numberOfDetectedLanes,
     input [4:0]substate,
@@ -9,6 +12,7 @@ module  masterRxLTSSM #(parameter MAXLANES = 16 , DEVICETYPE = 0)(
     input [15:0]RcvrCfgToidle,
     input [2:0] trainToGen,
     input [15:0]detailedRecoverySubstates,
+    input [2:0] gen,
     output reg finish,
     output reg [4:0]exitTo,
     output reg [15:0]resetOsCheckers,
@@ -142,24 +146,18 @@ parameter t0ms = 3'd0,t12ms= 3'd1,t24ms = 3'd2,t48ms = 3'd3,t2ms = 3'd4,t8ms = 3
                 enableTimer = 1'b1;
 		
             end
- 	    else if (substate==configurationIdle)
+ 	    else if (substate==configurationIdle || substate==recoveryIdle)
             begin
-                comparatorsCount=5'd1;
+                if(gen == 3'd1)     comparatorsCount = 64/GEN1_PIPEWIDTH;
+                else if(gen == 3'd2)comparatorsCount = 64/GEN2_PIPEWIDTH;
+                else if(gen == 3'd3)comparatorsCount = 64/GEN3_PIPEWIDTH;
+                else if(gen == 3'd4)comparatorsCount = 64/GEN4_PIPEWIDTH;
+                else if(gen == 3'd5)comparatorsCount = 64/GEN5_PIPEWIDTH;
                 timeToWait = t2ms;
                 nextState = counting;
                 startTimer = 1'b1;
                 enableTimer = 1'b1;
 		
-            end
-
-        else if (substate==recoveryIdle)
-            begin
-                comparatorsCount=5'd1;
-                timeToWait = t2ms;
-                nextState = counting;
-                startTimer = 1'b1;
-                enableTimer = 1'b1;
-        
             end
 
         else if ((substate == L0 && DEVICETYPE) || substate==recoverySpeed || substate==recoverySpeedeieos) 
