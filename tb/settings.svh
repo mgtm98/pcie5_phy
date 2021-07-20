@@ -13,10 +13,10 @@
   
   /********************************MAX_GEN_SUPPORTED*************************************/
 `ifndef MAX_GEN_FAR_PARTENER
-  `define MAX_GEN_FAR_PARTENER 2
+  `define MAX_GEN_FAR_PARTENER 1
 `endif
 `ifndef MAX_GEN_DUT
-  `define MAX_GEN_DUT 2
+  `define MAX_GEN_DUT 1
 `endif
 /*********************************PIPE_widths*******************************************/
 `ifndef GEN1_PIPEWIDTH

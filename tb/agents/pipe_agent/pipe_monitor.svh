@@ -182,6 +182,9 @@ function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
   pipe_seq_item_h.tlp = tlp;
   // Sending the sequence item to the analysis components
   ap_sent.write(pipe_seq_item_h);
+  `uvm_info(get_name(), "notify tlp_sent", UVM_MEDIUM)
+  `uvm_info(get_name(), $sformatf("tlp_sent_size = %d",tlp.size()), UVM_MEDIUM)
+
 endfunction
 
 function void pipe_monitor::notify_tlp_received(tlp_t tlp);
@@ -194,6 +197,8 @@ function void pipe_monitor::notify_tlp_received(tlp_t tlp);
   pipe_seq_item_h.tlp = tlp;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
+  `uvm_info(get_name(), "notify tlp_rec", UVM_MEDIUM)
+  `uvm_info(get_name(), $sformatf("tlp_rec_size = %d",tlp.size()), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
@@ -206,6 +211,7 @@ function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
   pipe_seq_item_h.dllp = dllp;
   // Sending the sequence item to the analysis components
   ap_sent.write(pipe_seq_item_h);
+  `uvm_info(get_name(), $sformatf( "notify dllp_sent: %p", dllp), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_dllp_received(dllp_t dllp);
@@ -218,6 +224,7 @@ function void pipe_monitor::notify_dllp_received(dllp_t dllp);
   pipe_seq_item_h.dllp = dllp;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
+  `uvm_info(get_name(), "notify dllp_rec", UVM_MEDIUM)
 endfunction
 
 // function void notify_enter_recovery_sent();

@@ -692,6 +692,7 @@ bit [7:0] temp;
 bit [7:0] temp_data;
 
 function void send_tlp (tlp_t tlp);
+  `uvm_info("pipe_driver_bfm",$sformatf("sending tlp, size= %d",tlp.size()),UVM_MEDIUM)
   if (current_gen == GEN1 || current_gen == GEN2) begin
     data.push_back(`STP_gen_1_2);          k_data.push_back(K);
 
@@ -719,6 +720,7 @@ function void send_tlp (tlp_t tlp);
 endfunction
 
 function void send_dllp (dllp_t dllp);
+  `uvm_info("pipe_driver_bfm","sending dllp",UVM_MEDIUM)
   if (current_gen == GEN1 || current_gen == GEN2) begin
     data.push_back(`SDP_gen_1_2);          k_data.push_back(K);
     data.push_back(dllp[0]);               k_data.push_back(D);
@@ -740,23 +742,25 @@ function void send_dllp (dllp_t dllp);
     data.push_back(dllp[4]);           
     data.push_back(dllp[5]);            
   end
+  `uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
+  `uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
 endfunction
 
 function void send_idle_data ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     data.push_back(8'b00000000);           k_data.push_back(D); //control but scrambled
   end
+  `uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
 endfunction
 
 task send_data ();
   `uvm_info("pipe_driver_bfm","entered send data",UVM_MEDIUM)
   `uvm_info("pipe_driver_bfm",$sformatf("current_gen = %s",current_gen.name()),UVM_MEDIUM)
-  assert (PowerDown == 4'b0000) 
-  else `uvm_fatal("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
+  wait (PowerDown == 4'b0000) ;
+  //else `uvm_error("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
   RxElecIdle = 0;  
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 1;
-    // RxValid [i] = 1'b1;
   end
 	if (current_gen == GEN1 || current_gen == GEN2)
 		send_data_gen_1_2 ();
@@ -764,7 +768,6 @@ task send_data ();
 	 	send_data_gen_3_4_5 ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     RxDataValid [i] = 0;
-    // RxValid [i] = 1'b0;
   end
 endtask
 
@@ -773,26 +776,22 @@ endtask
   byte unsigned data_scrambled [$];
   int pipe_width = get_width();
   int bus_data_width = (pipe_num_of_lanes * pipe_width);
-  for(int i = 0; i < data.size(); i++) begin
-    //`uvm_info("pipe_driver_bfm",$sformatf("zeft_queue = %p",data),UVM_MEDIUM)
+  for(int i = 0; i < data.size() + i; i++) begin
     lanenum = i;
     lanenum = lanenum - pipe_num_of_lanes * ($floor(lanenum/pipe_num_of_lanes));
     if(k_data [i] == D) begin
-      temp = data[i];
-      data_scrambled[i] = scramble(driver_scrambler, temp,lanenum, current_gen);
+      temp = data.pop_front();;
+      data_scrambled[i] = scramble(driver_scrambler, temp, lanenum, current_gen);
     end
     else if (k_data [i] == K) begin
-      data_scrambled[i] = data[i];
+      data_scrambled[i] = data.pop_front();;
     end
   end  
-  for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin
-    //`uvm_info("pipe_driver_bfm","menna 1",UVM_MEDIUM) 
-    //`uvm_info("pipe_driver_bfm",$sformatf("bus_data_width_param = %d",bus_data_width_param),UVM_MEDIUM)  
+  `uvm_info("pipe_driver_bfm",$sformatf("data_scrambled = %p",data_scrambled),UVM_MEDIUM)
+  `uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
+  for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin 
     for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j++) begin
-      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
-      //  `uvm_info("pipe_driver_bfm",$sformatf("i_menna = %d",i),UVM_MEDIUM)  
-       // `uvm_info("pipe_driver_bfm",$sformatf("j_menna = %d",j),UVM_MEDIUM)  
-        //`uvm_info("pipe_driver_bfm",$sformatf("bus_data_width = %d",bus_data_width),UVM_MEDIUM)  
+      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin 
         RxData[(8*i) +: 8] = data_scrambled.pop_front();
         RxDataK[i] = k_data.pop_front();
         `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)

@@ -57,7 +57,7 @@ task pipe_link_up_seq::body;
   ts_sent.use_n_fts        = 0;
   ts_sent.use_link_number  = 0;
   ts_sent.use_lane_number  = 0;
-  ts_sent.max_gen_supported = this.max_gen_supported;
+  $cast(ts_sent.max_gen_supported , `MAX_GEN_FAR_PARTENER);
   ts_sent.ts_type          = TS1;
 
   tses_sent = new[`NUM_OF_LANES];
@@ -68,7 +68,7 @@ task pipe_link_up_seq::body;
     tses_sent[i].use_n_fts        = 0;
     tses_sent[i].use_link_number  = 0;
     tses_sent[i].use_lane_number  = 0;
-    tses_sent[i].max_gen_supported = this.max_gen_supported;
+    $cast(tses_sent[i].max_gen_supported , `MAX_GEN_FAR_PARTENER);
     tses_sent[i].ts_type          = TS1;
   end
 
@@ -318,8 +318,8 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
   // Get the lane numbers from the received ts1s
   foreach(tses_received[i])
   begin
-    assert (tses_received[i].lane_number == i) 
-    else   `uvm_error(get_name(), "the order of lane numbers are incorrect")
+    assert (tses_received[i].lane_number == `NUM_OF_LANES - 1 - i) 
+    else   `uvm_error(get_name(), $sformatf("the order of lane numbers are incorrect, actual lane num= %h, expected=%d",tses_received[i].lane_number , i))
     tses_sent[i].lane_number = tses_received[i].lane_number;
     tses_sent[i].use_lane_number = 1;
   end

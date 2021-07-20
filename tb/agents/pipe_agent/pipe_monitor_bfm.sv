@@ -1393,7 +1393,7 @@ endtask
   dllp_t dllp_receieved;
   dllp_t dllp_sent;
   tlp_t tlp_sent;
-  bit [7:0] [bus_data_kontrol_param : 0] data_descrambled;
+  bit [bus_data_width_param : 0] data_descrambled;
   bit [7:0] [bus_data_kontrol_param : 0] idle_descrambled;
   byte tlp_q [$];
   byte dllp_q [$];
@@ -1474,15 +1474,15 @@ endtask
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0) begin
         temp_value=TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
+         data_descrambled[(8*j) +: 8] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
        end
        else if (TxDataK [i] == 1 && ((i-(get_width/8)-1)%4) == 0) begin
-        data_descrambled[j] = (TxData[(8*i) +: 8]);
+        data_descrambled[(8*j) +: 8] = (TxData[(8*i) +: 8]);
        end
        dllp_done = 0;
     end
     else begin
-      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      data_descrambled[(8*j) +: 8] = (TxData[(8*i) +: 8]);
       dllp_done = 1;
       end_dllp = j;
       break;
@@ -1493,7 +1493,7 @@ endtask
        if (i > end_dllp) begin
        break;
        end
-         dllp_q.push_back(data_descrambled[(i)]); 
+         dllp_q.push_back(data_descrambled[(8*i) +: 8]); 
      end
   end
   if (dllp_done) begin
@@ -1512,15 +1512,15 @@ endtask
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(TxDataK [i] == 0 && ((i-(get_width/8)-1)%4) == 0) begin
          temp_value = TxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_tx_scrambler, temp_value, lanenum, current_gen);
+         data_descrambled[(8*j) +: 8] = descramble(monitor_tx_scrambler, temp_value, lanenum, current_gen);
        end
        else if (TxDataK [i] == 1) begin
-         data_descrambled[j] = (TxData[(8*i) +: 8]);
+         data_descrambled[(8*j) +: 8] = (TxData[(8*i) +: 8]);
        end
        tlp_done = 0;
     end
     else begin
-      data_descrambled[j] = (TxData[(8*i) +: 8]);
+      data_descrambled[(8*j) +: 8] = (TxData[(8*i) +: 8]);
       tlp_done = 1;
       end_tlp = j;
       break;
@@ -1531,7 +1531,7 @@ endtask
        if (i > end_tlp) begin
        break;
        end
-         tlp_q.push_back(data_descrambled[(i)]); 
+         tlp_q.push_back(data_descrambled[(8*i) +: 8]); 
      end
   end
   if (tlp_done) begin
@@ -1604,34 +1604,40 @@ end
 endtask
  task automatic send_dllp_gen_1_2;
   int end_dllp = (bus_data_width_param + 1)/8;
+  `uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
+  `uvm_info("pipe_monitor_bfm", $sformatf("k_data abl descram = %h",RxDataK), UVM_MEDIUM)
   for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
     int j = i - start_dllp;
     if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(RxDataK [i] == 0 && ((i-(get_width/8)-1)%4) == 0) begin
         temp_value = RxData[(8*i) +: 8];
-        data_descrambled[j] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
+        data_descrambled[(8*j) +: 8] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
        end
        else if (RxDataK [i] == 1) begin
-        data_descrambled[j] = (RxData[(8*i) +: 8]);
+        data_descrambled[(8*j) +: 8] = (RxData[(8*i) +: 8]);
        end
        dllp_done = 0;
     end
     else begin
-      data_descrambled[j] = (RxData[(8*i) +: 8]);
+      `uvm_info("pipe_monitor_bfm", $sformatf("end found, %h", (RxData[(8*i) +: 8])), UVM_MEDIUM)
+      data_descrambled[(8*j) +: 8] = (RxData[(8*i) +: 8]);
+      `uvm_info("pipe_monitor_bfm", $sformatf("after end %h", data_descrambled[(8*j) +: 8]), UVM_MEDIUM)
       dllp_done = 1;
       end_dllp = j;
       break;
     end
   end  
+  `uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_descrambled = %h",data_descrambled), UVM_MEDIUM)
   for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
        if (i > end_dllp) begin
        break;
        end
-        dllp_q.push_back(data_descrambled[(i)]); 
+        dllp_q.push_back(data_descrambled[(8*i) +: 8]); 
      end
   end
+  `uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_queue = %p",dllp_q), UVM_MEDIUM)
   if (dllp_done) begin
     for (int i = 0; i < dllp_q.size(); i++) begin
        dllp_sent [i] = dllp_q.pop_front();
@@ -1642,32 +1648,34 @@ endtask
  
  task automatic send_tlp_gen_1_2;
   int end_tlp = (bus_data_width_param + 1)/8;
+  `uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
   for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
     int j = i - start_tlp;
     if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
       lanenum = $floor(i/(pipe_max_width/8.0));
        if(RxDataK [i] == 0 && ((i-(get_width/8)-1)%4) == 0) begin
          temp_value = RxData[(8*i) +: 8];
-         data_descrambled[j] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
+         data_descrambled[(8*j) +: 8] = descramble(monitor_rx_scrambler, temp_value, lanenum, current_gen);
        end
        else if (RxDataK [i] == 1) begin
-         data_descrambled[j] = (RxData[(8*i) +: 8]);
+         data_descrambled[(8*j) +: 8] = (RxData[(8*i) +: 8]);
        end
       tlp_done = 0;
     end
     else begin
-      data_descrambled[j] = (RxData[(8*i) +: 8]);
+      data_descrambled[(8*j) +: 8] = (RxData[(8*i) +: 8]);
       tlp_done = 1;
       end_tlp = j;
       break;
     end
-  end  
+  end 
+  `uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_descrambled = %h",data_descrambled), UVM_MEDIUM)
   for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
        if (i > end_tlp) begin
        break;
        end
-         tlp_q.push_back(data_descrambled[(i)]); 
+         tlp_q.push_back(data_descrambled[(8*i) +: 8]); 
      end
   end
   if (tlp_done) begin
@@ -1676,6 +1684,7 @@ endtask
     end
     proxy.notify_tlp_sent(tlp_sent);
   end
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_queue ="), UVM_MEDIUM)
  endtask  
  
 
