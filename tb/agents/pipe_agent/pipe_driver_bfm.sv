@@ -266,8 +266,12 @@ function automatic void ts_symbols_maker(ts_s ts,ref byte RxData_Q[$] , ref bit 
         if(ts.ts_type == TS2)
           temp[7] = ts.equalization_command;  
     end
-    else
-      temp = 8'h4A;
+    else begin
+      if(ts.ts_type == TS1)
+        temp = 8'h4A;
+      else
+      temp = 8'h45;
+    end
 
     RxData_Q = {RxData_Q,temp};
     RxDataK_Q = {RxDataK_Q,0};

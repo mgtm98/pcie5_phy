@@ -1,26 +1,26 @@
-class pipe_speed_change_without_equalization_seq extends pipe_base_seq;
+class pipe_speed_change_without_eq_dsp_seq extends pipe_base_seq;
 
-  `uvm_object_utils(pipe_link_up_seq)
+  `uvm_object_utils(pipe_speed_change_without_eq_dsp_seq)
 
   int max_supported_gen_by_dsp=`MAX_GEN_FAR_PARTENER;
   int max_supported_gen_by_usp=`MAX_GEN_DUT;
   int negotaited_rate;
 
   // Standard UVM Methods:
-  extern function new(string name = "pipe_speed_change_without_equalization_seq");
+  extern function new(string name = "pipe_speed_change_without_eq_dsp_seq");
   extern function automatic int calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
   extern task body;
 
   extern task send_seq_item(ts_s tses [`NUM_OF_LANES]);
   extern task get_tses_recived(output ts_s tses [`NUM_OF_LANES] );
   
-endclass:pipe_speed_change_without_equalization_seq
+endclass:pipe_speed_change_without_eq_dsp_seq
 
-function pipe_speed_change_without_equalization_seq::new(string name = "pipe_speed_change_without_equalization_seq");
+function pipe_speed_change_without_eq_dsp_seq::new(string name = "pipe_speed_change_without_eq_dsp_seq");
   super.new(name);
 endfunction
 
-task automatic pipe_speed_change_without_equalization_seq::body();
+task automatic pipe_speed_change_without_eq_dsp_seq::body();
   ts_s tses_send [`NUM_OF_LANES];
   ts_s tses_recv [`NUM_OF_LANES];
   bit flag;
@@ -30,6 +30,8 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   // setting generation in driver bfm to GEN1
 
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
+  `uvm_info(get_name(), "i am in speed change", UVM_MEDIUM)
+  
   pipe_seq_item_h.gen = GEN1;
   pipe_seq_item_h.pipe_operation=SET_GEN;
   start_item (pipe_seq_item_h);
@@ -39,7 +41,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   this.get_tses_recived(tses_recv);
   foreach(tses_recv[i]) begin
     assert((tses_recv[i].speed_change==1) && (tses_recv[i].ts_type == TS1)) else 
-      `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 1");
+      `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 1");
   end
   
   // save the USP max gen supported
@@ -69,7 +71,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
       end
       foreach(tses_recv[i]) begin
         assert(tses_recv[i].speed_change && tses_recv[i].ts_type == TS2 && tses_recv[i].auto_speed_change) else 
-          `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 2&3");
+          `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 2&3");
       end
       flag = 1;
     end
@@ -97,7 +99,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
         this.get_tses_recived(tses_recv);
         foreach(tses_recv[i]) begin
           assert((tses_recv[i].speed_change==1) &&(tses_recv[i].ts_type == TS2) && (tses_recv[i].auto_speed_change)) else 
-            `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 4 ");
+            `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 4 ");
         end
         ts2_recived_count++;
       end
@@ -176,7 +178,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
   this.get_tses_recived(tses_recv);
   foreach(tses_recv[i]) begin
     assert((tses_recv[i].speed_change==0) && tses_recv[i].ts_type == TS1) else 
-      `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 6");
+      `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 6");
   end
   /*************************************************************************************************************************************************************************/
   /****************************************step 7&8 (gen 2,3,4,5):send TS1 with speed_change bit=0 until TS2 that  have the Speed Change bit=0  is recived from USP************************************************/
@@ -201,7 +203,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
       end
       foreach(tses_recv[i]) begin
         assert((tses_recv[i].speed_change==0) && (tses_recv[i].ts_type == TS2)) else 
-          `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 7&8");
+          `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 7&8");
       end
       flag = 1;
     end
@@ -231,7 +233,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
         this.get_tses_recived(tses_recv);
         foreach(tses_recv[i]) begin
           assert((tses_recv[i].speed_change==0) && tses_recv[i].ts_type == TS2) else 
-            `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 9");
+            `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 9");
         end
         ts2_recived_count++;
       end
@@ -274,7 +276,7 @@ task automatic pipe_speed_change_without_equalization_seq::body();
 /*************************************************************************************************************************************************************************/
 endtask : body
 
-task pipe_speed_change_without_equalization_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
+task pipe_speed_change_without_eq_dsp_seq::send_seq_item(ts_s tses [`NUM_OF_LANES]);
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
   pipe_seq_item_h.tses_sent = tses;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
@@ -282,12 +284,12 @@ task pipe_speed_change_without_equalization_seq::send_seq_item(ts_s tses [`NUM_O
   finish_item (pipe_seq_item_h);
 endtask : send_seq_item
 
-task pipe_speed_change_without_equalization_seq::get_tses_recived(output ts_s tses [`NUM_OF_LANES]);
+task pipe_speed_change_without_eq_dsp_seq::get_tses_recived(output ts_s tses [`NUM_OF_LANES]);
   @(pipe_agent_config_h.detected_tses_e);
   tses = pipe_agent_config_h.tses_received;
 endtask
 
-function automatic int pipe_speed_change_without_equalization_seq::calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
+function automatic int pipe_speed_change_without_eq_dsp_seq::calc_gen(input logic[1:0] width, input logic[4:0] PCLKRate );
     
 
   real PCLKRate_value;

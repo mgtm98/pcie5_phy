@@ -88,7 +88,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
   		while(1) begin
         this.get_tses_recived(tses_recv);
         assert(tses_recv[0].ts_type == TS1 && tses_recv[0].speed_change) else 
-        	`uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 1");
+        	`uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 1");
         ts_recived_count += 1;
         if(ts_recived_count >= 8) begin
         	flag = 1;
@@ -126,7 +126,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
   		while(1) begin
         this.get_tses_recived(tses_recv);
         assert(tses_recv[0].ts_type == TS2) else 
-        	`uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 2");
+        	`uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 2");
         ts_recived_count += 1;
         if(ts_recived_count >= 8) begin
         	flag = 1;
@@ -267,7 +267,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
 	  	begin
 	  		while(1) begin
 				this.get_tses_recived(tses_recv);
-				assert(tses_recv[0].ts_type == TS1) else `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 4.3");
+				assert(tses_recv[0].ts_type == TS1) else `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 4.3");
 				if (tses_recv[0].ec == 2)  begin
 					flag = 1;
 					break;
@@ -347,7 +347,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
 	  	begin
 	  		while(1) begin
 	        this.get_tses_recived(tses_recv);
-	        assert(	(tses_recv[0].ts_type == TS1)&&(tses_recv[0].rcv==0) && (tses_recv[0].cursor == this.cursor) && (tses_recv[0].pre_cursor == this.pre_cursor) && (tses_recv[0].post_cursor == this.post_cursor) && (tses_recv[0].ec == 3) ) else `uvm_fatal("pipe_speed_change_without_equalization_seq", "");
+	        assert(	(tses_recv[0].ts_type == TS1)&&(tses_recv[0].rcv==0) && (tses_recv[0].cursor == this.cursor) && (tses_recv[0].pre_cursor == this.pre_cursor) && (tses_recv[0].post_cursor == this.post_cursor) && (tses_recv[0].ec == 3) ) else `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "");
 			assert(pipe_agent_config_h.new_TxDeemph == {this.pre_cursor, this.cursor, this.post_cursor}) else`uvm_fatal("pipe_speed_change_with_equalization_seq", "TxDeemph have wrong values ")
 			ts_recived_count += 1;
 	        if(ts_recived_count == 2) begin
@@ -412,7 +412,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
           this.get_tses_recived(tses_recv);
           if(tses_recv[0].ts_type == TS2) begin
 			foreach(tses_recv[i]) begin
-				assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 5.1");
+				assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 5.1");
 			end
 			flag = 1;
 			break;
@@ -443,7 +443,7 @@ task automatic pipe_speed_change_with_equalization_seq::body();
         this.get_tses_recived(tses_recv);
         foreach(tses_recv[i]) begin
           assert(!tses_recv[i].speed_change && tses_recv[i].ts_type == TS2) else 
-            `uvm_fatal("pipe_speed_change_without_equalization_seq", "received tses not as expecting step 5.2");
+            `uvm_fatal("pipe_speed_change_without_eq_dsp_seq", "received tses not as expecting step 5.2");
         end
         ts_recived_count++;
       end

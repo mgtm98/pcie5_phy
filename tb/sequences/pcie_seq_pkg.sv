@@ -25,7 +25,8 @@ package pcie_seq_pkg;
   `include "pipe_link_up_seq.svh"
   // `include "pipe_speed_change_seq.svh"
   `include "pipe_speed_change_with_equalization_seq.svh"
-  `include "pipe_speed_change_without_equalization_seq.svh"
+  `include "pipe_speed_change_without_eq_dsp_seq.svh"
+  `include "pipe_speed_change_without_eq_usp_seq.svh"
   `include "pipe_enter_recovery_seq.svh"
   `include "pipe_data_transmit_seq.svh"
 
@@ -36,5 +37,7 @@ package pcie_seq_pkg;
   `include "link_up_vseq.svh"
   `include "enter_recovery_vseq.svh"
   `include "data_exchange_vseq.svh"
+  `include "speed_change_dsp_vseq.svh"
+  `include "speed_change_usp_vseq.svh"
 
 endpackage
