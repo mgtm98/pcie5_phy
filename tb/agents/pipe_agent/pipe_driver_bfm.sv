@@ -95,7 +95,7 @@ assign LocalLF={pipe_num_of_lanes{lf_usp}};
 /******************************* RESET# (Phystatus de-assertion) *******************************/
 initial begin
   forever begin 
-    `uvm_info("pipe_driver_bfm", "pipe reset scenario started", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "pipe reset scenario started", UVM_LOW)
     wait(Reset==0);
     // @(posedge PCLK);
     RxDataK                               = 0;
@@ -131,11 +131,11 @@ end
 /******************************* Detect (Asserting needed signals) *******************************/
 initial begin
   forever begin 
-    `uvm_info("pipe_driver_bfm", "Waiting txdetectrx to be 1", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "Waiting txdetectrx to be 1", UVM_LOW)
     foreach(TxDetectRxLoopback[i]) begin
       wait(TxDetectRxLoopback[i] == 1);
     end
-    `uvm_info("pipe_driver_bfm", "Received txdetectrx to be 1", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "Received txdetectrx to be 1", UVM_LOW)
     
     @(posedge PCLK);
   
@@ -166,7 +166,7 @@ initial begin
       wait(PowerDown[(i*4) +:4] == 4'b0000 && PowerDown !== previous_PowerDown);
     end
     previous_PowerDown = PowerDown;
-    `uvm_info("pipe_driver_bfm", "Powerdown= P0 detected", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "Powerdown= P0 detected", UVM_LOW)
     @(posedge PCLK);
     for (int i = 0; i < `NUM_OF_LANES ; i++) begin
       PhyStatus[i] = 1;
@@ -179,11 +179,11 @@ initial begin
     end
     // PhyStatus = 0;
 
-    `uvm_info("pipe_driver_bfm", "Waiting for deassertion Txelecidle signal", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "Waiting for deassertion Txelecidle signal", UVM_LOW)
     for (int i = 0; i < `NUM_OF_LANES; i++) begin
       wait(TxElecIdle[i] == 0);
     end
-    `uvm_info("pipe_driver_bfm", "deassertion of Txelecidle signal", UVM_LOW)
+    //`uvm_info("pipe_driver_bfm", "deassertion of Txelecidle signal", UVM_LOW)
   end
 end
 //------------------------------------------
@@ -509,7 +509,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
   end
 
   reset_lfsr(driver_scrambler, current_gen);
-  `uvm_info("pipe_driver_bfm", $sformatf("%d", width), UVM_NONE)
+  //`uvm_info("pipe_driver_bfm", $sformatf("%d", width), UVM_NONE)
 
   if(current_gen <=GEN2)
   begin
@@ -527,7 +527,7 @@ task automatic send_tses(ts_s ts [], int start_lane = 0, int end_lane = pipe_num
         begin
           Data[i][j*8 +:8] = RxData_Q[i].pop_front();
           Character[i][j] = RxDataK_Q[i].pop_front();
-          //`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
+          ////`uvm_info("pipe_driver_bfm", $sformatf("%p", RxData_Q[i]), UVM_NONE)
         end
 
         //duplicating the Data and Characters to each lane in the driver
@@ -692,7 +692,7 @@ bit [7:0] temp;
 bit [7:0] temp_data;
 
 function void send_tlp (tlp_t tlp);
-  `uvm_info("pipe_driver_bfm",$sformatf("sending tlp, size= %d",tlp.size()),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("sending tlp, size= %d",tlp.size()),UVM_MEDIUM)
   if (current_gen == GEN1 || current_gen == GEN2) begin
     data.push_back(`STP_gen_1_2);          k_data.push_back(K);
 
@@ -720,7 +720,7 @@ function void send_tlp (tlp_t tlp);
 endfunction
 
 function void send_dllp (dllp_t dllp);
-  `uvm_info("pipe_driver_bfm","sending dllp",UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm","sending dllp",UVM_MEDIUM)
   if (current_gen == GEN1 || current_gen == GEN2) begin
     data.push_back(`SDP_gen_1_2);          k_data.push_back(K);
     data.push_back(dllp[0]);               k_data.push_back(D);
@@ -742,20 +742,20 @@ function void send_dllp (dllp_t dllp);
     data.push_back(dllp[4]);           
     data.push_back(dllp[5]);            
   end
-  `uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
-  `uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
 endfunction
 
 function void send_idle_data ();
   for (int i = 0; i < pipe_num_of_lanes; i++) begin
     data.push_back(8'b00000000);           k_data.push_back(D); //control but scrambled
   end
-  `uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("queue_data = %p",data),UVM_MEDIUM)
 endfunction
 
 task send_data ();
-  `uvm_info("pipe_driver_bfm","entered send data",UVM_MEDIUM)
-  `uvm_info("pipe_driver_bfm",$sformatf("current_gen = %s",current_gen.name()),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm","entered send data",UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("current_gen = %s",current_gen.name()),UVM_MEDIUM)
   wait (PowerDown == 4'b0000) ;
   //else `uvm_error("pipe_driver_bfm", "Unexpected PowerDown value at Normal Data Operation")
   RxElecIdle = 0;  
@@ -787,19 +787,19 @@ endtask
       data_scrambled[i] = data.pop_front();;
     end
   end  
-  `uvm_info("pipe_driver_bfm",$sformatf("data_scrambled = %p",data_scrambled),UVM_MEDIUM)
-  `uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("data_scrambled = %p",data_scrambled),UVM_MEDIUM)
+  //`uvm_info("pipe_driver_bfm",$sformatf("k_queue_data = %p",k_data),UVM_MEDIUM)
   for (int k = 0; k < data_scrambled.size() + k ; k = k + (bus_data_width)/8) begin 
     for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j++) begin
       for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin 
         RxData[(8*i) +: 8] = data_scrambled.pop_front();
         RxDataK[i] = k_data.pop_front();
-        `uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
+        //`uvm_info("pipe_driver_bfm",$sformatf("rxdata = %h",RxData),UVM_MEDIUM)
       end
     end
     @ (posedge PCLK);
   end
-  //`uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
+  ////`uvm_info("pipe_driver_bfm",$sformatf("rxdata2 = %h",RxData),UVM_MEDIUM)
   if (!(lanenum == pipe_num_of_lanes)) begin
     for (int j = lanenum + 1; j < (bus_data_width)/8; j ++) begin
       RxData [(8*j) +: 8] = 8'b11110111;
@@ -859,7 +859,7 @@ endtask
   end
 
   task eqialization_preset_applied();
-    `uvm_info("pipe_monitor_bfm", "waiting for flag_tx_preset_applied ", UVM_NONE)
+    //`uvm_info("pipe_monitor_bfm", "waiting for flag_tx_preset_applied ", UVM_NONE)
     wait(flag_tx_preset_applied==1);
   endtask : eqialization_preset_applied
 

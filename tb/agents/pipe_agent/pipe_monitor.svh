@@ -66,21 +66,21 @@ function pipe_monitor::new(string name = "pipe_monitor", uvm_component parent = 
 endfunction
   
 function void pipe_monitor::build_phase(uvm_phase phase);
-  `uvm_info(get_name(), "Enter pipe_monitor build_phase", UVM_MEDIUM)
+  //`uvm_info(get_name(), "Enter pipe_monitor build_phase", UVM_MEDIUM)
   super.build_phase(phase);
   ap_sent = new("ap_sent", this);
   ap_received = new("ap_received", this);
-  `uvm_info(get_name(), "Exit pipe_monitor build_phase", UVM_MEDIUM)
+  //`uvm_info(get_name(), "Exit pipe_monitor build_phase", UVM_MEDIUM)
 endfunction: build_phase
     
 
 function void pipe_monitor::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
-  `uvm_info(get_name(), "Enter pipe_monitor connect_phase", UVM_MEDIUM)
+  //`uvm_info(get_name(), "Enter pipe_monitor connect_phase", UVM_MEDIUM)
   pipe_monitor_bfm_h = pipe_agent_config_h.pipe_monitor_bfm_h;
   pipe_monitor_bfm_h.proxy = this;
   -> pipe_monitor_bfm_h.build_connect_finished_e;
-  `uvm_info(get_name(), "Exit pipe_monitor connect_phase", UVM_MEDIUM)
+  //`uvm_info(get_name(), "Exit pipe_monitor connect_phase", UVM_MEDIUM)
 endfunction: connect_phase
 
 task pipe_monitor::detect_posedge_clk();
@@ -108,7 +108,7 @@ task pipe_monitor:: power_down_change();
   //pipe_monitor_bfm_h.detected_power_down_change_e = pipe_agent_config_h.power_down_change_e;
  //-> pipe_agent_config_h.power_down_change_e;
   //-> pipe_monitor_bfm_h.detected_power_down_change_e;
-  //`uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected in monitor ", UVM_LOW)
+  ////`uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected in monitor ", UVM_LOW)
 endtask
 
 function void pipe_monitor::notify_tses_received(ts_s tses []);
@@ -182,8 +182,8 @@ function void pipe_monitor::notify_tlp_sent(tlp_t tlp);
   pipe_seq_item_h.tlp = tlp;
   // Sending the sequence item to the analysis components
   ap_sent.write(pipe_seq_item_h);
-  `uvm_info(get_name(), "notify tlp_sent", UVM_MEDIUM)
-  `uvm_info(get_name(), $sformatf("tlp_sent_size = %d",tlp.size()), UVM_MEDIUM)
+  //`uvm_info(get_name(), "notify tlp_sent", UVM_MEDIUM)
+  //`uvm_info(get_name(), $sformatf("tlp_sent_size = %d",tlp.size()), UVM_MEDIUM)
 
 endfunction
 
@@ -197,8 +197,8 @@ function void pipe_monitor::notify_tlp_received(tlp_t tlp);
   pipe_seq_item_h.tlp = tlp;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-  `uvm_info(get_name(), "notify tlp_rec", UVM_MEDIUM)
-  `uvm_info(get_name(), $sformatf("tlp_rec_size = %d",tlp.size()), UVM_MEDIUM)
+  //`uvm_info(get_name(), "notify tlp_rec", UVM_MEDIUM)
+  //`uvm_info(get_name(), $sformatf("tlp_rec_size = %d",tlp.size()), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
@@ -211,7 +211,7 @@ function void pipe_monitor::notify_dllp_sent(dllp_t dllp);
   pipe_seq_item_h.dllp = dllp;
   // Sending the sequence item to the analysis components
   ap_sent.write(pipe_seq_item_h);
-  `uvm_info(get_name(), $sformatf( "notify dllp_sent: %p", dllp), UVM_MEDIUM)
+  //`uvm_info(get_name(), $sformatf( "notify dllp_sent: %p", dllp), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_dllp_received(dllp_t dllp);
@@ -224,7 +224,7 @@ function void pipe_monitor::notify_dllp_received(dllp_t dllp);
   pipe_seq_item_h.dllp = dllp;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-  `uvm_info(get_name(), "notify dllp_rec", UVM_MEDIUM)
+  //`uvm_info(get_name(), "notify dllp_rec", UVM_MEDIUM)
 endfunction
 
 // function void notify_enter_recovery_sent();
@@ -313,7 +313,7 @@ endfunction
 // endfunction
 
 function void pipe_monitor::DUT_polling_state_start();
-  `uvm_info (get_type_name (), $sformatf ("DUT_polling_state_start is called"), UVM_MEDIUM)
+  //`uvm_info (get_type_name (), $sformatf ("DUT_polling_state_start is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.DUT_start_polling_e;
  endfunction
 
@@ -326,10 +326,10 @@ function void pipe_monitor::notify_idle_data_received();
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-  `uvm_info("pipe_monitor", "idle gat_tx", UVM_MEDIUM)
-  `uvm_info (get_type_name (), $sformatf ("notify_idle_data_received is called"), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor", "idle gat_tx", UVM_MEDIUM)
+  //`uvm_info (get_type_name (), $sformatf ("notify_idle_data_received is called"), UVM_MEDIUM)
   -> pipe_agent_config_h.idle_data_detected_e;
-  `uvm_info (get_type_name (), $sformatf ("idle_event_triggered"), UVM_MEDIUM)
+  //`uvm_info (get_type_name (), $sformatf ("idle_event_triggered"), UVM_MEDIUM)
 endfunction
 
 function void pipe_monitor::notify_idle_data_sent();
@@ -340,5 +340,5 @@ function void pipe_monitor::notify_idle_data_sent();
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
   // Sending the sequence item to the analysis components
   ap_received.write(pipe_seq_item_h);
-  `uvm_info("pipe_monitor", "idle gat", UVM_MEDIUM)
+  //`uvm_info("pipe_monitor", "idle gat", UVM_MEDIUM)
 endfunction

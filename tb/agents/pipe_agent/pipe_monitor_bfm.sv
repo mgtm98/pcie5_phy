@@ -90,7 +90,7 @@ interface pipe_monitor_bfm
   genvar i;
   generate
     for (i=0; i<8; i++) begin
-      assert property (reset_assertion(i))   `uvm_info ("pipe_monitor_bfm", "Reset Assertions done", UVM_LOW);
+      assert property (reset_assertion(i));   //`uvm_info ("pipe_monitor_bfm", "Reset Assertions done", UVM_LOW);
     end
  endgenerate
  /************************************************************************/
@@ -324,23 +324,23 @@ end
   logic [4:0] temp;
   initial begin
     forever begin   
-      `uvm_info ("pipe_monitor_bfm", "Reset scenario started in PIPE", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "Reset scenario started in PIPE", UVM_LOW)
       wait(Reset==0);
-      `uvm_info ("pipe_monitor_bfm", "Received Reset = 0", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "Received Reset = 0", UVM_LOW)
        @(posedge PCLK);
       reset_lfsr(monitor_tx_scrambler,current_gen);
 
       wait(Reset==1);
       @(posedge PCLK);
-      `uvm_info ("pipe_monitor_bfm", "Received Reset = 1", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "Received Reset = 1", UVM_LOW)
 
       foreach(PhyStatus[i]) begin 
         wait(PhyStatus[i]==0);
       end
-      //`uvm_info ("pipe_monitor_bfm", "Received PhyStatus = 0", UVM_LOW)
+      ////`uvm_info ("pipe_monitor_bfm", "Received PhyStatus = 0", UVM_LOW)
 
       proxy.notify_reset_detected();
-     `uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW)
+     //`uvm_info ("pipe_monitor_bfm", "Reset scenario detected", UVM_LOW)
     end
   end
 
@@ -348,11 +348,11 @@ end
   /******************************* Receiver detection Scenario *******************************/
   initial begin
     forever begin  
-      `uvm_info("pipe_driver_bfm", "Started receiver detection scenario", UVM_LOW)
+      //`uvm_info("pipe_driver_bfm", "Started receiver detection scenario", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 1);
       end
-      `uvm_info ("pipe_monitor_bfm", "TxDetectRxLoopback = 1", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "TxDetectRxLoopback = 1", UVM_LOW)
       @(posedge PCLK);
 
       for (int i = 0; i < `NUM_OF_LANES; i++) begin
@@ -362,7 +362,7 @@ end
         wait(PhyStatus[i]==1);
         assert (RxStatus[(i*3) +:3]=='b011) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b011")
       end
-      `uvm_info ("pipe_monitor_bfm", "Powerdown = P1 and RxStatus = 'b011", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "Powerdown = P1 and RxStatus = 'b011", UVM_LOW)
 
       @(posedge PCLK);
     
@@ -370,14 +370,14 @@ end
         wait(PhyStatus[i]==0);
         assert (RxStatus[(i*3) +:3]=='b000) else `uvm_error ("pipe_monitor_bfm", "RxStatus is not ='b000")
       end
-      `uvm_info ("pipe_monitor_bfm", "waiting for TxDetectRx signal to be deasserted", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "waiting for TxDetectRx signal to be deasserted", UVM_LOW)
       foreach(TxDetectRxLoopback[i]) begin
         wait(TxDetectRxLoopback[i] == 0);
       end
-      `uvm_info ("pipe_monitor_bfm", "TxDetectRx is deasserted", UVM_LOW)
+      //`uvm_info ("pipe_monitor_bfm", "TxDetectRx is deasserted", UVM_LOW)
       @(posedge PCLK);
       proxy.notify_receiver_detected();
-      `uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
+      //`uvm_info ("pipe_monitor_bfm", "Receiver detected", UVM_MEDIUM)
     end
   end
 
@@ -387,16 +387,16 @@ end
 task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts_s ts [];
   ts = new[pipe_num_of_lanes];
-    //`uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
     if(Width==2'b01) // 16 bit pipe parallel interface
       begin
-         //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE) 
+         ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE) 
           for (int i=start_lane;i<=end_lane;i++)
           begin
               wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1'b1)&&(TxDataValid[i]==1'b1)); //wait to see a COM charecter          
           end
 
-          //`uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
+          ////`uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
 
           reset_lfsr(monitor_tx_scrambler,current_gen);
           
@@ -532,17 +532,17 @@ task automatic receive_tses (input int start_lane = 0,input int end_lane = pipe_
       end
       else //8 bit pipe paraleel interface 
       begin
-        //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+        ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
         for (int i = start_lane; i <= end_lane;i++)
           begin
-             // `uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
+             // //`uvm_info("pipe_monitor_bfm", $sformatf("Waiting for lane TxData %i", i), UVM_NONE)
               
               wait((TxData[(i*32+0)+:8]==8'b101_11100)&&(TxDataK[4*i+0]==1)&&(TxDataValid[i]==1)); //wait to see a COM charecter
 
-              //`uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
+              ////`uvm_info("pipe_monitor_bfm", $sformatf("Recevied COM for lane TxData %i", i), UVM_NONE)
           end
 
-         // `uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
+         // //`uvm_info("pipe_monitor_bfm", "Received COM character", UVM_NONE)
           
           reset_lfsr(monitor_tx_scrambler,current_gen);
           @(posedge PCLK);
@@ -622,10 +622,10 @@ endtask
 task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1 );
   ts_s ts [];
   ts = new[pipe_num_of_lanes];
-    //`uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Entered receive_tses task", UVM_NONE)
       if(Width==2'b01) // 16 bit pipe parallel interface
       begin
-        //`uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+        ////`uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
         //wait to see start of OS block
           for (int i = start_lane; i <= end_lane;i++)
@@ -732,7 +732,7 @@ task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = 
       end
       else if(Width==2'b10) // 32 pipe parallel interface  
       begin
-         // `uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+         // //`uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
           //wait to see start of OS block
           for (int i = start_lane; i <= end_lane;i++)
@@ -827,7 +827,7 @@ task automatic receive_tses_gen3 (input int start_lane = 0,input int end_lane = 
     
     else //8 bit pipe paraleel interface 
       begin
-        //`uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
+        ////`uvm_info("pipe_monitor_bfm", "Waiting for start block", UVM_NONE)
 
         //wait to see start of OS block
         for (int i = start_lane; i <= end_lane;i++)
@@ -942,7 +942,7 @@ endtask
 task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
   if(Width==2'b01) // 16 bit pipe parallel interface
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -981,7 +981,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
   end
   else if(Width==2'b10) // 32 bit pipe parallel interface
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -1033,7 +1033,7 @@ task automatic receive_eieos (input int start_lane = 0,input int end_lane = pipe
   end
   else
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -1145,7 +1145,7 @@ endtask
 task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_num_of_lanes-1);
   if(Width==2'b01) // 16 bit pipe parallel interface
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -1170,7 +1170,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
 
   else if(Width==2'b10) // 32 bit pipe parallel interface
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -1188,7 +1188,7 @@ task automatic receive_eios(input int start_lane = 0,input int end_lane = pipe_n
   end
   else//8 bit width
   begin
-    //`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
+    ////`uvm_info("pipe_monitor_bfm", "Waiting for COM character", UVM_NONE)
     for (int i = start_lane; i <= end_lane;i++)
     begin
       //com   
@@ -1296,7 +1296,7 @@ endtask
   //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
   //       wait (TxElecIdle[i] == 0);
   //     end
-  //     //`uvm_info("pipe_monitor_bfm", $sformatf("elecidle= %b detected in monitor bfm",TxElecIdle), UVM_LOW)
+  //     ////`uvm_info("pipe_monitor_bfm", $sformatf("elecidle= %b detected in monitor bfm",TxElecIdle), UVM_LOW)
   //     //proxy.exit_electricle_idle();
   //     -> detected_exit_electricle_idle_e;
   //   end
@@ -1308,7 +1308,7 @@ endtask
   //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
   //       wait(PowerDown[(i*4) +:4] == 4'b0000);
   //     end
-  //     `uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
+  //     //`uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
   //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
   //       wait(PhyStatus[i] == 1);
   //     end
@@ -1317,7 +1317,7 @@ endtask
   //     for (int i = 0; i < pipe_num_of_lanes; i++) begin
   //       wait(PhyStatus[i] == 0);
   //     end
-  //     `uvm_info("pipe_monitor_bfm", "Phystatus asserted one clk cycle monitor bfm", UVM_LOW)
+  //     //`uvm_info("pipe_monitor_bfm", "Phystatus asserted one clk cycle monitor bfm", UVM_LOW)
   //     -> detected_power_down_change_e;
   //     //proxy.power_down_change();
   //   end
@@ -1329,7 +1329,7 @@ endtask
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
         wait(PowerDown[(i*4) +:4] == 4'b0000);
       end
-      //`uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
+      ////`uvm_info("pipe_monitor_bfm", "Powerdown changed ", UVM_LOW)
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
         wait(PhyStatus[i] == 1);
       end
@@ -1339,11 +1339,11 @@ endtask
         wait(PhyStatus[i] == 0);
       end
 
-      `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
+      //`uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
       for (int i = 0; i < pipe_num_of_lanes; i++) begin
         wait (TxElecIdle[i] == 0);
       end
-      `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
+      //`uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
       proxy.DUT_polling_state_start();
     end
   end  
@@ -1351,18 +1351,18 @@ endtask
   // initial begin
   //   forever begin
   //       wait(detected_power_down_change_e.triggered);
-  //       `uvm_info("pipe_monitor_bfm", $sformatf("Powerdown= %b detected in monitor bfm",PowerDown), UVM_LOW)
+  //       //`uvm_info("pipe_monitor_bfm", $sformatf("Powerdown= %b detected in monitor bfm",PowerDown), UVM_LOW)
   //       for (int i = 0; i < pipe_num_of_lanes; i++) begin
   //         assert (PowerDown[(i*4) +:4] == 4'b0000) 
   //         else begin
-  //           `uvm_info("pipe_monitor_bfm", "Powerdown not p0 detected in monitor bfm", UVM_LOW)
+  //           //`uvm_info("pipe_monitor_bfm", "Powerdown not p0 detected in monitor bfm", UVM_LOW)
   //           wait(detected_power_down_change_e.triggered);
   //           i = 0;
   //         end
   //       end
-  //       `uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
+  //       //`uvm_info("pipe_monitor_bfm", "Powerdown= P0 detected ended in monitor bfm", UVM_LOW)
   //       wait(detected_exit_electricle_idle_e.triggered);
-  //       `uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
+  //       //`uvm_info("pipe_monitor_bfm", "exit elecidle detected in monitor bfm", UVM_LOW)
   //       proxy.DUT_polling_state_start();
   //   end
   // end  
@@ -1420,7 +1420,7 @@ endtask
       if (TxDataK[0] == 1 && TxData[(8*0) +: 8] == 8'b10111100) begin //comm 
        repeat((128/get_width())-1) begin
          @ (posedge PCLK);
-         //`uvm_info("pipe_monitor_bfm", "momken clock_sent_tx", UVM_MEDIUM)
+         ////`uvm_info("pipe_monitor_bfm", "momken clock_sent_tx", UVM_MEDIUM)
        end
       end
      else begin
@@ -1433,31 +1433,31 @@ endtask
   if (TxDataValid[0] === 1) begin  
    for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
      if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
-      `uvm_info("pipe_monitor_bfm", "momken stp_sent_tx", UVM_MEDIUM)
+      //`uvm_info("pipe_monitor_bfm", "momken stp_sent_tx", UVM_MEDIUM)
        start_tlp = i;
        receive_tlp_gen_1_2; 
      end
      else if ((TxDataK[i] == 1 && TxData[(8*i) +: 8] == `SDP_gen_1_2) || dllp_done == 0) begin
-      `uvm_info("pipe_monitor_bfm", "momken sdp_sent_tx", UVM_MEDIUM)
+      //`uvm_info("pipe_monitor_bfm", "momken sdp_sent_tx", UVM_MEDIUM)
        start_dllp = i;
        receive_dllp_gen_1_2; 
      end
      else if (TxDataK[i] == 0) begin
-        `uvm_info("pipe_monitor_bfm", "momken idle_sent_tx", UVM_MEDIUM)
+        //`uvm_info("pipe_monitor_bfm", "momken idle_sent_tx", UVM_MEDIUM)
         lanenum = $floor(i/(pipe_max_width/8.0));
         temp_value = TxData[(8*i) +: 8];
-        //`uvm_info("pipe_monitor_bfm", $sformatf("lanenum_tx= %d",lanenum), UVM_MEDIUM)
+        ////`uvm_info("pipe_monitor_bfm", $sformatf("lanenum_tx= %d",lanenum), UVM_MEDIUM)
         if (((i-(get_width/8)-1)%4) == 0) 
           idle_descrambled[i] = descramble(monitor_tx_scrambler,temp_value,lanenum, current_gen);
         else
         idle_descrambled[i] = 8'b1111_1111;
-        //`uvm_info("pipe_monitor_bfm", $sformatf("idle_descrambled_tx= %h",idle_descrambled[i]), UVM_MEDIUM)
+        ////`uvm_info("pipe_monitor_bfm", $sformatf("idle_descrambled_tx= %h",idle_descrambled[i]), UVM_MEDIUM)
         if (idle_descrambled[i] == 8'b0000_0000) begin
-          //`uvm_info("pipe_monitor_bfm", "menna 7_tx", UVM_MEDIUM)
+          ////`uvm_info("pipe_monitor_bfm", "menna 7_tx", UVM_MEDIUM)
           num_idle_data++;         
         end                 
         if (num_idle_data == (pipe_num_of_lanes*get_width())/8) begin
-          //`uvm_info("pipe_monitor_bfm", "menna 8_tx", UVM_MEDIUM)
+          ////`uvm_info("pipe_monitor_bfm", "menna 8_tx", UVM_MEDIUM)
           proxy.notify_idle_data_received();
           num_idle_data = 0;
         end
@@ -1558,7 +1558,7 @@ endtask
     if (RxDataK[0] == 1 && RxData[(8*0) +: 8] == 8'b10111100) begin //comm 
       repeat((128/get_width())-1) begin
         @ (posedge PCLK);
-        // `uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
+        // //`uvm_info("pipe_monitor_bfm", "momken clock_sent", UVM_MEDIUM)
       end
     end
     else begin
@@ -1571,30 +1571,30 @@ task process_rx_data_gen_1_2;
 if (RxDataValid[0] === 1) begin  
   for (int i = 0; i < (bus_data_kontrol_param + 1); i++) begin
     if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `STP_gen_1_2) || tlp_done == 0) begin
-     `uvm_info("pipe_monitor_bfm", "momken stp_sent", UVM_MEDIUM)
+     //`uvm_info("pipe_monitor_bfm", "momken stp_sent", UVM_MEDIUM)
       start_tlp = i;
       send_tlp_gen_1_2; 
     end
     else if ((RxDataK[i] == 1 && RxData[(8*i) +: 8] == `SDP_gen_1_2) || dllp_done == 0) begin
-     `uvm_info("pipe_monitor_bfm", "momken sdp_sent", UVM_MEDIUM)
+     //`uvm_info("pipe_monitor_bfm", "momken sdp_sent", UVM_MEDIUM)
       start_dllp = i;
       send_dllp_gen_1_2; 
     end
     else if (RxDataK[i] == 0) begin
-       `uvm_info("pipe_monitor_bfm", "momken idle_sent", UVM_MEDIUM)
+       //`uvm_info("pipe_monitor_bfm", "momken idle_sent", UVM_MEDIUM)
        lanenum = $floor(i/(pipe_max_width/8.0));
        temp_value = RxData[(8*i) +: 8];
        if (((i-(get_width/8)-1)%4) == 0) 
          idle_descrambled[i] = descramble(monitor_rx_scrambler,temp_value,lanenum, current_gen);
        else
        idle_descrambled[i] = 8'b1111_1111;
-       //`uvm_info("pipe_monitor_bfm", $sformatf("idle_descrambled= %h",idle_descrambled[i]), UVM_MEDIUM)
+       ////`uvm_info("pipe_monitor_bfm", $sformatf("idle_descrambled= %h",idle_descrambled[i]), UVM_MEDIUM)
        if (idle_descrambled[i] == 8'b0000_0000) begin
-         //`uvm_info("pipe_monitor_bfm", "menna 7", UVM_MEDIUM)
+         ////`uvm_info("pipe_monitor_bfm", "menna 7", UVM_MEDIUM)
          num_idle_data++;         
        end                 
        if (num_idle_data == (pipe_num_of_lanes*get_width())/8) begin
-         //`uvm_info("pipe_monitor_bfm", "menna 8", UVM_MEDIUM)
+         ////`uvm_info("pipe_monitor_bfm", "menna 8", UVM_MEDIUM)
          proxy.notify_idle_data_sent();
          num_idle_data = 0;
        end
@@ -1604,8 +1604,8 @@ end
 endtask
  task automatic send_dllp_gen_1_2;
   int end_dllp = (bus_data_width_param + 1)/8;
-  `uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
-  `uvm_info("pipe_monitor_bfm", $sformatf("k_data abl descram = %h",RxDataK), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("k_data abl descram = %h",RxDataK), UVM_MEDIUM)
   for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
     int j = i - start_dllp;
     if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
@@ -1620,15 +1620,15 @@ endtask
        dllp_done = 0;
     end
     else begin
-      `uvm_info("pipe_monitor_bfm", $sformatf("end found, %h", (RxData[(8*i) +: 8])), UVM_MEDIUM)
+      //`uvm_info("pipe_monitor_bfm", $sformatf("end found, %h", (RxData[(8*i) +: 8])), UVM_MEDIUM)
       data_descrambled[(8*j) +: 8] = (RxData[(8*i) +: 8]);
-      `uvm_info("pipe_monitor_bfm", $sformatf("after end %h", data_descrambled[(8*j) +: 8]), UVM_MEDIUM)
+      //`uvm_info("pipe_monitor_bfm", $sformatf("after end %h", data_descrambled[(8*j) +: 8]), UVM_MEDIUM)
       dllp_done = 1;
       end_dllp = j;
       break;
     end
   end  
-  `uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_descrambled = %h",data_descrambled), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_descrambled = %h",data_descrambled), UVM_MEDIUM)
   for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
        if (i > end_dllp) begin
@@ -1637,7 +1637,7 @@ endtask
         dllp_q.push_back(data_descrambled[(8*i) +: 8]); 
      end
   end
-  `uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_queue = %p",dllp_q), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data_dllp_queue = %p",dllp_q), UVM_MEDIUM)
   if (dllp_done) begin
     for (int i = 0; i < dllp_q.size(); i++) begin
        dllp_sent [i] = dllp_q.pop_front();
@@ -1648,7 +1648,7 @@ endtask
  
  task automatic send_tlp_gen_1_2;
   int end_tlp = (bus_data_width_param + 1)/8;
-  `uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data abl descram = %h",RxData), UVM_MEDIUM)
   for(int i = start_tlp; i < bus_data_kontrol_param + 1; i++) begin 
     int j = i - start_tlp;
     if(!(RxDataK[i] == 1 && RxData[(8*i) +: 8] == `END_gen_1_2)) begin
@@ -1669,7 +1669,7 @@ endtask
       break;
     end
   end 
-  `uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_descrambled = %h",data_descrambled), UVM_MEDIUM)
+  //`uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_descrambled = %h",data_descrambled), UVM_MEDIUM)
   for (int j = 0; j < (bus_data_width)/(pipe_num_of_lanes*8); j = j ++) begin
      for (int i = j ; i < (bus_data_width_param + 1)/8 ; i = i + (bus_data_width_param + 1)/(pipe_num_of_lanes*8)) begin
        if (i > end_tlp) begin
@@ -1684,7 +1684,7 @@ endtask
     end
     proxy.notify_tlp_sent(tlp_sent);
   end
-  //`uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_queue ="), UVM_MEDIUM)
+  ////`uvm_info("pipe_monitor_bfm", $sformatf("data_tlp_queue ="), UVM_MEDIUM)
  endtask  
  
 

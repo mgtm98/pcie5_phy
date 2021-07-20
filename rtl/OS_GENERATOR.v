@@ -86,13 +86,13 @@ always @(*)begin
  temp4_comb=0;
   
  if(start)begin
-	$display("If start"); 
+	//$display("If start"); 
   if(gen==3'b001||gen==3'b010 ) begin
-	$display("If gen");   
+	//$display("If gen");   
     tx_preset_comb=tx_preset;
     rx_preset_comb=rx_preset;
 	if(EQ)begin
-	 $display("If EQ");		 
+	 //$display("If EQ");		 
      temp1_comb[7:0]={1'b1,tx_preset_comb[3:0],rx_preset_comb[2:0]};
      temp1_comb[15:8]={1'b1,tx_preset_comb[7:4],rx_preset_comb[5:3]};
      temp1_comb[23:16]={1'b1,tx_preset_comb[11:8],rx_preset_comb[8:6]};
@@ -112,7 +112,7 @@ always @(*)begin
     end
    else
    begin
-	   $display("If eq = 0"); 
+	   //$display("If eq = 0"); 
 	temp1_comb={no_of_lanes{8'h4A}};
    end
    
