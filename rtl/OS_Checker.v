@@ -1,4 +1,6 @@
-module osChecker #(parameter DEVICETYPE = 0)(
+module osChecker #(parameter DEVICETYPE = 0,parameter GEN1_PIPEWIDTH = 8,
+ parameter GEN2_PIPEWIDTH = 8, parameter GEN3_PIPEWIDTH = 8, parameter GEN4_PIPEWIDTH = 8,parameter GEN5_PIPEWIDTH = 8)
+ (
     input clk,
     input [7:0]linkNumber,
     input [7:0]laneNumber,
@@ -128,6 +130,10 @@ module osChecker #(parameter DEVICETYPE = 0)(
 
 reg [7:0]symbol6OfTS2;
 reg [7:0]rateidTs2;
+
+
+
+
 //CURRENT STATE FF
 always @(posedge clk or negedge reset)
 begin
@@ -474,7 +480,9 @@ begin
         configIdle1:
         begin
             resetcounter = 1'b0; countup = 1'b0;
-            if(valid && (|orderedset[63:0]==1'b0))
+            if(valid &&( (gen == 3'd1 && |orderedset[GEN1_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd2 && |orderedset[GEN2_PIPEWIDTH-1:0]==1'b0)
+            ||(gen == 3'd3 && |orderedset[GEN3_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd4 && |orderedset[GEN4_PIPEWIDTH-1:0]==1'b0)
+            ||(gen == 3'd5 && |orderedset[GEN1_PIPEWIDTH-5:0]==1'b0)  ))
             begin
             nextState = configIdle2;
             resetcounter = 1'b1; countup = 1'b1;
@@ -487,7 +495,9 @@ begin
             resetcounter = 1'b1; countup = 1'b0;
             if(valid)
                 begin
-                    if((|orderedset[63:0]==1'b0))
+                    if( (gen == 3'd1 && |orderedset[GEN1_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd2 && |orderedset[GEN2_PIPEWIDTH-1:0]==1'b0)
+                    ||(gen == 3'd3 && |orderedset[GEN3_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd4 && |orderedset[GEN4_PIPEWIDTH-1:0]==1'b0)
+                    ||(gen == 3'd5 && |orderedset[GEN1_PIPEWIDTH-5:0]==1'b0)  )
                     begin
                         countup = 1'b1;
                         nextState =  configIdle2;
@@ -845,7 +855,9 @@ begin
         RcvrIdle1:
         begin
             resetcounter = 1'b0; countup = 1'b0;
-            if(valid && (|orderedset==1'b0))
+            if(valid &&( (gen == 3'd1 && |orderedset[GEN1_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd2 && |orderedset[GEN2_PIPEWIDTH-1:0]==1'b0)
+            ||(gen == 3'd3 && |orderedset[GEN3_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd4 && |orderedset[GEN4_PIPEWIDTH-1:0]==1'b0)
+            ||(gen == 3'd5 && |orderedset[GEN1_PIPEWIDTH-5:0]==1'b0)  ))
             begin
             nextState = RcvrIdle2;
             resetcounter = 1'b1; countup = 1'b1;
@@ -859,7 +871,9 @@ begin
             resetcounter = 1'b1; countup = 1'b0;
             if(valid)
                 begin
-                    if((|orderedset==1'b0))
+                     if( (gen == 3'd1 && |orderedset[GEN1_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd2 && |orderedset[GEN2_PIPEWIDTH-1:0]==1'b0)
+                    ||(gen == 3'd3 && |orderedset[GEN3_PIPEWIDTH-1:0]==1'b0) ||(gen == 3'd4 && |orderedset[GEN4_PIPEWIDTH-1:0]==1'b0)
+                    ||(gen == 3'd5 && |orderedset[GEN1_PIPEWIDTH-5:0]==1'b0)  )
                     begin
                         countup = 1'b1;
                         nextState =  RcvrIdle2;

@@ -64,7 +64,9 @@ genvar i;
 generate
    for (i=0; i <= 15; i=i+1) 
    begin
-     osChecker #(.DEVICETYPE(DEVICETYPE))osChecker( 
+     osChecker #(.DEVICETYPE(DEVICETYPE),.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH),.GEN2_PIPEWIDTH(GEN2_PIPEWIDTH),
+     .GEN3_PIPEWIDTH(GEN3_PIPEWIDTH),.GEN4_PIPEWIDTH(GEN4_PIPEWIDTH),.GEN5_PIPEWIDTH(GEN5_PIPEWIDTH))
+     osChecker( 
       .clk(clk),
       .linkNumber(linkNumber),
       .laneNumber(i[7:0]),
@@ -112,7 +114,9 @@ generate
 endgenerate
 
 
-masterRxLTSSM#(.DEVICETYPE(DEVICETYPE)) masterRxLTSSM(
+masterRxLTSSM#(.DEVICETYPE(DEVICETYPE),.GEN1_PIPEWIDTH(GEN1_PIPEWIDTH),.GEN2_PIPEWIDTH(GEN2_PIPEWIDTH),
+.GEN3_PIPEWIDTH(GEN3_PIPEWIDTH),.GEN4_PIPEWIDTH(GEN4_PIPEWIDTH),.GEN5_PIPEWIDTH(GEN5_PIPEWIDTH)) 
+masterRxLTSSM(
     .clk(clk),
     .numberOfDetectedLanes(numberOfDetectedLanes),
     .substate(substate),
@@ -131,7 +135,8 @@ masterRxLTSSM#(.DEVICETYPE(DEVICETYPE)) masterRxLTSSM(
     .startTimer(startTimer),
     .resetTimer(resetTimer),
     .comparatorsCount(checkValues),
-    .trainToGen(trainToGen));
+    .trainToGen(trainToGen),
+    .gen(Gen));
  
 Timer #(
 Width,
