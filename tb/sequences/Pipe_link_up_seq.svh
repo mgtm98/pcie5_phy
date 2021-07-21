@@ -44,7 +44,7 @@ function pipe_link_up_seq::new(string name = "pipe_link_up_seq");
 endfunction
   
 task pipe_link_up_seq::body;
-  //`uvm_info("pipe_link_up_seq", "Started pipe_link_up_seq", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started pipe_link_up_seq", UVM_MEDIUM)
   if(!this.randomize()) begin
     `uvm_fatal(get_name(), "Can't randomize the pipe_link_up_seq")
   end
@@ -91,16 +91,16 @@ task pipe_link_up_seq::body;
 endtask: body
 
 task pipe_link_up_seq::detect_state;
-  //`uvm_info(get_name(), "waiting for receiver detection", UVM_MEDIUM)
+  `uvm_info(get_name(), "waiting for receiver detection", UVM_MEDIUM)
   wait(pipe_agent_config_h.receiver_detected_e.triggered);
-  //`uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
+  `uvm_info(get_name(), "Receiver detected", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::polling_state;
-  //`uvm_info("pipe_link_up_seq", "polling state started", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started polling_state", UVM_MEDIUM)
   polling_active_state;
   polling_configuration_state;
-  //`uvm_info("pipe_link_up_seq", "polling state finished", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Finished polling_state", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::receiving_8_ts1; //Dut sending
@@ -154,6 +154,7 @@ endtask
 
 task pipe_link_up_seq::polling_configuration_state;
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item");
+  `uvm_info("pipe_link_up_seq", "Started polling_configuration_state", UVM_MEDIUM)
   wait(pipe_agent_config_h.detected_tses_e.triggered)
   while (pipe_agent_config_h.tses_received[0].ts_type == TS1) begin
     start_item (pipe_seq_item_h);
@@ -193,10 +194,12 @@ task pipe_link_up_seq::polling_configuration_state;
       //`uvm_info("pipe_link_up_seq", $sformatf("16 TS2 sent"), UVM_MEDIUM)
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished polling_configuration_state", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_state;
   //`uvm_info("pipe_link_up_seq", $sformatf("env type: %b",IS_ENV_UPSTREAM), UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_state", UVM_MEDIUM)
   if (IS_ENV_UPSTREAM) begin
   config_linkwidth_start_state_upstream;
   config_linkwidth_accept_state_upstream;
@@ -211,6 +214,7 @@ task pipe_link_up_seq::config_state;
   config_complete_state_downstream;
   config_idle_state;
   end
+  `uvm_info("pipe_link_up_seq", "Finished config_state", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_start_state_upstream;
@@ -219,8 +223,8 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
   bit two_consecutive_ts1s_with_non_pad_link_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
+  `uvm_info("pipe_link_up_seq", "Started config_linkwidth_start_state_upstream", UVM_MEDIUM)
   // Initialize the num_of_ts2_received array with zeros
-  //`uvm_info("pipe_link_up_seq", "Entered config_linkwidth_start_state_upstream", UVM_MEDIUM)
   foreach(num_of_ts1s_with_non_pad_link_number[i])
   begin
     num_of_ts1s_with_non_pad_link_number[i] = 0;
@@ -266,6 +270,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_start_state_upstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
@@ -273,7 +278,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
   bit [7:0] used_link_num;
   bit ts1_with_non_pad_lane_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
-  //`uvm_info("pipe_link_up_seq", "Entered config_linkwidth_accept_state_upstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_linkwidth_accept_state_upstream", UVM_MEDIUM)
   // Use the link number of the ts1s on the first lane to be transmitted
   used_link_num = tses_received[0].link_number;
   foreach(tses_sent[i])
@@ -323,6 +328,7 @@ task pipe_link_up_seq::config_linkwidth_accept_state_upstream;
     tses_sent[i].lane_number = tses_received[i].lane_number;
     tses_sent[i].use_lane_number = 1;
   end
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_accept_state_upstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_lanenum_wait_state_upstream;
@@ -331,7 +337,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
   bit two_consecutive_ts2s_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
-  //`uvm_info("pipe_link_up_seq", "Entered config_lanenum_wait_state_upstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_lanenum_wait_state_upstream", UVM_MEDIUM)
   // Initialize the num_of_ts2_received array with zeros
   foreach(num_of_ts2_received[i])
   begin
@@ -380,6 +386,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_lanenum_wait_state_upstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_complete_state_upstream;
@@ -387,7 +394,7 @@ task pipe_link_up_seq::config_complete_state_upstream;
   int num_of_ts2_received [`NUM_OF_LANES];
   bit eight_consecutive_ts2s_detected;
   int i;
-  //`uvm_info("pipe_link_up_seq", "Entered config_complete_state_upstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_complete_state_upstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
 
   // Initialize the num_of_ts2_received array with zeros
@@ -454,6 +461,7 @@ task pipe_link_up_seq::config_complete_state_upstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_complete_state_upstream", UVM_MEDIUM)
 endtask
 
 
@@ -462,7 +470,7 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
   int unsigned num_of_detected_ts1s_with_same_link_number [`NUM_OF_LANES];
   bit two_ts1s_with_same_link_number_detected;
   pipe_seq_item_h.pipe_operation = SEND_TSES;
-  //`uvm_info("pipe_link_up_seq", "Entered config_linkwidth_start_state_downstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_linkwidth_start_state_downstream", UVM_MEDIUM)
   foreach(tses_sent[i])
   begin
     tses_sent[i].link_number = link_number;
@@ -516,16 +524,18 @@ task pipe_link_up_seq::config_linkwidth_start_state_downstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_start_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_linkwidth_accept_state_downstream;
-  //`uvm_info("pipe_link_up_seq", "Entered config_linkwidth_accept_state_downstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_linkwidth_accept_state_downstream", UVM_MEDIUM)
   // Update the lane numbers to start with zero and increase sequentially
   foreach(tses_sent[i])
   begin
     tses_sent[i].lane_number = `NUM_OF_LANES - i - 1;
     tses_sent[i].use_lane_number = 1;
   end
+  `uvm_info("pipe_link_up_seq", "Finished config_linkwidth_accept_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_lanenum_wait_state_downstream;
@@ -533,7 +543,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
   int unsigned num_of_detected_ts1s_with_same_lane_numbers;
   bit two_ts1s_with_same_lane_numbers_detected;
   bit all_lane_numbers_are_correct;
-  //`uvm_info("pipe_link_up_seq", "Entered config_lanenum_wait_state_downstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_lanenum_wait_state_downstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
   pipe_seq_item_h.tses_sent = tses_sent;
   // Send ts1s with the generated lane numbers until two ts1s are received with the same link numbers
@@ -581,6 +591,7 @@ task pipe_link_up_seq::config_lanenum_wait_state_downstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_lanenum_wait_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_complete_state_downstream;
@@ -588,7 +599,7 @@ task pipe_link_up_seq::config_complete_state_downstream;
   int num_of_ts2_received [`NUM_OF_LANES];
   bit eight_consecutive_ts2s_detected;
   int i;
-  //`uvm_info("pipe_link_up_seq", "Entered config_complete_state_downstream", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_complete_state_downstream", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = SEND_TSES;
 
   // Initialize the num_of_ts2_received array with zeros
@@ -655,6 +666,7 @@ task pipe_link_up_seq::config_complete_state_downstream;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_complete_state_downstream", UVM_MEDIUM)
 endtask
 
 task pipe_link_up_seq::config_idle_state;
@@ -663,7 +675,7 @@ task pipe_link_up_seq::config_idle_state;
   bit eight_consecutive_idle_data_detected;
   bit one_idle_data_received;
   int i;
-  //`uvm_info("pipe_link_up_seq", "Entered config_idle_state", UVM_MEDIUM)
+  `uvm_info("pipe_link_up_seq", "Started config_idle_state", UVM_MEDIUM)
   pipe_seq_item_h.pipe_operation = IDLE_DATA_TRANSFER;
 
   // Initialize the num_of_idle_data_received array with zeros
@@ -722,4 +734,5 @@ task pipe_link_up_seq::config_idle_state;
       end
     end
   join
+  `uvm_info("pipe_link_up_seq", "Finished config_idle_state", UVM_MEDIUM)
 endtask
