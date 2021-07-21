@@ -111,7 +111,7 @@ initial begin
     fs_usp                               = 0;
     LocalTxCoeffcientsValid               = 0;
     LinkEvaluationFeedbackDirectionChange = 0;
-    current_gen                           = GEN3;
+    current_gen                           = GEN1;
   
     PhyStatus = {pipe_num_of_lanes{1'b1}};
 
