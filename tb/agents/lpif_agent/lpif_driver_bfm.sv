@@ -45,7 +45,7 @@ interface lpif_driver_bfm #(
   task reset_scenario ();
     `uvm_info("lpif_driver_bfm", "reset scenario started", UVM_LOW)
     @(posedge lclk);
-    reset <= 0;
+    reset = 0;
 
     // Set the default values for the signals
     lp_irdy = 0;
@@ -60,9 +60,9 @@ interface lpif_driver_bfm #(
     lp_tlpedb = 0;
     
     @(posedge lclk);
-    reset <= 1;
+    reset = 1;
     @(posedge lclk);
-    lp_state_req <= RESET;
+    lp_state_req = RESET;
     `uvm_info("lpif_driver_bfm", "waiting link_reset sts", UVM_LOW)
     wait(pl_state_sts == RESET);
   	@(posedge lclk);
@@ -70,7 +70,7 @@ interface lpif_driver_bfm #(
   endtask
 
   task link_up ();
-    lp_state_req <= ACTIVE;
+    lp_state_req = ACTIVE;
     wait(pl_linkup == 1 && pl_state_sts == ACTIVE);
   	@(posedge lclk);
     //`uvm_info("lpif_driver_bfm", "reset scenario finished", UVM_LOW)
@@ -83,8 +83,11 @@ interface lpif_driver_bfm #(
   bit dllp_start_queue [$];
   bit dllp_end_queue [$];
 
-  function void send_tlp(tlp_t tlp);
+  function automatic void send_tlp(tlp_t tlp);
     // Add the bytes of the TLP to the data queue and add the suitable values for the other signals
+    longint start_index = data_queue.size();
+    longint end_index = data_queue.size() + tlp.size() - 1;
+    `uvm_info("lpif_driver_bfm", "Started send_tlp", UVM_NONE)
     foreach(tlp[i]) begin
       data_queue.push_back(tlp[i]);
       tlp_start_queue.push_back(0);
@@ -93,15 +96,21 @@ interface lpif_driver_bfm #(
       dllp_end_queue.push_back(0);
     end
     // Fix the first value of the tlp_start queue
-    tlp_start_queue.pop_front();
-    tlp_start_queue.push_front(1);
+    tlp_start_queue[start_index] = 1;
+    // tlp_start_queue.pop_front();
+    // tlp_start_queue.push_front(1);
     // Fix the last value of the tlp_end queue
-    tlp_end_queue.pop_back();
-    tlp_end_queue.push_back(1);
+    tlp_end_queue[end_index] = 1;
+    // tlp_end_queue.pop_back();
+    // tlp_end_queue.push_back(1);
+    `uvm_info("lpif_driver_bfm", "Finished send_tlp", UVM_NONE)
   endfunction
 
-  function void send_dllp(dllp_t dllp);
+  function automatic void send_dllp(dllp_t dllp);
     // Add the bytes of the DLLP to the data queue and add the suitable values for the other signals
+    longint start_index = data_queue.size();
+    longint end_index = data_queue.size() + $size(dllp) - 1;
+    `uvm_info("lpif_driver_bfm", "Started send_dllp", UVM_NONE)
     foreach(dllp[i]) begin
       data_queue.push_back(dllp[i]);
       tlp_start_queue.push_back(0);
@@ -110,18 +119,22 @@ interface lpif_driver_bfm #(
       dllp_end_queue.push_back(0);
     end
     // Fix the first value of the dllp_start queue
-    dllp_start_queue.pop_front();
-    dllp_start_queue.push_front(1);
+    dllp_start_queue[start_index] = 1;
+    // dllp_start_queue.pop_front();
+    // dllp_start_queue.push_front(1);
     // Fix the last value of the dllp_end queue
-    dllp_end_queue.pop_back();
-    dllp_end_queue.push_back(1);
+    dllp_end_queue[end_index] = 1;
+    // dllp_end_queue.pop_back();
+    // dllp_end_queue.push_back(1);
+    `uvm_info("lpif_driver_bfm", "Finished send_dllp", UVM_NONE)
   endfunction
 
   task send_data();
     longint unsigned i;
     longint unsigned j;
     longint unsigned num_of_loops;
-    lp_irdy <= 1;
+    `uvm_info("lpif_driver_bfm", "Started send_data", UVM_NONE)
+    lp_irdy = 1;
     // Calculate the number of times the upper layer will need to put the data on the full bus
     num_of_loops = data_queue.size() / (lpif_bus_width / 8);
     // Loop over the number of times the upper layer will need to put the data on the full bus
@@ -129,45 +142,63 @@ interface lpif_driver_bfm #(
       // Loop over the full bus
       for(j = 0; j < lpif_bus_width / 8; j++) begin
         // Put the values in the queues on the signals
-        lp_data[(j*8)+:8] <= data_queue.pop_front();
-        lp_tlp_start[j] <= tlp_start_queue.pop_front();
-        lp_tlp_end[j] <= tlp_end_queue.pop_front();
-        lp_dllp_start[j] <= dllp_start_queue.pop_front();
-        lp_dllp_end[j] <= dllp_end_queue.pop_front();
-        lp_valid[j] <= 1;
+        lp_data[(j*8)+:8] = data_queue.pop_front();
+        lp_tlp_start[j] = tlp_start_queue.pop_front();
+        lp_tlp_end[j] = tlp_end_queue.pop_front();
+        lp_dllp_start[j] = dllp_start_queue.pop_front();
+        lp_dllp_end[j] = dllp_end_queue.pop_front();
+        lp_valid[j] = 1;
       end
-      wait(pl_trdy == 1);
-      @(posedge lclk);
+      if(pl_trdy == 1) begin
+        @(posedge lclk);
+        if(pl_trdy == 0) begin
+          wait(pl_trdy == 1);
+          @(posedge lclk);
+        end
+      end
+      else begin
+        wait(pl_trdy == 1);
+        @(posedge lclk);
+      end
     end
     // Notify that some of the values on the data bus will be invalid
     for(i = 0; i < lpif_bus_width / 8; i++) begin
-      lp_valid[i] <= 0;
+      lp_valid[i] = 0;
     end
     if(data_queue.size() != 0) begin
       // Loop over the only needed number of lanes
       num_of_loops = data_queue.size();
       for(i = 0; i < num_of_loops; i++) begin
-        lp_data[(i*8)+:8] <= data_queue.pop_front();
-        lp_tlp_start[i] <= tlp_start_queue.pop_front();
-        lp_tlp_end[i] <= tlp_end_queue.pop_front();
-        lp_dllp_start[i] <= dllp_start_queue.pop_front();
-        lp_dllp_end[i] <= dllp_end_queue.pop_front();
-        lp_valid[i] <= 1;
+        lp_data[(i*8)+:8] = data_queue.pop_front();
+        lp_tlp_start[i] = tlp_start_queue.pop_front();
+        lp_tlp_end[i] = tlp_end_queue.pop_front();
+        lp_dllp_start[i] = dllp_start_queue.pop_front();
+        lp_dllp_end[i] = dllp_end_queue.pop_front();
+        lp_valid[i] = 1;
       end
-      wait(pl_trdy == 1);
-      @(posedge lclk);
+      if(pl_trdy == 1) begin
+        @(posedge lclk);
+        if(pl_trdy == 0) begin
+          wait(pl_trdy == 1);
+          @(posedge lclk);
+        end
+      end
+      else begin
+        wait(pl_trdy == 1);
+        @(posedge lclk);
+      end
     end
     // Notify that all the incoming values are invalid
-    for(i = 0; i < lpif_bus_width / 8; i++) begin
-      lp_valid[i] <= 0;
-    end
-    lp_irdy <= 0;
-  endtask
-
-
-
-  task retrain();
-    //to be implemented
+    // for(i = 0; i < lpif_bus_width / 8; i++) begin
+    //   lp_valid[i] = 0;
+    // end
+    lp_valid = {(bus_kontrol_param + 1){0}};
+    lp_tlp_start = {(bus_kontrol_param + 1){0}};
+    lp_tlp_end = {(bus_kontrol_param + 1){0}};
+    lp_dllp_start = {(bus_kontrol_param + 1){0}};
+    lp_dllp_end = {(bus_kontrol_param + 1){0}};
+    lp_irdy = 0;
+    `uvm_info("lpif_driver_bfm", "Finished send_data", UVM_NONE)
   endtask
   
 endinterface

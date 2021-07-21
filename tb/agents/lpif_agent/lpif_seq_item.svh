@@ -11,6 +11,7 @@ class lpif_seq_item extends uvm_sequence_item;
   constraint c1 {
     tlp.size() >= TLP_MIN_SIZE;
     tlp.size() <= TLP_MAX_SIZE;
+    tlp.size()%4 == 2;
   };
 
   extern function new(string name = "lpif_seq_item");

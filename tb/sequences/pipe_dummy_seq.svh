@@ -13,21 +13,15 @@ endfunction
 
 task pipe_dummy_seq::body();
   pipe_seq_item pipe_seq_item_h = pipe_seq_item::type_id::create("pipe_seq_item_h");
-  `uvm_info(get_name(), "pipe_dummy_seq started", UVM_NONE)
+  `uvm_info(get_name(), "Started pipe_dummy_seq", UVM_NONE)
   start_item(pipe_seq_item_h);
-  if(!pipe_seq_item_h.randomize() with {pipe_operation == SEND_TSES;}) begin
+  if(!pipe_seq_item_h.randomize() with {pipe_operation == pipe_agent_pkg::IDLE_DATA_TRANSFER;}) begin
     `uvm_fatal(get_name(), "Can't randomize pipe_seq_item")
   end
-  for (int i = 0; i < `NUM_OF_LANES; i++) begin
-    pipe_seq_item_h.tses_sent[i].n_fts            = 0;
-    pipe_seq_item_h.tses_sent[i].lane_number      = i;
-    pipe_seq_item_h.tses_sent[i].link_number      = 8;
-    pipe_seq_item_h.tses_sent[i].use_n_fts        = 0;
-    pipe_seq_item_h.tses_sent[i].use_link_number  = 0;
-    pipe_seq_item_h.tses_sent[i].use_lane_number  = 0;
-    pipe_seq_item_h.tses_sent[i].max_gen_supported = GEN1;
-    pipe_seq_item_h.tses_sent[i].ts_type          = TS1;
-  end
   finish_item(pipe_seq_item_h);
-  #20;
+  start_item(pipe_seq_item_h);
+  pipe_seq_item_h.pipe_operation = pipe_agent_pkg::SEND_DATA;
+  finish_item(pipe_seq_item_h);
+  #1;
+  `uvm_info(get_name(), "Finished pipe_dummy_seq", UVM_NONE)
 endtask
