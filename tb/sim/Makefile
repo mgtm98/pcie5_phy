@@ -33,7 +33,7 @@ include ../utility/utility.mk
 
 #################################### Run Configurations #####################################
 TEST								= pcie_test
-SEQ									= reset_vseq,link_up_vseq
+DEF_SEQ									= reset_vseq,link_up_vseq
 # SEQ									= reset_vseq,dummy_vseq
 
 #################################### Rules #####################################
@@ -48,10 +48,14 @@ build: COMMON_BUILD UTILITY_BUILD build_agents ENV_BUILD SEQ_BUILD TEST_BUILD TO
 	@echo Project is built 
 
 run:
+ifdef SEQ
 	vsim -gui -do "wave.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887
+else 
+	vsim -gui -do "wave.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${DEF_SEQ} -suppress 8887
+endif
 
 run_design:
-	vsim -novopt -do "design.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${SEQ} -suppress 8887 -suppress 12110
+	vsim -novopt -do "design.do" hvl_top hdl_top +UVM_NO_RELNOTES +UVM_TESTNAME="$(TEST)" +VSEQ=${DEF_SEQ} -suppress 8887 -suppress 12110
 
 clean:
 	rm -r work
