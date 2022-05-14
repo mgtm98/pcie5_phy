@@ -15,14 +15,14 @@ package pcie_seq_pkg;
   `include "lpif_dummy_seq.svh"
   `include "lpif_reset_seq.svh"
   `include "lpif_enter_recovery_seq.svh"
-  `include "lpif_link_up_seq.svh"
+  `include "Lpif_link_up_seq.svh"
   `include "lpif_data_transmit_seq.svh"
 
   // PIPE Sequences
   `include "pipe_base_seq.svh"
   `include "pipe_dummy_seq.svh"
   `include "pipe_reset_seq.svh"
-  `include "pipe_link_up_seq.svh"
+  `include "Pipe_link_up_seq.svh"
   // `include "pipe_speed_change_seq.svh"
   `include "pipe_speed_change_with_equalization_seq.svh"
   `include "pipe_speed_change_without_eq_dsp_seq.svh"
