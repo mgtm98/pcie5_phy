@@ -1,5 +1,5 @@
 # pcie5_phy
-PCIE 5.0 Graduation project (Verification Team) under supervision of Mentor Graphics 
+PCIE 5.0 Graduation project (Verification Team)
 
 To run the Environment: 
 - navigate to tb/sim
